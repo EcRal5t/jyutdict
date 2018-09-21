@@ -78,6 +78,9 @@
                 <table style="text-align: right; width: 100%">
                     <tr><td colspan="2">偷偷藏在這裏做更新日誌。/骨稽<br><br><br><br></td></tr>
                     <tr>
+                        <td>2018-09-21</td><td width="80%">加了分韻。</td>
+                    </tr>
+                    <tr>
                         <td>2018-09-17</td><td width="80%">乜山十都冇做。</td>
                     </tr>
                     <tr>

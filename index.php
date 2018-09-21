@@ -71,44 +71,70 @@
         </form>
         <br>
 
-                <?PHP
+        <?PHP
+        if (!empty($_GET['character'])) {
+        ?>
+        <div class="box">
+            <form style=" text-align: center;">
+                <?php
+                $chara = $_GET['character'];
 
-                if (!empty($_GET['character'])) {
-                    ?>
-                    <div class="box">
-                    <form style=" text-align: center;">
-                    <?php
-                    $chara = $_GET['character'];
+                $sqlJingwaa = "Select * from `Jingwaa` where `chara`='".$chara."'";
+                $sqlFanwan = "Select * from `Fanwan` where `chara`='".$chara."'";
+                $queryJingwaa = mysqli_query($con, $sqlJingwaa);
+                $queryFanwan = mysqli_query($con, $sqlFanwan);
+                $resultJingwaa = mysqli_fetch_row($queryJingwaa);
+                $resultFanwan = mysqli_fetch_row($queryFanwan);
 
-                    $sql = "Select * from `Jingwaa` where `chara`='".$chara."'";
-                    $query = mysqli_query($con, $sql);
-                    if (!$query) {
-                        printf("Error: %s\n", mysqli_error($con));
-                        exit();
-                    }
-                    $rs = mysqli_fetch_row($query);
-                    if (is_array($rs)) {
-                        echo '<span style="font-size: 5em;">'.$rs[7].'</span><br>';
-                        echo '序號: '.$rs[0].'　　　葉碼: '.$rs[1].'<br>筆畫: '.$rs[2].'　　　部首外筆畫: '.$rs[5];
-                        echo '<br><br>原文標音（粵拼）: '.$rs[9].' ( '.$rs[8].' )';
-                        if ($rs[10]<>'_NULL')
-                            echo '<br>正文又讀: '.$rs[11].' ( '.$rs[10].' )';
-
-                        if ($rs = mysqli_fetch_row($query)) {
-                            echo '<br><br>又音: '.$rs[9].' ( '.$rs[8].' )';
-                            if ($rs[10]<>'_NULL')
-                                echo '<br>正文又讀: '.$rs[11].' ( '.$rs[10].' )';
-                        }
-
-                    } else echo '耖毋到: '.$chara.'。';
-                    unset($rs, $_POST['pw']);
-                    echo '</form></div>';
-
-
-                } else {
-                    echo "<br><br>";
-                }
+                echo '<span style="font-size: 5em;">'.$chara.'</span><br>';
                 ?>
+
+                <table style="width: 100%">
+                    <tr>
+                        <td>
+                            <span style="font-size: 2em;">分韻</span><br>
+                            <?PHP
+                            if (is_array($resultFanwan)) {
+                                echo '序號: '.$resultFanwan[0].'　　　小韻: '.$resultFanwan[4].'<br>';
+                                echo'韻部: '.$resultFanwan[1].'-'.$resultFanwan[2].'<br>';
+                                echo '意義: '.$resultFanwan[6].'<br>';
+                                echo '聲-韻-調: '.$resultFanwan[6].'-'.$resultFanwan[7].'-'.$resultFanwan[8];
+                                echo ' ( '.$resultFanwan[9].$resultFanwan[10].$resultFanwan[11].' )';
+
+                            } else {
+                                echo '耖毋到';
+                            }
+                            ?>
+                        </td>
+                        <td>
+                            <?PHP
+                            echo '<span style="font-size: 2em;">英華</span><br>';
+                            if (is_array($resultJingwaa)) {
+                                echo '序號: '.$resultJingwaa[0].'　　　葉碼: '.$resultJingwaa[1].'<br>';
+                                echo '筆畫: '.$resultJingwaa[2].'　　　部首外筆畫: '.$resultJingwaa[5];
+                                echo '<br><br>原文標音（粵拼）: '.$resultJingwaa[9].' ( '.$resultJingwaa[8].' )';
+                                if ($resultJingwaa[10]<>'_NULL')
+                                    echo '<br>正文又讀: '.$resultJingwaa[11].' ( '.$resultJingwaa[10].' )';
+
+                                if ($resultJingwaa = mysqli_fetch_row($queryJingwaa)) {
+                                    echo '<br><br>又音: '.$resultJingwaa[9].' ( '.$resultJingwaa[8].' )';
+                                    if ($resultJingwaa[10]<>'_NULL')
+                                        echo '<br>正文又讀: '.$resultJingwaa[11].' ( '.$resultJingwaa[10].' )';
+                                }
+                            } else {
+                                echo '耖毋到';
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <?PHP
+        } else {
+            echo "<br><br>";
+        }
+        ?>
 
         　<br><br><br><br>
         <hr>
@@ -122,4 +148,7 @@
 </div>
 
 </body>
+<?PHP
+unset($resultJingwaa, $resultFanwan, $_POST['pw']);
+?>
 </html>
