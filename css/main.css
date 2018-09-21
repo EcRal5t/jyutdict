@@ -71,7 +71,7 @@ form.search {
     -webkit-align-items: center;
 }
 input#searchingInputText {
-
+    width: 84%;
     text-align: center;
 }
 input.inputText, textarea.inputText, input.inputTextWrong, textarea.inputTextWrong {
