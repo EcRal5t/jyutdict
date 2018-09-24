@@ -1,5 +1,5 @@
 body {
-    font-family: Han Sans TC, 微软正黑, sans-serif;
+    font-family: Han Sans TC, Hiragino Sans GB, Microsoft JhengHei UI, sans-serif;
     font-size: 16px;
     color: #000000;
     padding: 0;
@@ -37,7 +37,7 @@ div.box {
     width: 100%;
     background: #F3F3F8;
     border: none;
-    padding: 25px 0 50px 0;
+    padding: 25px 0 40px 0;
     margin: 30px 0;
     box-shadow: lightgray 0 2px 10px 0 ;
     border-radius: 10px;
