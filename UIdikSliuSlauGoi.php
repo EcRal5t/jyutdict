@@ -9,8 +9,9 @@
     <link rel="stylesheet" type="text/css" href="./css/main.css">
     <link rel="icon" href="./img/favicon.png">
     <style type="text/css">
-
-
+		ul.nav-pills {
+			top: 20px;
+			position: fixed;
     </style>
     <?PHP
     include("connectDB.php");
@@ -59,7 +60,7 @@
   
   <!--毋識啊樸坴嘢使得毋使得-->
   <div class="container">
-		<div class="row">
+    	<div class="row">
             <form style=" text-align: center;">
               <?php
               $chara = $_GET['character'];
@@ -148,7 +149,7 @@
               	</div>
             </form>
         </div>
-     </div>
+ </div>
         <?PHP
         } else {
             echo "<br><br>";
