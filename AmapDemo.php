@@ -45,7 +45,7 @@
 			echo 'content:"<div class=\'container\'>';	#此处遍历输出读音 可以改里面那个DIV改标签样式
 			foreach($this->pronunciation as $value)
 			{
-				echo $value." | ";
+				echo $value."<br>";
 			}
 			echo '</div>"'."\n".'});'."\n";
 		}
@@ -253,7 +253,7 @@
 DefaultTextJS;
     	}else
 			{
-				$mapFanwan->Mapshow();		
+				$mapFanwan->Mapshow();
 				$mapJingwaa->Mapshow();		#要显示的东西放这里！！！
 			}
 	    ?>
