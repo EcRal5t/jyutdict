@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<?PHP
+include("connectDB.php");
+include("fun/writeLog.inc.php");
+?>
 <html>
 <head><meta http-equiv="Content-Type" content="text/html; charset=utf-16">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -12,9 +16,7 @@
 
 
     </style>
-    <?PHP
-    include("connectDB.php");
-    ?>
+
 </head>
 
 
@@ -55,69 +57,73 @@
         <?php
         if (isset($_COOKIE["login"])) echo ' - <a href="./logout.php">logout.php</a>';
         ?>
+        <br><a href="./newindex.php" style="font-size: 150px;">新主頁</a>
         <br><br>
+        <?PHP
+        if (!empty($_GET['character'])) {
+            $submitChara = $_GET['character'];
+        } else {
+            $submitChara = "粵";
+        }
+        ?>
+
+
         <form class="search" action="" method="get">
             <input type="text" id="searchingInputText" class="inputText" name="character" maxlength="2" style="font-size: 24px"
             <?PHP
-            if (!empty($_GET['character'])) {
-                $submitChara = $_GET['character'];
-                echo "value=\"$submitChara\"";
-            } else {
-                echo "value=\"粵\"";
-            }
+            echo "value=\"$submitChara\"";
             ?>>
             <input type="submit" class="inputButton" name="submit" value="耖！">
         </form>
         <br>
 
         <?PHP
+        writeLog("open: ".var_export($_GET, true));
+        //var_dump(microtime(true));
         if (!empty($_GET['character'])) {
+            $submitChara = $_GET['character'];
+            $tradCharaAru = false;                                      //查询到有一对一的传统字形
+
+            $sim2Trad_countTime_begin = microtime(true);
+            $sim2Trad_getCharaId_sql = "Select * from `Character_simtrad_list` where `chara`='".$submitChara."'";
+            $sim2Trad_getCharaId_result  = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getCharaId_sql));
+            if (is_array($sim2Trad_getCharaId_result)) {                  //在简繁映射表找到了字
+                $sim2Trad_SimMap_sql = "Select * from `Character_simtrad_map` where `chara_id_sim`=".$sim2Trad_getCharaId_result[0];
+                $sim2Trad_SimMap_query = mysqli_query($con, $sim2Trad_SimMap_sql);
+                $sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query);
+                if (is_array($sim2Trad_SimMap_result)) {                //查询到有传统字形
+                    $sim2Trad_countTradChara_sql = "Select count(*) from `Character_simtrad_map` where `chara_id_sim`=".$sim2Trad_getCharaId_result[0];
+                    $sim2Trad_countTradChara_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_countTradChara_sql));
+                    if ($sim2Trad_countTradChara_result[0]>1) {         //一简对多繁
+                        if ($sim2Trad_SimMap_result[1]==$sim2Trad_SimMap_result[0]) $sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query);
+                        echo '有繁体: ';
+                        do {                                            //列举出所有传统字形
+                            $sim2Trad_getTradChara_sql = "Select * from `Character_simtrad_list` where `chara_id`=" . $sim2Trad_SimMap_result[1];
+                            $sim2Trad_getTradChara_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getTradChara_sql));
+                            echo " <a href=\"index.php?character=".$sim2Trad_getTradChara_result[1]."\">".$sim2Trad_getTradChara_result[1]."</a>";
+                        } while (is_array($sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query)));
+                        echo "<br>";
+                    } else {                                            //查询到有一对一的传统字形
+                        $sim2Trad_getTradChara_sql = "Select * from `Character_simtrad_list` where `chara_id`=" . $sim2Trad_SimMap_result[1];
+                        $sim2Trad_getTradChara_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getTradChara_sql));
+                        //$submitChara = $sim2Trad_getTradChara_result[1];      //result[0]为传统字形的id，result[1]为字本身
+                        $tradCharaAru = true;
+                    }
+                }
+            }
+            $sim2Trad_countTime_end = microtime(true);
+            echo "简转繁：".($sim2Trad_countTime_end-$sim2Trad_countTime_begin)*1000 . 'ms';
         ?>
         <div class="box">
             <form style=" text-align: center;">
                 <?php
-                $submitChara = $_GET['character'];
-                $tradCharaAru = false;                                      //查询到有一对一的传统字形
 
-                $sim2Trad_getCharaId_sql = "Select * from `Character_simtrad_list` where `chara`='".$submitChara."'";
-                $sim2Trad_getCharaId_result  = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getCharaId_sql));
-                if (is_array($sim2Trad_getCharaId_result)) {                  //在简繁映射表找到了字
-                    $sim2Trad_SimMap_sql = "Select * from `Character_simtrad_map` where `chara_id_sim`=".$sim2Trad_getCharaId_result[0];
-                    $sim2Trad_SimMap_query = mysqli_query($con, $sim2Trad_SimMap_sql);
-                    $sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query);
-                    if (is_array($sim2Trad_SimMap_result)) {                //查询到有传统字形
-                        $sim2Trad_countTradChara_sql = "Select count(*) from `Character_simtrad_map` where `chara_id_sim`=".$sim2Trad_getCharaId_result[0];
-                        $sim2Trad_countTradChara_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_countTradChara_sql));
-                        if ($sim2Trad_countTradChara_result[0]>1) {         //一简对多繁
-                            if ($sim2Trad_SimMap_result[1]==$sim2Trad_SimMap_result[0]) $sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query);
-                            echo '有繁体: ';
-                            do {                                            //列举出所有传统字形
-                                $sim2Trad_getTradChara_sql = "Select * from `Character_simtrad_list` where `chara_id`=" . $sim2Trad_SimMap_result[1];
-                                $sim2Trad_getTradChara_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getTradChara_sql));
-                                echo " <a href=\"index.php?character=".$sim2Trad_getTradChara_result[1]."\">".$sim2Trad_getTradChara_result[1]."</a>";
-                            } while (is_array($sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query)));
-                            echo "<br>";
-                        } else {                                            //查询到有一对一的传统字形
-                            $sim2Trad_getTradChara_sql = "Select * from `Character_simtrad_list` where `chara_id`=" . $sim2Trad_SimMap_result[1];
-                            $sim2Trad_getTradChara_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getTradChara_sql));
-                            //$submitChara = $sim2Trad_getTradChara_result[1];      //result[0]为传统字形的id，result[1]为字本身
-                            $tradCharaAru = true;
-                        }
-                    }
-                }
                 ?>
 
-                少年智则国智，少年富则国富；少年强则国强，少年独立则国独立；少年自由则国自由；少年进步则国进步；少年胜于欧洲，则国胜于欧洲；少年雄于地球，则国雄于地球。红日初升，其道大光（47）。河出伏流，一泻汪洋。潜龙腾渊，鳞爪飞扬。乳虎啸谷，百兽震惶。鹰隼试翼，风尘翕张。奇花初胎，矞矞皇皇（48）。干将发硎，有作其芒（49）。天戴其苍，地履其黄。纵有千古，横有八荒。前途似海，来日方长。美哉我少年中国，与天不老！壮哉我中国少年，与国无疆！
                 <table style="width: 100%;">
                     <?PHP
                     queryForCharaBegin:
-
-                    $query_inJingwaa_sql = "Select * from `Jingwaa` where `chara`='".$submitChara."'";
-                    $query_inFanwan_sql = "Select * from `Fanwan` where `chara`='".$submitChara."'";
-                    $query_inJingwaa_query = mysqli_query($con, $query_inJingwaa_sql);
-                    $query_inFanwan_query = mysqli_query($con, $query_inFanwan_sql);
-                    $query_inJingwaa_result = mysqli_fetch_row($query_inJingwaa_query);
-                    $query_inFanwan_result = mysqli_fetch_row($query_inFanwan_query);
+                    $query_countTime_begin = microtime(true);
                     ?>
                     <tr>
                         <td colspan="2">
@@ -130,6 +136,10 @@
                         <td width="50%">
                             <span style="font-size: 2em;">分韻</span><br>
                             <?PHP
+                            $query_countTimeFanwan_begin = microtime(true);
+                            $query_inFanwan_sql = "Select * from `Fanwan` where `chara`='".$submitChara."'";
+                            $query_inFanwan_query = mysqli_query($con, $query_inFanwan_sql);
+                            $query_inFanwan_result = mysqli_fetch_row($query_inFanwan_query);
                             if (is_array($query_inFanwan_result)) {
                                 do {
                                     echo '序號: '.$query_inFanwan_result[0].'　　小韻: '.$query_inFanwan_result[4].'<br>';
@@ -142,11 +152,17 @@
                             } else {
                                 echo '耖毋到';
                             }
+                            $query_countTimeFanwan_end = microtime(true);
+                            echo ($query_countTimeFanwan_end-$query_countTimeFanwan_begin)*1000 . 'ms';
                             ?>
                         </td>
                         <td width="50%">
                             <span style="font-size: 2em;">英華</span><br>
                             <?PHP
+                            $query_countTimeJingwaa_begin = microtime(true);
+                            $query_inJingwaa_sql = "Select * from `Jingwaa` where `chara`='".$submitChara."'";
+                            $query_inJingwaa_query = mysqli_query($con, $query_inJingwaa_sql);
+                            $query_inJingwaa_result = mysqli_fetch_row($query_inJingwaa_query);
                             if (is_array($query_inJingwaa_result)) {
                                 echo '序號: '.$query_inJingwaa_result[0].'　　葉碼: '.$query_inJingwaa_result[1].'<br>';
                                 echo '部首: '.$query_inJingwaa_result[6].'　　筆畫: '.$query_inJingwaa_result[2].'+'.$query_inJingwaa_result[5].'<br>';
@@ -166,11 +182,15 @@
                             } else {
                                 echo '耖毋到';
                             }
+                            $query_countTimeJingwaa_end = microtime(true);
+                            echo ($query_countTimeJingwaa_end-$query_countTimeJingwaa_begin)*1000 . 'ms';
                             ?>
                         </td>
                     </tr>
 
                     <?PHP
+                    $query_countTime_end = microtime(true);
+                    echo "<tr><td colspan='2'>".($query_countTime_end-$query_countTime_begin)*1000 . 'ms</td></tr>';
                     if ($tradCharaAru) {
                         echo "<tr><td colspan='2'><hr></td></tr>";
                         $tradCharaAru = false;
