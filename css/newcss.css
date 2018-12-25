@@ -1,0 +1,371 @@
+body {
+    font-family: Han Sans TC, Hiragino Sans GB, Microsoft JhengHei UI, sans-serif;
+    font-size: 18px;
+    color: black;
+    padding: 0;
+    margin: 0;
+    background: #F3F3F8;
+}
+@media screen and (max-width: 530px) and (min-width: 450px){
+    body {
+        font-size: 14px;
+    }
+}
+@media screen and (max-width: 450px) {
+    body {
+        font-size: 13px;
+    }
+}
+
+.wrapper {
+    height: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+}
+@media screen and (max-width: 430px) and (min-width: 1px) {
+    .wrapper {
+        width: 430px;
+    }
+}
+
+.leftNavBar {
+    background: #2F5597;
+    color: white;
+
+    width: 100%;
+    padding: 0;
+
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transform: translate3d(0, 0, 0);
+    box-shadow: 1px 0 10px 0 #2F5597;
+    z-index: 1;
+}
+
+.leftNavBar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+
+}
+.leftNavBar ul span {
+    margin: auto;
+    line-break: anywhere;
+}
+.leftNavBar ul li {
+    width: 100%;
+    box-shadow: 0 0 10px 1px rgba(0, 34, 68, 0.05);
+}
+.leftNavBar ul li.topLOGO {
+    position: relative;
+    background: #4472C4;
+    height: 150px;
+    margin: 0;
+    display: flex;
+    z-index: 10;
+}
+
+
+
+.leftNavBar ul li:not(.topLOGO):not(.bottom) {
+    position: relative;
+    height: 50px;
+
+}
+.leftNavBar ul li.bottom {
+    height: 25px;
+    font-size: 12px;
+    position: absolute;
+}
+.leftNavBar ul li.bottom1 {
+    bottom: 25px;
+    background: #32579A;
+    z-index: 2;
+}
+.leftNavBar ul li.bottom0 {
+    bottom: 0;
+    background: #355CA3;
+    z-index: 3;
+}
+@media screen and (max-height: 450px) {
+    .leftNavBar ul li.bottom {
+        position: relative;
+    }
+    .leftNavBar ul li.bottom1, .bottom0 {
+        bottom: 0;
+    }
+}
+
+.leftNavBar ul li a {
+    color: white;
+    height: 100%;
+    display: flex;
+    text-decoration: none;
+
+}
+
+.leftNavBar ul li a:visited {
+}
+.leftNavBar ul li a:not(.bottom) {
+}
+
+div#highlightRectangle {
+    position: fixed;
+    top: 150px;
+    left: 0 ;
+    width: 10px;
+    height: 50px;
+    background: lightblue;
+    z-index: 7;
+}
+@media screen and (min-width: 930px) {
+    div#highlightRectangle {
+        width: 7%;
+    }
+}
+
+.container {
+    background: aliceblue;
+    flex: 5;
+    overflow-y: auto;
+    text-align: center;
+    padding: 0 150px;
+    position: relative;
+}
+@media screen and (min-width: 1500px) {
+    .container {
+        padding: 0 calc(50% - 600px) ;
+    }
+}
+@media screen and (max-width: 1200px) and (min-width: 930px) {
+    .container {
+        padding: 0 calc(50% - 450px) ;
+    }
+}
+@media screen and (max-width: 930px) {
+    .container {
+        padding: 0 15px;
+    }
+}
+
+.container #toggleLeftNavBar {
+    width: 40px;
+    height: 40px;
+    border: none;
+    margin: 25px 0;
+    padding: 0;
+
+    float: left;
+    border-radius: 5px;
+    background: #4472C4;
+    font-size: 20px;
+    color: white;
+}
+
+.container .searching {
+    width: calc(100% - 100px) ;
+    padding: 0 50px;
+    height: 40px;
+    margin-top: 110px;
+}
+.container .searching form {
+    height: 100%;
+}
+.container .searching form .searchingInput {
+    width: 80%;
+    height: 100%;
+    padding: 0;
+    font-size: 24px;
+    text-align: center;
+    border: none;
+    float: left;
+}
+.container .searching form .searchingButton {
+    width: 20%;
+    height: 100%;
+    border: none;
+    padding: 0;
+    float: left;
+}
+
+.container #charaSimToTrad {
+    background: lawngreen;
+    margin-top: 50px;
+    width: 100%;
+    height: 50px;
+    display: flex;
+}
+.container #charaSimToTrad span {
+    margin: auto;
+    float: left;
+}
+.container #charaSimToTradHead {
+    width: 100px;
+}
+.container #charaSimToTradMain {
+    width: calc(100% - 100px) ;
+}
+
+
+.container #wanshyuResult {
+    margin-top: 50px;
+    float: left;
+    width: 100%;
+    background: crimson;
+    text-align: center;
+}
+
+.container #wanshyuResult #charaHead {
+    width: 125px;
+    height: 150px;
+    float: left;
+    background: blueviolet;
+    margin-right: 50px;
+}
+@media screen and (max-width: 800px) and (min-width: 1px) {
+    .container #wanshyuResult #charaHead {
+        float: none;
+        margin: auto;
+        padding-bottom: 50px;
+    }
+}
+
+.container #wanshyuResult span {
+    margin: auto;
+    position: relative;
+
+}
+.container #wanshyuResult #charaHead #charaHeadSqu {
+    width: 125px;
+    height: 110px;
+    background: greenyellow;
+    font-size: 110px;
+    display: flex;
+}
+.container #wanshyuResult #charaHead #oldPronounce {
+    text-align: center;
+    width: 125px;
+    height: 20px;
+    background: teal;
+    font-size: 12px;
+    display: flex;
+}
+
+
+.container #wanshyuResult #wanshyuResultForm {
+    width: calc(100% - 175px) ;
+    float: left;
+    background: skyblue;
+}
+@media screen and (max-width: 800px) and (min-width: 1px) {
+    .container #wanshyuResult #wanshyuResultForm {
+        margin: auto;
+        width: 100%;
+        float: none;
+    }
+}
+.container #wanshyuResult .wanshyuResultBlock {
+    width: 100%;
+    float: left;
+    background: mediumspringgreen;
+}
+.container #wanshyuResult .wanshyuResultBlock table {
+    border-collapse: collapse;
+    width: 100%;
+    padding: 0;
+}
+.container #wanshyuResult .wanshyuResultBlock table td {
+    text-align: center;
+    line-height: 27px;
+    padding: 0;
+}
+.container #wanshyuResult .wanshyuResultBlock span {
+    margin: auto;
+
+}
+.container #wanshyuResult .wanshyuResultFormHead {
+    padding: 3px 0;
+    width: 50px;
+    height: 100%;
+    float: left;
+    background: royalblue;
+    font-size: 20px;
+    line-height: 22px;
+    display: flex;
+}
+
+.container #wanshyuResult #wanshyuResultFanwan {
+
+    width: calc(100% - 50px) ;
+    float: right;
+    background: hotpink;
+}
+
+.container #wanshyuResult #wanshyuResultYingwaa {
+    width: calc(100% - 50px) ;
+    float: right;
+    background: plum;
+}
+
+.container #regionalResult {
+    margin-top: 50px;
+    /*margin-bottom: 50px;*/
+    width: 100%;
+    float: left;
+    background: limegreen;
+}
+
+.container #regionalResult table {
+    border-collapse: collapse;
+    width: 100%;
+    padding: 0;
+}
+.container #regionalResult table td{
+    text-align: center;
+    line-height: 27px;
+    padding: 0;
+    width: 25%;
+}
+
+.container #regionalResult #regionalResultForm {
+    width: calc(100% - 450px) ;
+    float: left;
+    background: orangered;
+    margin-right: 50px;
+}
+@media screen and (max-width: 830px) and (min-width: 1px) {
+    .container #regionalResult #regionalResultForm {
+        width: calc(100% - 100px) ;
+        float: none;
+        margin-right: 0;
+        padding: 0 50px;
+        margin-bottom: 50px;
+    }
+}
+
+
+
+.container #regionalResult #regionalResultMap {
+    width: 400px;
+    height: 400px;
+    font-size: 50px;
+    float: left;
+    background: goldenrod;
+    display: flex;
+}
+@media screen and (max-width: 830px) {
+    .container #regionalResult #regionalResultMap {
+        float: none;
+        margin: auto;
+    }
+}
+@media screen and (max-width: 530px) and (min-width: 1px) {
+    .container #regionalResult #regionalResultMap {
+        width: 100%;
+        float: none;
+        margin: auto;
+    }
+}
