@@ -25,17 +25,17 @@ include("fun/writeLog.inc.php");
         <ul>
             <li id="topLOGO" class="topLOGO">
                 <span style="font-size: 16px; line-height: 24px;">
-                    <span style="font-size: 50px;">粤</span> DicK
+                    <br><br><br><span style="font-size: 50px;">粵</span> DicK<br><br><br>
                 </span>
             </li>
             <li style="background: #3E6CBE; z-index: 6;">
                 <a href="#topLOGO"><span>字</span></a>
             </li>
             <li style="background: #3B67B5; z-index: 5;">
-                <a href="./index.php"><span>旧主页</span></a>
+                <a href="#topLOGO"><span>韻</span></a>
             </li>
             <li style="background: #3861AC; z-index: 4;">
-                <a href="#topLOGO"><span>丙</span></a>
+                <a onclick="alert('<h1>不給看</h1>')"><span>旧主页</span></a>
             </li>
             <li style="background: #355CA3; z-index: 3;">
                 <a href="#topLOGO"><span>丁</span></a>
@@ -44,7 +44,7 @@ include("fun/writeLog.inc.php");
                 <a href="#topLOGO"><span>戊</span></a>
             </li>
             <li class="bottom bottom1">
-                <a href="#topLOGO"><span>癸</span></a>
+                <a href="#topLOGO"><span>壬</span></a>
             </li>
             <li class="bottom bottom0">
                 <a href="#topLOGO"><span>癸</span></a>
@@ -53,19 +53,20 @@ include("fun/writeLog.inc.php");
     </div>
 
     <div id="container" class="container">
-        <hr style="height: 2px; border: none;">
         <input type="button" value="Ξ" id="toggleLeftNavBar" onclick="toggleLeftNavBar()">
         <?PHP //设置变量 submitChara 为 提交的字符
         if (!empty($_GET['character'])) {
             $submitChara = $_GET['character'];
+            $submitChara = mb_substr($submitChara, 0, 1, 'utf8');
         } else {
             $submitChara = "粵";
         }
+
         ?>
         <div class="searching">
             <form>
-                <input type="text" id="searchingInput" class="searchingInput" name="character" maxlength="2" <?PHP echo "value=\"$submitChara\""; ?>>
-                <input type="submit" class="searchingButton" value="耖！">
+                <input type="text" id="searchingInput" class="searchingInput generalBgDeeper" name="character" <?PHP echo "value=\"$submitChara\""; ?>>
+                <input type="submit" class="searchingButton generalBg" value="耖">
             </form>
         </div>
 
@@ -95,12 +96,12 @@ include("fun/writeLog.inc.php");
 
             $charaCount = count($charaArray);
             if ($charaCount > 2) { ?>
-                <div id="charaSimToTrad">
+                <div class="generalBgDeeper" id="charaSimToTrad">
                     <span id="charaSimToTradHead">简转繁</span>
                     <span id="charaSimToTradMain">
                     <?PHP
-                    for ($i = 2; $i < $charaCount; $i++) {
-                        echo " <a href=\"index.php?character=" . $charaArray[$i] . "\">" . $charaArray[$i] . "</a>";
+                    for ($i = 1; $i < $charaCount; $i++) {
+                        echo " <a href=\"newindex.php?character=" . $charaArray[$i] . "\">" . $charaArray[$i] . "</a>";
                     } ?>
                     </span>
                 </div>
@@ -109,22 +110,30 @@ include("fun/writeLog.inc.php");
             ?>
 
             <?PHP
+            if ($charaCount > 2) $charaCount = 1;
             if ($charaCount <= 2) {
                 for ($i = 0; $i < $charaCount; $i++) { ?>
                     <div id="wanshyuResult">
-                        <div id="charaHead">
-                            <div id="charaHeadSqu"><span style="top: -25px;"><?PHP echo "$charaArray[$i]" ?></span>
-                            </div>
-                            <div id="oldPronounce">
-                                <span>上上上上上上上上</span>
-                            </div>
-                            <div id="oldPronounce">
-                                <span>中中中中中中中中</span>
-                            </div>
+                        <div class="generalBgDeeper" id="charaHead">
+                            <div class="generalBg" id="charaHeadSqu"><span style="top: -10px;"><?PHP echo "$charaArray[$i]" ?></span></div>
+
+                            <?PHP
+                            $query_inKuangyon_sql = "SELECT * FROM `YKuangyon` WHERE `chara`='" . $charaArray[$i] . "'";
+                            $query_inKuangyon_query = mysqli_query($con, $query_inKuangyon_sql);
+                            while (is_array($query_inKuangyon_result = mysqli_fetch_row($query_inKuangyon_query))) {
+                                echo '<div id="oldPronounce"><span>';
+                                echo '<span style="background: gray; color: white;">中</span>'
+                                    .$query_inKuangyon_result[2].$query_inKuangyon_result[3].$query_inKuangyon_result[4]
+                                    .$query_inKuangyon_result[5].$query_inKuangyon_result[6].$query_inKuangyon_result[7]
+                                    .' ('.$query_inKuangyon_result[8].')';
+                                echo "</span></div>";
+                            }
+                            ?>
+
                         </div>
                         <div id="wanshyuResultForm">
-                            <div class="wanshyuResultBlock">
-                                <div class="wanshyuResultFormHead"><span>分<br/>韻</span></div>
+                            <div class="wanshyuResultBlock generalBgDeeper" style="margin-bottom: 3px;">
+                                <div class="wanshyuResultFormHead" style="height: 81px;"><span>分 韻 </span></div>
                                 <?PHP
                                 $query_inFanwan_sql = "SELECT * FROM `Fanwan` WHERE `chara`='" . $charaArray[$i] . "'";
                                 $query_inFanwan_query = mysqli_query($con, $query_inFanwan_sql);
@@ -132,12 +141,12 @@ include("fun/writeLog.inc.php");
                                 if (is_array($query_inFanwan_result)) {
                                     do {
                                         ?>
-                                        <table id="wanshyuResultFanwan">
+                                        <table class="generalForm" id="wanshyuResultFanwan">
                                             <tr>
-                                                <td bgcolor="green" width="12.5%">序號</td>
-                                                <td bgcolor="red" width="12.5%">小韻</td>
-                                                <td bgcolor="blue" width="37.5%">韻部</td>
-                                                <td bgcolor="cyan" width="25%">聲-韻-調</td>
+                                                <td width="12.5%">序號</td>
+                                                <td width="12.5%">小韻</td>
+                                                <td width="37.5%">韻部</td>
+                                                <td width="25%">聲-韻-調</td>
                                                 <td rowspan="2">
                                                     <?PHP
                                                     if ($query_inFanwan_result[9] <> '0') echo $query_inFanwan_result[9];
@@ -164,42 +173,30 @@ include("fun/writeLog.inc.php");
                                 } else echo "<span style='font-size: 20px;'>冇見有</span>";
                                 ?>
                             </div>
-                            <div class="wanshyuResultBlock" style="margin-top: 15px;">
-                                <div class="wanshyuResultFormHead"><span>英<br/>華</span></div>
+                            <div class="wanshyuResultBlock generalBgDeeper" style="margin-top: 12px;">
+                                <div class="wanshyuResultFormHead" style="height: 54px;"><span>英 華</span></div>
                                 <?PHP
                                 $query_inJingwaa_sql = "SELECT * FROM `Jingwaa` WHERE `chara`='" . $charaArray[$i] . "'";
                                 $query_inJingwaa_query = mysqli_query($con, $query_inJingwaa_sql);
-                                $query_inJingwaa_result = mysqli_fetch_row($query_inJingwaa_query);
-                                if (is_array($query_inJingwaa_result)) {
-                                    $JingwaaOne = $query_inJingwaa_result;
-                                    if (is_array($query_inJingwaa_result = mysqli_fetch_row($query_inJingwaa_query))) {
-                                        $JingwaaTwo = $query_inJingwaa_result;
-                                    }
+                                $JingwaaArray = [];
+                                for ($i = 0; is_array($query_inJingwaa_result = mysqli_fetch_row($query_inJingwaa_query)); $i++) {
+                                    $JingwaaArray[$i] = $query_inJingwaa_result;
                                 }
-                                if (isset($JingwaaOne)) {
+                                $JingwaaPronounCount = count($JingwaaArray);
+                                if ($JingwaaPronounCount>0) {
                                     ?>
-                                    <table id="wanshyuResultYingwaa">
+                                    <table class="generalForm" id="wanshyuResultYingwaa">
                                         <tr>
-                                            <td bgcolor="green" width="12.5%">序號</td>
-                                            <td bgcolor="red" width="12.5%">葉碼</td>
-                                            <td bgcolor="blue" width="12.5%">筆畫</td>
-                                            <td bgcolor="cyan" width="37.5%">原文標音</td>
-                                            <td bgcolor="purple" rowspan="2">
+                                            <td width="12.5%">序號</td>
+                                            <td width="12.5%">葉碼</td>
+                                            <td width="12.5%">筆畫</td>
+                                            <td width="37.5%">原文標音</td>
+                                            <td rowspan="2">
                                                 <?PHP
-                                                if ($JingwaaOne[12]) echo '<i>';
-                                                echo $JingwaaOne[8];
-                                                if ($JingwaaOne[12]) echo '</i>';
-                                                if ($JingwaaOne[10] <> '_NULL') {
-                                                    echo ' (' . $JingwaaOne[10] . ')';
-                                                }
-                                                if (isset($JingwaaTwo)) {
-                                                    echo "<br>";
-                                                    if ($JingwaaTwo[12]) echo '<i>';
-                                                    echo $JingwaaTwo[8];
-                                                    if ($JingwaaTwo[12]) echo '</i>';
-                                                    if ($JingwaaTwo[10] <> '_NULL') {
-                                                        echo ' (' . $JingwaaTwo[10] . ')';
-                                                    }
+                                                for ($i=0; $i<$JingwaaPronounCount; $i++) {
+                                                    if ($i>0) echo '<br>';
+                                                    echo ($JingwaaArray[$i][12] ? "<i>$JingwaaArray[$i][8]</i>" : $JingwaaArray[$i][8]);
+                                                    echo ( ($JingwaaArray[$i][10]<>'_NULL') ? ' ('.$JingwaaArray[$i][10].')' : '');
                                                 }
                                                 ?>
                                             </td>
@@ -207,32 +204,22 @@ include("fun/writeLog.inc.php");
                                         <tr>
                                             <td>
                                                 <?PHP
-                                                echo $JingwaaOne[0];
-                                                if (isset($JingwaaTwo)) {
-                                                    echo '<br>'.$JingwaaTwo[0];
+                                                for ($i=0; $i<$JingwaaPronounCount; $i++) {
+                                                    if ($i>0) echo '<br>';
+                                                    echo $JingwaaArray[$i][0];
                                                 }
                                                 ?>
                                             </td>
-                                            <td><?PHP echo $JingwaaOne[1]; ?></td>
-                                            <td><?PHP echo $JingwaaOne[2]
-                                                    . '(' . $JingwaaOne[6]
-                                                    . ')+' . $JingwaaOne[5]; ?></td>
+                                            <td><?PHP echo $JingwaaArray[0][1]; ?></td>
+                                            <td><?PHP echo $JingwaaArray[0][2]
+                                                    . '(' .$JingwaaArray[0][6]
+                                                    . ')+'.$JingwaaArray[0][5]; ?></td>
                                             <td>
                                                 <?PHP
-                                                if ($JingwaaOne[12]) echo '<i>';
-                                                echo $JingwaaOne[9];
-                                                if ($JingwaaOne[12]) echo '</i>';
-                                                if ($JingwaaOne[11] <> '_NULL') {
-                                                    echo ' (' . $JingwaaOne[11] . ')';
-                                                }
-                                                if (isset($JingwaaTwo)) {
-                                                    echo "<br>";
-                                                    if ($JingwaaTwo[12]) echo '<i>';
-                                                    echo $JingwaaTwo[9];
-                                                    if ($JingwaaTwo[12]) echo '</i>';
-                                                    if ($JingwaaTwo[11] <> '_NULL') {
-                                                        echo ' (' . $JingwaaTwo[11] . ')';
-                                                    }
+                                                for ($i=0; $i<$JingwaaPronounCount; $i++) {
+                                                    if ($i>0) echo '<br>';
+                                                    echo ($JingwaaArray[$i][12] ? "<i> $JingwaaArray[$i][9] </i>" : $JingwaaArray[$i][9]);
+                                                    echo ( ($JingwaaArray[$i][11]<>'_NULL') ? ' ('.$JingwaaArray[$i][11].')' : '');
                                                 }
                                                 ?>
                                             </td>
@@ -251,45 +238,56 @@ include("fun/writeLog.inc.php");
             }
             ?>
             <div id="regionalResult">
-                <div id="regionalResultForm">
-                    <table>
+                <div class="generalBgDeeper" id="regionalResultForm">
+                    <table class="generalForm">
+                        <?PHP
+                        if ($charaCount <= 2) {
+                            for ($i = 0; $i < $charaCount; $i++) {
+                                $query_inCityList_sql = "SELECT * FROM `IAreaList`";
+                                $query_inCityList_query = mysqli_query($con, $query_inCityList_sql);
+
+                                echo "<tr><td style='font-size: 22px; height: 36px;' colspan='4'>$charaArray[$i]</td></tr>";
+
+                                while (is_array($cityList = mysqli_fetch_row($query_inCityList_query))) {
+                                    $query_inCity_sql = "SELECT * FROM `" . $cityList[6] . "` WHERE `chara`='" . $charaArray[$i] . "'";
+                                    $query_inCity_query = mysqli_query($con, $query_inCity_sql);
+                                    while (is_array($query_inCity_result = mysqli_fetch_row($query_inCity_query))) {
+                                        echo "<tr><td>$cityList[3]</td>";
+                                        echo "<td>$cityList[4]</td><td>$cityList[5]</td>";
+                                        echo "<td>";
+                                        echo "<span style='color: #C00000;'>$query_inCity_result[2]</span>";
+                                        echo "<span style='color: #00C000;'>$query_inCity_result[3]</span>";
+                                        echo "<span style='color: #0000C0;'>$query_inCity_result[4]</span>";
+                                        echo "<span style='color: #C0C000;'>$query_inCity_result[5]</span>";
+                                        echo "</td></tr>";
+                                    }
+                                }
+                                echo "<tr><td colspan='4'>&nbsp;</td></tr>";
+                            }
+                        }
+                        ?>
                         <tr>
-                            <td></td><td></td><td></td><td></td>
+                            <td>顏</td><td>色</td><td>先</td><td>不管</td>
                         </tr>
                         <tr>
-                            <td>廣東</td><td>廣州</td><td> - </td><td>chiaang4</td>
+                            <td>僅</td><td>用</td><td>於</td><td>測試</td>
                         </tr>
-                        <tr>
-                            <td>未</td><td>加</td><td>數</td><td>據</td>
+
+                        <tr style="font-size: 25px;">
+                            <td style="color: fuchsia;">極</td><td style="color: chartreuse;">致</td><td style="color: lightskyblue;">色</td><td style="color: lightpink;">彩</td>
                         </tr>
-                        <tr>
-                            <td>衹</td><td>是</td><td>測</td><td>試</td>
-                        </tr>
-                        <tr style="font-size: 25px; color: fuchsia;">
-                            <td>極</td><td>致</td><td>色</td><td>彩</td>
-                        </tr>
-                        <tr style="font-size: 25px; color: chartreuse;">
-                            <td>全</td><td>新</td><td>體</td><td>驗</td>
+                        <tr style="font-size: 25px;">
+                            <td style="color: blueviolet;">全</td><td style="color: aquamarine;">新</td><td style="color: khaki;">體</td><td style="color: crimson;">驗</td>
                         </tr>
                     </table>
                 </div>
-                <div id="regionalResultMap">
+                <div class="generalBgDeeper" id="regionalResultMap">
                     <span style="margin: auto;">放地圖</span>
                 </div>
             </div>
-
         <?PHP
         }
         ?>
-
-
-
-
-
-
-
-
-
     </div>
 </div>
 </body>

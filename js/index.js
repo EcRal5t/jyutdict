@@ -50,7 +50,9 @@ function tabHighlightRectanglePos(which) {
 
 function initial(which) {
     //tabHighlightRectanglePos(which);
-    heightModify();
+    setTimeout(function () {
+         heightModify();
+         }, 2500);
 }
 
 

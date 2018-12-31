@@ -9,6 +9,7 @@ function showLeftNavBar() {
     let highlightRec = document.getElementById("highlightRectangle");
     navBar.style.flex = 1;
     highlightRec.style.display = "block";
+
 }
 
 function toggleLeftNavBar() {
