@@ -1,16 +1,16 @@
+html {
+    height: 100%;
+}
 body {
     font-family: Han Sans TC, Hiragino Sans GB, Microsoft JhengHei UI, sans-serif, "Microsoft YaHei UI";
     font-size: 16px;
+    height: 100%;
     color: black;
     padding: 0;
     margin: 0;
     background: aliceblue;
 }
-@media screen and (max-width: 530px) and (min-width: 461px){
-    body {
-        font-size: 14px;
-    }
-}
+
 @media screen and (max-width: 460px) {
     body {
         font-size: 13px;
@@ -24,9 +24,9 @@ body {
     align-items: stretch;
 
 }
-@media screen and (max-width: 450px) {
+@media screen and (max-width: 400px) {
     .wrapper {
-        width: 450px;
+        width: 400px;
     }
 }
 
@@ -94,6 +94,7 @@ body {
 .leftNavBar ul li.bottom {
     height: 25px;
     position: absolute;
+    /*float: bottom;*/
     font-size: 14px;
 }
 .leftNavBar ul li.bottom1 {
@@ -132,7 +133,6 @@ div#highlightRectangle {
 }
 
 .container {
-
     -webkit-flex: 5;
     -ms-flex: 5;
     flex: 5;
@@ -146,11 +146,11 @@ div#highlightRectangle {
 
 
     background: rgba(181,197,216,0.5);
-    background: -moz-radial-gradient(bottom right, ellipse cover, rgba(105,155,200,0.5) 0%, rgba(181,197,216,0.5) 57%);
-    background: -webkit-gradient(radial, bottom right 0px, top left, 100%, color-stop(0%,rgba(105,155,200,0.5)), color-stop(57%,rgba(181,197,216,0.5)));
-    background: -webkit-radial-gradient(bottom right, ellipse cover, rgba(105,155,200,0.5) 0%,rgba(181,197,216,0.5) 57%);
-    background: -o-radial-gradient(bottom right, ellipse cover, rgba(105,155,200,0.5) 0%,rgba(181,197,216,0.5) 57%);
-    background: -ms-radial-gradient(bottom right, ellipse cover, rgba(105,155,200,0.5) 0%,rgba(181,197,216,0.5) 57%);
+    /*background: -moz-radial-gradient(bottom right, ellipse cover, rgba(105,155,200,0.5) 0%, rgba(181,197,216,0.5) 57%);*/
+    /*background: -webkit-gradient(radial, bottom right 0px, top left, 100%, color-stop(0%,rgba(105,155,200,0.5)), color-stop(57%,rgba(181,197,216,0.5)));*/
+    /*background: -webkit-radial-gradient(bottom right, ellipse cover, rgba(105,155,200,0.5) 0%,rgba(181,197,216,0.5) 57%);*/
+    /*background: -o-radial-gradient(bottom right, ellipse cover, rgba(105,155,200,0.5) 0%,rgba(181,197,216,0.5) 57%);*/
+    /*background: -ms-radial-gradient(bottom right, ellipse cover, rgba(105,155,200,0.5) 0%,rgba(181,197,216,0.5) 57%);*/
     background: radial-gradient(ellipse at bottom right, rgba(105,155,200,0.5) 0%,rgba(181,197,216,0.5) 57%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#699bc8', endColorstr='#b5c5d8',GradientType=1 );
 
@@ -186,47 +186,23 @@ div#highlightRectangle {
     z-index: 12;
     border-radius: 5px;
     background: #4472C4;
-    font-size: 20px;
+    font-size: 28px;
     color: white;
 }
 
-.container .searching {
+
+
+.container #searching {
     width: calc(100% - 100px) ;
     padding: 0 50px;
     height: 40px;
     margin-top: 110px;
-
 }
-.container .searching form {
-    height: 100%;
-}
-.container .searching form .searchingInput {
-    width: 80%;
-    height: 100%;
-    padding: 0;
+.container #searching .inputForm .inputText {
     font-size: 24px;
-    text-align: center;
-    border: none;
-    float: left;
-
-    /*background: #FFFFFFC0;*/
 }
-.container .searching form .searchingInput:focus {
-    background: rgba(238, 252, 254, 0.6);
-}
-.container .searching form .searchingButton {
-    width: 20%;
-    height: 100%;
-    border: none;
-    padding: 0;
+.container  #searching .inputForm .inputButton {
     font-size: 20px;
-    float: left;
-}
-.container .searching form .searchingButton:hover {
-    background: rgba(238, 252, 254, 0.5);
-}
-.container .searching form .searchingButton:active {
-    background: rgba(138, 152, 154, 0.5);
 }
 
 .container #charaSimToTrad {
@@ -297,7 +273,6 @@ div#highlightRectangle {
 
     /*background: teal;*/
     background: #F0FFFF40;
-
 }
 
 
@@ -348,6 +323,8 @@ div#highlightRectangle {
     /*background: royalblue;*/
 }
 
+
+
 .container #wanshyuResult #wanshyuResultFanwan {
     width: calc(100% - 50px) ;
     float: right;
@@ -390,15 +367,15 @@ div#highlightRectangle {
 
     /*background: orangered;*/
 }
-@media screen and (max-width: 930px) and (min-width: 531px) {
+@media screen and (max-width: 1030px) and (min-width: 773px) {
     .container #regionalResult #regionalResultForm {
-        width: 400px ;
+        width: 600px ;
         float: none;
         padding: 0;
-        margin: 0 calc(50% - 200px) 50px calc(50% - 200px) ;
+        margin: 0 calc(50% - 300px) 50px calc(50% - 300px) ;
     }
 }
-@media screen and (max-width: 530px) {
+@media screen and (max-width: 773px) {
     .container #regionalResult #regionalResultForm {
         width: 100%;
         float: none;
@@ -407,6 +384,59 @@ div#highlightRectangle {
     }
 }
 
+.container #regionalResult #regionalResultEdit {
+    /*background: blue;*/
+    width: 100%;
+    margin-top: 50px;
+    /*background: orangered;*/
+}
+.container #regionalResult #editingText {
+    /*background: blue;*/
+    resize:none;
+
+}
+.container #regionalResult #editingForm {
+    /*background: blue;*/
+    width: 20%;
+    height: 100%;
+    border: none;
+    padding: 0;
+    float: left;
+}
+
+.container #regionalResult .tips {
+    position:relative;
+    font-size: 0.9em;
+    z-index:2;
+}
+.container #regionalResult .tips:hover {
+    z-index:3;
+    background:none;
+}
+.container #regionalResult .tips .tipsMain {
+    display: none;
+}
+.container #regionalResult .tips:hover .tipsMain {
+    display: block;
+    position: absolute;
+    top: 0;
+    border:1px solid black;
+    background-color:#ccFFFF;
+    padding: 3px;
+    color:black;
+}
+@media screen and (min-width: 1030px) {
+    .container #regionalResult .tips:hover .tipsMain {
+        left: 100% ;
+        width: 15em;
+    }
+}
+@media screen and (max-width: 1030px) {
+    .container #regionalResult .tips:hover .tipsMain {
+        right: calc(50% + 2em) ;
+        width: 5em;
+    }
+}
 
 .container #regionalResult #regionalResultMap {
     width: 400px;
@@ -417,7 +447,7 @@ div#highlightRectangle {
 
     /*background: goldenrod;*/
 }
-@media screen and (max-width: 930px) {
+@media screen and (max-width: 1030px) {
     .container #regionalResult #regionalResultMap {
         float: none;
         margin: auto;
@@ -431,7 +461,35 @@ div#highlightRectangle {
     }
 }
 
+.container .inputForm {
+    height: 100%;
+}
+.container .inputForm .inputText {
+    width: 80%;
+    height: 100%;
+    padding: 0;
+    text-align: center;
+    border: none;
+    float: left;
 
+    /*background: #FFFFFFC0;*/
+}
+.container .inputForm .inputText:focus {
+    background: rgba(238, 252, 254, 0.6);
+}
+.container .inputForm .inputButton {
+    width: 20%;
+    height: 100%;
+    border: none;
+    padding: 0;
+    float: left;
+}
+.container .inputForm .inputButton:hover {
+    background: rgba(238, 252, 254, 0.5);
+}
+.container .inputForm .inputButton:active {
+    background: rgba(138, 152, 154, 0.5);
+}
 
 
 
@@ -451,8 +509,33 @@ div#highlightRectangle {
     border-collapse: collapse;
 }
 .generalForm td {
-    box-shadow: 0 0 1px 1px rgba(255,255,255, 0.15);
+    box-shadow: 0 0 0 0.1px rgba(0,0,0, 0.3);
     -moz-box-shadow: 0 0 1px 1px rgba(255,255,255, 0.15);
     -o-box-shadow: 0 0 1px 1px rgba(255,255,255, 0.15);
-
 }
+
+
+
+
+/* hl means highlight */
+.hlFontRed {
+    color: #C00000;
+}
+.hlFontGreen {
+     color: #00A000;
+ }
+.hlFontBlue {
+    color: #0000C0;
+}
+.hlFontYellow {
+    color: #C0A000;
+}
+.hlFontPurple {
+    color: #A000C0;
+}
+.hlFontCyan {
+    color: #70C0C0;
+}
+
+
+
