@@ -1,7 +1,7 @@
 function hideLeftNavBar() {
     let navBar = document.getElementById("leftNavBar");
     let highlightRec = document.getElementById("highlightRectangle");
-    navBar.style.flex = 0;
+    navBar.style.display = 0;
     highlightRec.style.display = "none";
 }
 function showLeftNavBar() {
@@ -15,21 +15,25 @@ function showLeftNavBar() {
 function toggleLeftNavBar() {
     let navBar = document.getElementById("leftNavBar");
     let highlightRec = document.getElementById("highlightRectangle");
+    let bottom = document.getElementsByClassName("bottom");
     //alert(highlightRec.style.display);
 
     if (highlightRec.style.display === "block" || highlightRec.style.display === "") {
-        navBar.style.flex = "0";
+        navBar.style.display = "none";
         highlightRec.style.display = "none";
-
+        bottom[0].style.display = "none";
+        bottom[1].style.display = "none";
     } else {
-        navBar.style.flex = "1";
+        navBar.style.display = "inline";
         highlightRec.style.display = "block";
+        bottom[0].style.display = "inherit";
+        bottom[1].style.display = "inherit";
     }
 }
 
 function judgeHiddenNavBar() {
-    let width = window.innerWidth;
-    if (width < 630) {
+    if (window.innerWidth < 630) {
         toggleLeftNavBar();
     }
 }
+
