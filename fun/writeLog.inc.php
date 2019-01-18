@@ -29,11 +29,11 @@ function getIP() {
 }
 
 
-function writeLog($extraString) {
+function writeLog($extraString, $path = ".") {
     //$DOCUMENT_ROOT = $_SERVER['DOCUMENT_ROOT'];
     date_default_timezone_set('Asia/Shanghai');
     $serverTime = date('Y-m-d H:i:s',time());
-    $writeLogDst = fopen(".\log\log.txt","a+");
+    $writeLogDst = fopen("$path\log\log.txt","a+");
 
     if (isset($_COOKIE["login"])) {
         $extraString = $_COOKIE["login"]."\t".$extraString;
