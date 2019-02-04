@@ -131,78 +131,11 @@
                   </div>
               </div>
           </div>
-          <?PHP
+        <?PHP
+            $test = LocalDictionary::getInstance();
+            $test->show($test->query($charaArray[$i], $con));
             }#END for ($i = 0; $i < $charaCount; $i++)
           ?>
-          <div id="regionalResult">
-              <div class="generalBgDeeper" id="regionalResultForm">
-                  <table class="generalForm">
-                      <?PHP
-                      if ($charaCount <= 2) {
-                          for ($i = 0; $i < $charaCount; $i++) {
-                              $query_inCityList_sql   = "SELECT * FROM `IAreaList`";
-                              $query_inCityList_query = mysqli_query($con, $query_inCityList_sql);
-                              ?>
-
-                              <tr>
-                                  <td style='font-size: 22px; height: 36px;' colspan='4'><?PHP echo $charaArray[$i]; ?></td>
-                              </tr>
-                              <?PHP
-                              while (is_array($cityList = mysqli_fetch_row($query_inCityList_query))) {
-                                  $query_inCity_sql   = "SELECT * FROM `" . $cityList[6] . "` WHERE `chara`='" . $charaArray[$i] . "'";
-                                  $query_inCity_query = mysqli_query($con, $query_inCity_sql);
-                                  while (is_array($inCityPron = mysqli_fetch_row($query_inCity_query))) {
-                                      ?>
-
-                                      <tr>
-                                          <td class='locOneth' style="width: 20%"><?PHP echo $cityList[3]; ?></td>
-                                          <td class='locThird' style="width: 15%"><?PHP echo $cityList[5]; ?></td>
-                                          <td>
-                                              <?PHP
-                                            echo '<span class="hlFontRed">' . $inCityPron[2] . '</span>';
-                                            echo '<span class="hlFontGreen">' . $inCityPron[3] . '</span>';
-                                            echo '<span class="hlFontBlue">' . $inCityPron[4] . '</span>';
-                                            echo '<span class="hlFontPurple">' . $inCityPron[5] . '</span>';
-                                            echo '<span class="hlFontCyan" style="font-size: 0.9em;"> /' . $inCityPron[6] . '/</span>';
-                                              ?>
-                                          </td>
-                                          <td class="tips"> <?PHP
-                                            if ($editMode) {
-                                              echo "<span style='color: gray; font-size: 9px; float:left;' onclick='editPron([";
-                                              echo "\"$inCityPron[2]\", \"$inCityPron[3]\", \"$inCityPron[4]\", \"$inCityPron[5]\", ";
-                                              echo "\"" . substr($cityList[6], 1) . "\", \"$inCityPron[0]\", \"$inCityPron[6]\"";
-                                              echo "])'>改音</span>";
-                                            }
-
-                                            if (mb_strlen($inCityPron[7], 'UTF8') > 4) {
-                                              echo mb_substr($inCityPron[7], 0, 4, 'utf8') . "…";
-                                              echo "<span class='tipsMain'>$inCityPron[7]</span>";
-                                            } else
-                                              echo $inCityPron[7];
-
-//                                                if ($editMode) {
-//                                                    echo "<span style='color: gray; font-size: 9px; float:left;' onclick='editPronNote([";
-//                                                    echo "\"" . substr($cityList[6], 1) . "\", \"$inCityPron[0]\", \"$inCityPron[7]\"";
-//                                                    echo "])'>改註</span>";
-//                                                }
-                                              ?>
-
-                                          </td>
-                                      </tr>
-                                      <?PHP
-                                        }
-                                        }
-                                        echo "<tr><td colspan='4' class='locOneth locThird'>&nbsp;</td></tr>";
-                                        }
-                                        }
-                      ?>
-
-                  </table>
-              </div>
-              <div class="generalBgDeeper" id="regionalResultMap">
-                  <span style="margin: auto;">地圖</span>
-              </div>
-          </div>
     </div>
 </div>
 </body>
