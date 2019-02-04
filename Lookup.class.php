@@ -249,8 +249,8 @@ class LocalDictionary extends Lookup implements displayInMap {
     private function _clone() {}
 
     public static function getInstance() {
-        if (!self::$instance instanceof SingleInstance) {
-            self::$instance = new SingleInstance();
+        if (!self::$instance instanceof LocalDictionary) {
+            self::$instance = new LocalDictionary();
         }
         return self::$instance;
     }
@@ -278,10 +278,10 @@ class LocalDictionary extends Lookup implements displayInMap {
         $resultArray = [];
         foreach ($citylist as $eachCitylist)
         {
-            $result = ["longitude"=>$eachCitylist[1], "latitude"=>$eachCitylist[1],
+            $result = ["longitude"=>$eachCitylist[0], "latitude"=>$eachCitylist[1],
             "oneth"=>$eachCitylist[2],"forth"=>$eachCitylist[3],
             "third"=>$eachCitylist[4]];#一个数组五个键名
-            $jamArray = $this->jamquery($character, $eachCitylist[5]);
+            $jamArray = $this->jamquery($character, $eachCitylist[5],$con);
             if(!empty($jamArray))
             {
                 $resultArray[] = array_merge($result,$jamArray);
@@ -289,19 +289,20 @@ class LocalDictionary extends Lookup implements displayInMap {
         }
         return $resultArray;
     }
-    private function jamquery($character,$sheetname)
+    private function jamquery($character,$sheetname,$con)
     {
         $resultArray = [];
         $query_sql =
         "SELECT
-        'chara','initial','nuclei','coda','tone','ipa','note'
-        FROM"
+        `chara`, `initial`, `nuclei`, `coda`, `tone`, `ipa`, `note`
+        FROM "
         .$sheetname.
-        "WHERE
+        "
+        WHERE
         chara = '".$character."'";
         $resultSet = mysqli_query($con, $query_sql);
         for($result = mysqli_fetch_row($resultSet);
-        is_array($resultSet);
+        is_array($result);
         $result = mysqli_fetch_row($resultSet))
         {
             $resultArray[] = $result;
@@ -311,7 +312,7 @@ class LocalDictionary extends Lookup implements displayInMap {
     public function show($charaArray)
     {
         if(!empty($charaArray)){
-            $character = $charaArray[0][0];
+            $character = $charaArray[0][0][0]; #从第一个结果里面取得字
             echo <<<show
 <div id="regionalResult">
     <div class="generalBgDeeper" id="regionalResultForm">
@@ -320,21 +321,103 @@ class LocalDictionary extends Lookup implements displayInMap {
             <td style='font-size: 22px; height: 36px;' colspan='4'>$character</td>
         </tr>
 show;
-            for($num = 0;$num < (count($charaArray) - 1);$num++)
+            for($num = 0;$num < count($charaArray);$num++)
             {
-                $locOneth = $charaArray[$num]["oneth"];
-                $locThird = $charaArray[$num]["third"];
-                $red =  $charaArray[$num]
-                $green
-                $blue
-                $purple
-                $cyan
-                $charaArray[$num]
-            }
+                for($charanum = 0;
+                $charanum < (count($charaArray[$num]) - 5);
+                $charanum++)
+                {#多音字
+                    $locOneth = $charaArray[$num]["oneth"]; #大片
+                    $locThird = $charaArray[$num]["third"]; #小片
+                    $red =  $charaArray[$num][$charanum][1];    #声母
+                    $green = $charaArray[$num][$charanum][2];  #韵腹
+                    $blue = $charaArray[$num][$charanum][3];   #韵尾
+                    $purple = $charaArray[$num][$charanum][4]; #声调
+                    $cyan = $charaArray[$num][$charanum][5];   #IPA
+                    $note = $charaArray[$num][$charanum][6];   #note
+                    $forth = $charaArray[$num]['forth'];
+                    echo <<<show
+        <tr>
+          <td class='locOneth' style="width: 20%">$locOneth</td>
+          <td class='locThird' style="width: 15%">$locThird</td>
+          <td>
+            <span class="hlFontRed">$red</span><span class="hlFontGreen">$green</span><span class="hlFontBlue">$blue</span><span class="hlFontPurple">$purple</span><span class="hlFontCyan ipa" style="font-size: 0.9em;">/$cyan/</span>
+          </td>
+show;
+                    echo '<td class = "tips">';
+                    if (mb_strlen($note,'UTF8') > 4)
+                    {
+                        echo mb_strlen($note,'UTF8')."...";
+                        echo "<span class='tipsMain'>$inCityPron[7]</span>";
+                    }else{
+                        echo $note;
+                    }
+                }#end for(charanum)
+            }#end for(num)
+            echo <<<show
+        </table>
+    </div>
+show;
+        echo "<tr><td colspan='4' class='locOneth locThird'>&nbsp;</td></tr>";
+        $this->display($charaArray);
+        echo "</div>";
         }
     }
-    function display($charArray) {
+    function display($charaArray) {
+        if(!empty($charaArray))
+        {
+            echo '<link type="text/css" rel="styleSheet"  href="./css/map.css" />';
+            echo '<div class="generalBgDeeper" id ="regionalResultMap">';
+            echo <<<map
+<div id="Mapcontainer" style="height: inherit;width: inherit;margin: 0 auto;box-shadow: 6px 8px 5px #888888;"></div>
+<script type="text/javascript">
+    var amap;
+    window.init = function()
+    {
+        amap = new AMap.Map('Mapcontainer', {
+        zoom : 6,
+        resizeEnable: true,
+        center: [111.540396,23.433842],                         //中心点坐标
+        mapStyle:'amap://styles/aec282517396368ba079797e8c90a25d'
+        });
 
+map;
+            #此处插入要显示的标签
+            for($num = 0;$num < count($charaArray);$num++)
+            {
+                $longitude = $charaArray[$num]['longitude'];
+                $latitude = $charaArray[$num]['latitude'];
+                #此处CONTENT是MAKER标记位置的内容 去掉默认CONTENT是一个小大头针
+                echo <<<map
+    var marker$num = new AMap.Marker({
+        content: "<div></div>" ,
+        position: [$longitude,$latitude],
+        content: "<div class='LocaleLable'>
+map;
+                for($charanum = 0;
+                $charanum < (count($charaArray[$num]) - 5);
+                $charanum++)
+                {
+                    $initial = $charaArray[$num][$charanum][1];
+                    $wanfuk = $charaArray[$num][$charanum][2];
+                    $wantail = $charaArray[$num][$charanum][3];
+                    $tone = $charaArray[$num][$charanum][4];
+                    echo $initial.$wanfuk.$wantail.$tone.'<br>';
+                }#end for charanum
+                echo <<<map
+    </div>"
+    });
+    marker$num.setMap(amap);
+map;
+            }#end for num
+            echo <<<map
+    }
+</script>
+<script src="https://webapi.amap.com/maps?v=1.4.8&key=ee088abc17a02cbebe4786e06dbd11f9&callback=init"></script>
+
+map;
+            echo '</div>';
+        }
     }
 
 }
