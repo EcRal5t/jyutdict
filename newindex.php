@@ -88,6 +88,7 @@
         }
       ?>
       <?PHP
+      if (!empty($_GET['character'])){
       if ($charaCount > 2) $charaCount = 1;
           for ($i = 0; $i < $charaCount; $i++) {
       ?>
@@ -125,8 +126,10 @@
                   <div class="wanshyuResultBlock generalBgDeeper" style="margin-top: 12px;">
                       <div class="wanshyuResultFormHead" style="height: 54px;"><span>英<br>華</span></div>
                       <?PHP
-                      $jing = JingWaaDict::getInstance();
-                      $jing->show($jing->query($charaArray[$i], $con));
+                      if (!empty($_GET['character'])){
+                          $jing = JingWaaDict::getInstance();
+                          $jing->show($jing->query($charaArray[$i], $con));
+                      }
                         ?>
                   </div>
               </div>
@@ -135,6 +138,7 @@
             $test = LocalDictionary::getInstance();
             $test->show($test->query($charaArray[$i], $con));
             }#END for ($i = 0; $i < $charaCount; $i++)
+        }//end if !empty get
           ?>
     </div>
 </div>
