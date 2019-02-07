@@ -14,23 +14,24 @@ function annexForm(name, maxCol,whichCol, begin, max) {
     max      = max || 65535;
     let trs  = document.querySelector(name).children[0].children;
     let tdText = "";
-    let rowspancount = 1;
+    let rowspanCount = 1;
     let extendingCellIndex = begin;
     let maxLength = Math.min(begin+max, trs.length);
     for (let trIndex = begin; trIndex<maxLength;trIndex++) {
         if (whichCol>=trs[trIndex].children.length) {
             return;
-        } else if (trs[trIndex].children[whichCol].innerHTML!==tdText) {
+        }
+        if (trs[trIndex].children[whichCol].innerHTML!==tdText) {
             tdText = trs[trIndex].children[whichCol].innerHTML;
-            trs[extendingCellIndex].children[whichCol].rowSpan = rowspancount;
-            if (whichCol<maxCol) annexForm(name, maxCol, whichCol+1,extendingCellIndex,rowspancount);
-            rowspancount = 1;
+            trs[extendingCellIndex].children[whichCol].rowSpan = rowspanCount;
+            if (whichCol<maxCol) annexForm(name, maxCol, whichCol+1,extendingCellIndex,rowspanCount);
+            rowspanCount = 1;
             extendingCellIndex = trIndex;
         } else {
             trs[trIndex].children[whichCol].style.display = "none";
-            rowspancount++;
+            rowspanCount++;
         }
     }
-    trs[extendingCellIndex].children[whichCol].rowSpan = rowspancount;
-    if (whichCol<maxCol) annexForm(name, maxCol, whichCol+1,extendingCellIndex,rowspancount);
+    trs[extendingCellIndex].children[whichCol].rowSpan = rowspanCount;
+    if (whichCol<maxCol) annexForm(name, maxCol, whichCol+1,extendingCellIndex,rowspanCount);
 }

@@ -7,21 +7,23 @@
 ├── README.md	_	本文檔  
 │  
 ├── css  
-│　　├── define.less  	_	最基礎的變量定義  
+│　　├── define.less		_	最基礎的變量定義  
 │　　├── general.less	_	css的通用類  
-│　　├── index.less	    _	查字頁  
+│　　├── index.less		_	查字頁  
 │　　└── newindex.less	_	查韻頁  
 │  
 ├── fun  
 │　　└── modifyCharaSheet.php	_	ajax改字表  
 │  
-├── js                            
+├── js  
 │　　├── general.js	_	js的通用函數  
 │　　└── index.js	_	查字頁  
 │  
+├── Lookup.class.php	_	负责在各字表查询字  
+│  
 ├── connectDB.php  
 ├── newindex.php	_	查字頁  
-└── pron.php	    _	查韻頁  
+└── pron.php		_	查韻頁  
 
 <br><br>
 
@@ -81,7 +83,8 @@
 
 #### 190207 v0.8.29
 * ADD
-  * 按韵搜索
+  * 查音
+  * 查字里的地图
 * MODIFY
   * 对主页统一了侧边栏风格
   * css樣式改用less做了

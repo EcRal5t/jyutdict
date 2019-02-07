@@ -12,7 +12,6 @@ include("connectDB.php");
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>泛粵大典</title>
-    <link rel="stylesheet" type="text/css" href="./css/general.css?<?PHP echo rand(); ?>">
     <link rel="stylesheet" type="text/css" href="./css/newindex.css?<?PHP echo rand(); ?>">
     <script src="./js/general.js?<?PHP echo rand(); ?>"></script>
 <!--    <script src="./js/newindex.js?--><?PHP //echo rand(); ?><!--"></script>-->
