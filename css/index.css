@@ -37,11 +37,13 @@
   text-align: center;
   border-spacing: 0;
   border-collapse: collapse;
+  box-sizing: border-box;
 }
 .general-form th,
 .general-form tr,
 .general-form td {
   line-height: 24px;
+  box-sizing: border-box;
 }
 .general-form td {
   border: 1px solid rgba(0, 0, 0, 0.2);
@@ -424,7 +426,8 @@ body {
   float: left;
   font-size: 22px;
   line-height: 22px;
-  display: flex;
+  padding: 0 5px 0 5px;
+  box-sizing: border-box;
   background: royalblue;
 }
 #wanshyuResult #wanshyuResultFanwan {
@@ -441,7 +444,7 @@ body {
 }
 #regionalResult {
   margin-top: 50px;
-  /*margin-bottom: 50px;*/
+  margin-bottom: 50px;
   width: 100%;
   float: left;
   font-size: 16px;
@@ -557,4 +560,16 @@ body {
     float: none;
     margin: auto;
   }
+}
+#regionalResult #regionalResultMap #mapContainer {
+  height: inherit;
+  width: inherit;
+}
+#regionalResult #regionalResultMap #mapContainer .locale-label {
+  font-size: 13px;
+  color: #ffffff;
+  text-align: center;
+  width: 4em;
+  background-color: #00000088;
+  line-height: 14px;
 }

@@ -110,8 +110,8 @@
         float: left;
         font-size: 22px;
         line-height: 22px;
-        display: flex;
-    
+        padding: 0 5px 0 5px;
+        box-sizing: border-box;
         background: royalblue;
     }
     
@@ -136,7 +136,7 @@
 
 #regionalResult {
     margin-top: 50px;
-    /*margin-bottom: 50px;*/
+    margin-bottom: 50px;
     width: 100%;
     float: left;
     font-size: 16px;
@@ -255,9 +255,22 @@
             float: none;
             margin: auto;
         }
+    
+        
+        #mapContainer {
+            height: inherit;
+            width: inherit;
+    
+            .locale-label {
+                font-size: 13px;
+                color:#ffffff;
+                text-align : center;
+                width: 4em;
+                background-color: #00000088;
+                line-height : 14px;
+            }
+        }
     }
-    
-    
 }
 
 
