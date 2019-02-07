@@ -1,0 +1,562 @@
+.clearfix:before,
+.clearfix:after {
+  content: "";
+  display: table;
+}
+.clearfix:after {
+  clear: both;
+}
+.clearfix {
+  *zoom: 1;
+}
+.divider {
+  background-color: #bbb;
+  display: block;
+  overflow: hidden;
+  height: 1px;
+  width: 100%;
+  margin: 8px 0;
+}
+.vertical-writing {
+  writing-mode: tb-lr;
+  -webkit-writing-mode: vertical-lr;
+  writing-mode: vertical-lr;
+}
+.general-bg {
+  box-shadow: 0 0 5px 0 rgba(0, 34, 68, 0.05);
+  background: rgba(238, 252, 254, 0.2);
+  border-radius: 2px;
+}
+.general-bg-deeper {
+  box-shadow: 0 0 10px 0 rgba(0, 34, 68, 0.07);
+  background: rgba(238, 252, 254, 0.3);
+  border-radius: 2px;
+}
+.general-form {
+  width: 100%;
+  text-align: center;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+.general-form th,
+.general-form tr,
+.general-form td {
+  line-height: 24px;
+}
+.general-form td {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+.general-form .column1-20 {
+  width: 5%;
+}
+.general-form .column2-20 {
+  width: 10%;
+}
+.general-form .column3-20 {
+  width: 15%;
+}
+.general-form .column4-20 {
+  width: 20%;
+}
+.general-form .column5-20 {
+  width: 25%;
+}
+.general-form .column6-20 {
+  width: 30%;
+}
+.general-form .column10-20 {
+  width: 50%;
+}
+.general-form .min-width30 {
+  min-width: 30px;
+}
+.general-form .min-width45 {
+  min-width: 45px;
+}
+.general-form .min-width60 {
+  min-width: 60px;
+}
+.general-form .min-width90 {
+  min-width: 90px;
+}
+.font-14 {
+  font-size: 14px;
+}
+.font-16 {
+  font-size: 16px;
+}
+.font-64 {
+  font-size: 64px;
+}
+.text-align-left {
+  text-align: left;
+}
+/* hl means highlight */
+.hlFontRed {
+  color: #C00000;
+}
+.hlFontGreen {
+  color: #00A000;
+}
+.hlFontBlue {
+  color: #0000C0;
+}
+.hlFontYellow {
+  color: #C0A000;
+}
+.hlFontPurple {
+  color: #A000C0;
+}
+.hlFontCyan {
+  color: #70C0C0;
+}
+.ipa {
+  font-family: Verdana, "Charis SIL", Helvetica, Century, Arial, Serif;
+  font-size: 0.85em;
+}
+#sidenav {
+  position: fixed;
+  height: 100%;
+  width: 240px;
+  min-width: 240px;
+  background-color: #70a;
+  z-index: 10;
+  display: block;
+  -webkit-box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  -moz-box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  -webkit-transform: translate3d(-240px, 0, 0);
+  -moz-transform: translate3d(-240px, 0, 0);
+  -ms-transform: translate3d(-240px, 0, 0);
+  -o-transform: translate3d(-240px, 0, 0);
+  transform: translate3d(-240px, 0, 0);
+  -webkit-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  -ms-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+#sidenav.open {
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  -o-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
+}
+#sidenav-head {
+  height: 160px;
+  width: 100%;
+  background-color: #047;
+  line-height: 25px;
+  font-size: 25px;
+  color: #fff;
+  text-align: center;
+  padding-top: 60px;
+  box-sizing: border-box;
+}
+#sidenav-list {
+  line-height: 24px;
+}
+#sidenav-list .sidenav-link {
+  list-style-type: none;
+  display: block;
+  background-color: #f70;
+  -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -ms-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+}
+#sidenav-list .sidenav-link:hover {
+  background-color: #fa0;
+}
+#sidenav-list .sidenav-link:hover a {
+  color: #300;
+}
+#sidenav-list .sidenav-link a {
+  display: block;
+  line-height: 3pc;
+  text-decoration: none;
+  -ms-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 0 3pc;
+  color: #333;
+}
+.sidenav-show-btn,
+.sidenav-hide-btn {
+  display: block;
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
+  position: fixed;
+  outline: none;
+  -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -ms-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  color: #18d;
+}
+.sidenav-show-btn:hover,
+.sidenav-hide-btn:hover {
+  color: #444;
+}
+.sidenav-show-btn {
+  background-color: rgba(0, 0, 0, 0);
+  top: 50px;
+  left: 50px;
+}
+.sidenav-show-btn:after {
+  content: '≡';
+  font-size: 24px;
+}
+.sidenav-hide-btn {
+  background-color: #0f7;
+}
+.sidenav-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  visibility: hidden;
+  z-index: 9;
+  opacity: 0;
+  background-color: #000;
+  -webkit-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  -ms-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+.sidenav-overlay.active {
+  visibility: visible;
+  opacity: 0.5;
+}
+* {
+  padding: 0;
+  margin: 0;
+}
+input,
+button {
+  outline: none;
+  border: none;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  font-family: "Han Sans TC", "Hiragino Sans GB", "Microsoft JhengHei UI", sans-serif, "Microsoft YaHei UI", "Times New Roman";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: black;
+  background-color: aliceblue;
+}
+#wrapper {
+  background-color: #0aa;
+  min-height: 100%;
+}
+#container {
+  flex: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 50px;
+  background-color: #0a7;
+  box-sizing: border-box;
+  min-height: 100%;
+  overflow: hidden;
+}
+@media screen and (max-width: 400px) {
+  #container {
+    width: 300px;
+    padding: 0;
+  }
+}
+#searching {
+  max-width: 700px;
+  padding: 0 100px;
+  margin: 110px auto 0 auto;
+}
+@media screen and (max-width: 600px) {
+  #searching {
+    padding: 0;
+    width: 300px;
+  }
+}
+#searching form#inputForm {
+  width: 100%;
+}
+#searching #inputText,
+#searching #inputButton {
+  height: 36px;
+  font-size: 1pc;
+  text-align: center;
+  float: left;
+}
+#searching #inputText {
+  width: 72.5%;
+  -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -ms-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+}
+#searching #inputText:hover,
+#searching #inputText:focus {
+  background-color: rgba(128, 255, 255, 0.5);
+}
+#searching .text-invalid {
+  background-color: rgba(255, 0, 64, 0.75) !important;
+}
+#searching .text-invalid:hover,
+#searching .text-invalid:focus {
+  background-color: rgba(255, 64, 128, 0.75) !important;
+}
+#searching #inputButton {
+  margin-left: 5%;
+  width: 22.5%;
+  -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -ms-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+}
+#searching #inputButton:hover,
+#searching #inputButton:active {
+  background-color: rgba(128, 196, 255, 0.5);
+}
+#charaSimToTrad {
+  margin-top: 50px;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  background: lawngreen;
+}
+#charaSimToTrad span {
+  margin: auto;
+  float: left;
+}
+#charaSimToTradHead {
+  width: 100px;
+}
+#charaSimToTradMain {
+  width: calc(100% - 100px);
+  padding-right: 100px;
+  font-size: 18px;
+  background: violet;
+}
+#wanshyuResult {
+  margin-top: 50px;
+  float: left;
+  width: 100%;
+  text-align: center;
+}
+#wanshyuResult span {
+  margin: auto;
+  position: relative;
+}
+#wanshyuResult #charaHead {
+  width: 150px;
+  /*height: 150px;*/
+  float: left;
+  background: blueviolet;
+  margin-right: 50px;
+}
+@media screen and (max-width: 830px) {
+  #wanshyuResult #charaHead {
+    float: none;
+    margin: auto;
+  }
+}
+#wanshyuResult #charaHead #charaHeadSqu {
+  width: 100%;
+  height: 123px;
+  font-size: 100px;
+  display: flex;
+  background: greenyellow;
+}
+#wanshyuResult #charaHead #oldPronounce {
+  text-align: center;
+  width: 100%;
+  height: 27px;
+  font-size: 12px;
+  display: flex;
+  background: teal;
+}
+#wanshyuResult #wanshyuResultForm {
+  width: calc(100% - 200px);
+  float: left;
+  background: skyblue;
+}
+@media screen and (max-width: 830px) {
+  #wanshyuResult #wanshyuResultForm {
+    margin-top: 50px;
+    width: 100%;
+    float: none;
+  }
+}
+#wanshyuResult .wanshyuResultBlock {
+  width: 100%;
+  float: left;
+  background: mediumspringgreen;
+}
+#wanshyuResult .wanshyuResultBlock table {
+  width: 100%;
+  padding: 0;
+}
+#wanshyuResult .wanshyuResultBlock table td {
+  text-align: center;
+  line-height: 27px;
+  padding: 0;
+}
+#wanshyuResult .wanshyuResultBlock span {
+  margin: auto;
+}
+#wanshyuResult .wanshyuResultFormHead {
+  width: 50px;
+  height: 100%;
+  float: left;
+  font-size: 22px;
+  line-height: 22px;
+  display: flex;
+  background: royalblue;
+}
+#wanshyuResult #wanshyuResultFanwan {
+  width: calc(100% - 50px);
+  float: right;
+  line-height: 27px;
+  background: hotpink;
+}
+#wanshyuResult #wanshyuResultYingwaa {
+  width: calc(100% - 50px);
+  float: right;
+  line-height: 27px;
+  background: plum;
+}
+#regionalResult {
+  margin-top: 50px;
+  /*margin-bottom: 50px;*/
+  width: 100%;
+  float: left;
+  font-size: 16px;
+  background: limegreen;
+}
+#regionalResult #regionalResultForm {
+  width: calc(100% - 450px);
+  float: left;
+  margin-right: 50px;
+  background: orangered;
+}
+@media screen and (max-width: 1030px) and (min-width: 773px) {
+  #regionalResult #regionalResultForm {
+    width: 600px ;
+    float: none;
+    padding: 0;
+    margin: 0 calc(50% - 300px) 50px calc(50% - 300px);
+  }
+}
+@media screen and (max-width: 773px) {
+  #regionalResult #regionalResultForm {
+    width: 100%;
+    float: none;
+    padding: 0;
+    margin: 0 0 50px 0;
+  }
+}
+#regionalResult #regionalResultEdit {
+  background: blue;
+  width: 100%;
+  margin-top: 50px;
+  /*background: orangered;*/
+}
+#regionalResult #editingText {
+  /*background: blue;*/
+  resize: none;
+}
+#regionalResult #editingForm {
+  /*background: blue;*/
+  width: 20%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  float: left;
+}
+#regionalResult #regionalResultEdit {
+  background: blue;
+  width: 100%;
+  margin-top: 50px;
+  /*background: orangered;*/
+}
+#regionalResult #editingText {
+  /*background: blue;*/
+  resize: none;
+}
+#regionalResult #editingForm {
+  /*background: blue;*/
+  width: 20%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  float: left;
+}
+#regionalResult .tips {
+  position: relative;
+  font-size: 0.9em;
+  z-index: 2;
+}
+#regionalResult .tips:hover {
+  z-index: 3;
+  background: none;
+}
+#regionalResult .tips:hover .tipsMain {
+  display: block;
+  position: absolute;
+  top: 0;
+  border: 1px solid black;
+  background-color: #ccFFFF;
+  padding: 3px;
+  color: black;
+}
+@media screen and (min-width: 1030px) {
+  #regionalResult .tips:hover .tipsMain {
+    left: 100% ;
+    width: 20em;
+  }
+}
+@media screen and (max-width: 1030px) {
+  #regionalResult .tips:hover .tipsMain {
+    right: calc(50% + 2em);
+    width: 10em;
+  }
+}
+#regionalResult .tips .tipsMain {
+  display: none;
+}
+#regionalResult #regionalResultMap {
+  width: 400px;
+  height: 400px;
+  font-size: 50px;
+  float: left;
+  display: flex;
+  background: goldenrod;
+}
+@media screen and (max-width: 1030px) {
+  #regionalResult #regionalResultMap {
+    float: none;
+    margin: auto;
+  }
+}
+@media screen and (max-width: 530px) {
+  #regionalResult #regionalResultMap {
+    width: 100%;
+    float: none;
+    margin: auto;
+  }
+}
+/*# sourceMappingURL=index.css.map */
