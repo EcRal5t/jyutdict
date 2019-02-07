@@ -2,7 +2,7 @@ html {
     height: 100%;
 }
 body {
-    font-family: Han Sans TC, Hiragino Sans GB, Microsoft JhengHei UI, sans-serif, "Microsoft YaHei UI";
+    font-family: "Han Sans TC", "Hiragino Sans GB", "Microsoft JhengHei UI", sans-serif, "Microsoft YaHei UI","Times New Roman";
     font-size: 16px;
     height: 100%;
     color: black;
@@ -24,9 +24,9 @@ body {
     align-items: stretch;
 
 }
-@media screen and (max-width: 400px) {
+@media screen and (max-width: 350px) {
     .wrapper {
-        width: 400px;
+        width: 350px;
     }
 }
 
@@ -428,13 +428,13 @@ div#highlightRectangle {
 @media screen and (min-width: 1030px) {
     .container #regionalResult .tips:hover .tipsMain {
         left: 100% ;
-        width: 15em;
+        width: 20em;
     }
 }
 @media screen and (max-width: 1030px) {
     .container #regionalResult .tips:hover .tipsMain {
         right: calc(50% + 2em) ;
-        width: 5em;
+        width: 10em;
     }
 }
 
@@ -476,6 +476,8 @@ div#highlightRectangle {
 }
 .container .inputForm .inputText:focus {
     background: rgba(238, 252, 254, 0.6);
+
+    transition: 150ms;
 }
 .container .inputForm .inputButton {
     width: 20%;
@@ -486,6 +488,7 @@ div#highlightRectangle {
 }
 .container .inputForm .inputButton:hover {
     background: rgba(238, 252, 254, 0.5);
+    transition: 150ms;
 }
 .container .inputForm .inputButton:active {
     background: rgba(138, 152, 154, 0.5);
@@ -537,5 +540,7 @@ div#highlightRectangle {
     color: #70C0C0;
 }
 
-
-
+.ipa {
+    font-family: Verdana, "Charis SIL", Helvetica, Century, Arial, Serif;
+    font-size: 0.85em;
+}

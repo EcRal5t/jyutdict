@@ -1,0 +1,271 @@
+@import "general.less";
+
+//本頁面
+
+#charaSimToTrad {
+    margin-top: 50px;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    
+    background: lawngreen;
+}
+#charaSimToTrad span {
+    margin: auto;
+    float: left;
+}
+#charaSimToTradHead {
+    width: 100px;
+}
+#charaSimToTradMain {
+    width: calc(100% - 100px) ;
+    padding-right: 100px;
+    font-size: 18px;
+    
+    background: violet;
+}
+
+
+#wanshyuResult {
+    margin-top: 50px;
+    float: left;
+    width: 100%;
+    ///*background: crimson;*/
+    text-align: center;
+    
+    span {
+        margin: auto;
+        position: relative;
+    }
+    
+    #charaHead {
+        width: 150px;
+        /*height: 150px;*/
+        float: left;
+        background: blueviolet;
+        margin-right: 50px;
+        
+        @media screen and (max-width: 830px) {
+            float: none;
+            margin: auto;
+        }
+    
+        #charaHeadSqu {
+            width: 100%;
+            height: 123px;
+            font-size: 100px;
+            display: flex;
+    
+            background: greenyellow;
+        }
+        #oldPronounce {
+            text-align: center;
+            width: 100%;
+            height: 27px;
+            font-size: 12px;
+            display: flex;
+    
+            background: teal;
+            //background: #F0FFFF40;
+        }
+    }
+    
+    #wanshyuResultForm {
+        width: calc(100% - 200px) ;
+        float: left;
+    
+        background: skyblue;
+        @media screen and (max-width: 830px) {
+            margin-top: 50px;
+            width: 100%;
+            float: none;
+        }
+    }
+    
+    .wanshyuResultBlock {
+        width: 100%;
+        float: left;
+    
+        background: mediumspringgreen;
+        
+        table {
+            width: 100%;
+            padding: 0;
+    
+            td {
+                text-align: center;
+                line-height: 27px;
+                padding: 0;
+            }
+        }
+    
+        span {
+            margin: auto;
+        }
+    }
+    
+    .wanshyuResultFormHead {
+        width: 50px;
+        height: 100%;
+        float: left;
+        font-size: 22px;
+        line-height: 22px;
+        display: flex;
+    
+        background: royalblue;
+    }
+    
+    #wanshyuResultFanwan {
+        width: calc(100% - 50px) ;
+        float: right;
+        line-height: 27px;
+    
+        background: hotpink;
+    }
+    
+    #wanshyuResultYingwaa {
+        width: calc(100% - 50px) ;
+        float: right;
+        line-height: 27px;
+        
+        background: plum;
+    }
+}
+
+
+
+#regionalResult {
+    margin-top: 50px;
+    /*margin-bottom: 50px;*/
+    width: 100%;
+    float: left;
+    font-size: 16px;
+    background: limegreen;
+    
+    #regionalResultForm {
+        width: calc(100% - 450px) ;
+        float: left;
+        margin-right: 50px;
+        
+        background: orangered;
+        
+        @media screen and (max-width: 1030px) and (min-width: 773px) {
+            width: 600px ;
+            float: none;
+            padding: 0;
+            margin: 0 calc(50% - 300px) 50px calc(50% - 300px) ;
+        }
+        @media screen and (max-width: 773px) {
+            width: 100%;
+            float: none;
+            padding: 0;
+            margin: 0 0 50px 0;
+        }
+    }
+    
+    #regionalResultEdit {
+        background: blue;
+        width: 100%;
+        margin-top: 50px;
+        /*background: orangered;*/
+    }
+    #editingText {
+        /*background: blue;*/
+        resize:none;
+        
+    }
+    #editingForm {
+        /*background: blue;*/
+        width: 20%;
+        height: 100%;
+        border: none;
+        padding: 0;
+        float: left;
+    }
+    
+    #regionalResultEdit {
+        background: blue;
+        width: 100%;
+        margin-top: 50px;
+        /*background: orangered;*/
+    }
+    #editingText {
+        /*background: blue;*/
+        resize:none;
+        
+    }
+    #editingForm {
+        /*background: blue;*/
+        width: 20%;
+        height: 100%;
+        border: none;
+        padding: 0;
+        float: left;
+    }
+    
+    .tips {
+        position:relative;
+        font-size: 0.9em;
+        z-index:2;
+        
+        &:hover {
+            z-index:3;
+            background:none;
+    
+            .tipsMain {
+                display: block;
+                position: absolute;
+                top: 0;
+                border:1px solid black;
+                background-color:#ccFFFF;
+                padding: 3px;
+                color:black;
+                @media screen and (min-width: 1030px) {
+                    left: 100% ;
+                    width: 20em;
+                }
+                @media screen and (max-width: 1030px) {
+                    right: calc(50% + 2em) ;
+                    width: 10em;
+                }
+        
+            }
+        }
+    
+        .tipsMain {
+            display: none;
+        }
+    }
+    
+    
+    #regionalResultMap {
+        width: 400px;
+        height: 400px;
+        font-size: 50px;
+        float: left;
+        display: flex;
+        
+        background: goldenrod;
+    
+        @media screen and (max-width: 1030px) {
+            float: none;
+            margin: auto;
+        }
+        @media screen and (max-width: 530px) {
+            width: 100%;
+            float: none;
+            margin: auto;
+        }
+    }
+    
+    
+}
+
+
+
+
+
+
+
+
+

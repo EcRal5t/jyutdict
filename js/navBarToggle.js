@@ -1,16 +1,4 @@
-function hideLeftNavBar() {
-    let navBar = document.getElementById("leftNavBar");
-    let highlightRec = document.getElementById("highlightRectangle");
-    navBar.style.display = 0;
-    highlightRec.style.display = "none";
-}
-function showLeftNavBar() {
-    let navBar = document.getElementById("leftNavBar");
-    let highlightRec = document.getElementById("highlightRectangle");
-    navBar.style.flex = 1;
-    highlightRec.style.display = "block";
 
-}
 
 function toggleLeftNavBar() {
     let navBar = document.getElementById("leftNavBar");

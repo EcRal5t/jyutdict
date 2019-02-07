@@ -2,6 +2,16 @@
 <?PHP
 include("connectDB.php");
 include("fun/writeLog.inc.php");
+
+//设置变量 submitChara 为 提交的字符
+//        writeLog("Locate: 1, open: ".var_export($_REQUEST, true), ".");
+$editMode = isset($_REQUEST['editmode']);
+if (!empty($_REQUEST['character'])) {
+    $submitChara = $_REQUEST['character'];
+    $submitChara = mb_substr($submitChara, 0, 1, 'utf8');
+} else {
+    $submitChara = "粵";
+}
 ?>
 <html>
 <head>
@@ -11,83 +21,54 @@ include("fun/writeLog.inc.php");
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TITLE</title>
-    <link rel="stylesheet" type="text/css" href="./css/newcss.css">
+    <link rel="stylesheet" type="text/css" href="./css/index.css?<?PHP echo rand(); ?>">
+    <link rel="stylesheet" type="text/css" href="./css/general.css?<?PHP echo rand(); ?>">
     <link rel="icon" href="./img/favicon.png">
-    <style type="text/css"></style>
     <script src="./js/index.js?<?PHP echo rand(); ?>"></script>
-    <script src="./js/navBarToggle.js"></script>
+    <script src="./js/general.js"></script>
 </head>
 
-<body onload="initial(0);judgeHiddenNavBar();annexForm('locOneth');annexForm('locThird');" onresize="">
+<body <?PHP if (!empty($_REQUEST['character'])) echo "onload=\"annexForm('#regionalResultTable', 1)\""; ?>>
 
-<div id="wrapper" class="wrapper" >
-    <div id="leftNavBar" class="leftNavBar">
-        <div id="highlightRectangle"></div>
-        <ul style="height: 100%;">
-            <li id="topLOGO" class="topLOGO">
-                <span style="font-size: 16px; line-height: 24px;">
-                    <br><br><br><span style="font-size: 50px;">粵</span> Dict<br><br><br>
-                </span>
-            </li>
-            <li style="background: #3E6CBE; z-index: 6;">
-                <a href=""><span>字</span></a>
-            </li>
-            <li style="background: #3B67B5; z-index: 5;">
-                <a href=""><span>韻</span></a>
-            </li>
-            <li style="background: #3861AC; z-index: 4;">
-                <a><span>丙</span></a>
-            </li>
-            <li style="background: #355CA3; z-index: 3;">
-                <a href=""><span>丁</span></a>
-            </li>
-            <li style="background: #32579A; z-index: 2;">
-                <a><span>關於</span></a>
-            </li>
-            <li class="bottom bottom1">
-                <a onclick=""><span>壬</span></a>
-            </li>
-            <li class="bottom bottom0">
-                <a><span>v0.8.26</span></a>
-            </li>
+<div id="wrapper" class="wrapper">
+    <div class="sidenav-overlay" onclick="hideSidenav()"></div>
+    
+    <div id="sidenav">
+        <div id="sidenav-head"><span class="font-64">粤</span>dict</div>
+        <ul id="sidenav-list">
+            <li class="sidenav-link"><a href="./newindex.php">字</a></li>
+            <li class="sidenav-link"><a href="./pron.php">韻</a></li>
+            <li class="sidenav-link"><a href="newindex.php">放著先</a></li>
+            <li class="divider"></li>
+            <li class="sidenav-link"><a ><!--href="./about.php">-->關於</a></li>
         </ul>
     </div>
 
-    <div id="container" class="container">
-        <input type="button" value="≡" id="toggleLeftNavBar" onclick="toggleLeftNavBar()">
-        <?PHP //设置变量 submitChara 为 提交的字符
-//        writeLog("Locate: 1, open: ".var_export($_GET, true), ".");
-        $editMode = isset($_GET['editmode']);
-        if (!empty($_GET['character'])) {
-            $submitChara = $_GET['character'];
-            $submitChara = mb_substr($submitChara, 0, 1, 'utf8');
-        } else {
-            $submitChara = "粵";
-        }
-        ?>
+    <div id="container">
+        
+        <button class="sidenav-show-btn" onclick="showSidenav()"></button>
 
         <div id="searching">
-            <form class="inputForm">
-                <input type="text" class="inputText generalBgDeeper" name="character" <?PHP echo "value=\"$submitChara\""; ?>>
-                <input type="submit" class="inputButton generalBg" value="耖">
-                <?PHP if ($editMode) echo '<input style="display: none;" name="editmode">'; ?>
-                
+            <form id="inputForm" class="clearfix" method="get">
+                <input type="text" id="inputText" class="general-bg-deeper" name="character"  <?PHP echo "value=\"$submitChara\""; ?>>
+                <input type="submit" id="inputButton" class="general-bg" value="耖">
+                <?PHP if ($editMode) echo '<input type="hidden" name="editmode">'; ?>
             </form>
         </div>
-
+        
         <?PHP
-        if (!empty($_GET['character'])) {
+        if (!empty($_REQUEST['character'])) {
             $charaArray = array($submitChara);
-    
+            
             $sim2Trad_countTime_begin   = microtime(TRUE);
             $sim2Trad_getCharaId_sql    = "SELECT * FROM `Character_simtrad_list` WHERE `chara`='" . $submitChara . "'";
             $sim2Trad_getCharaId_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getCharaId_sql));
-    
+            
             if (is_array($sim2Trad_getCharaId_result)) {
                 $sim2Trad_SimMap_sql    = "SELECT * FROM `Character_simtrad_map` WHERE `chara_id_sim`=" . $sim2Trad_getCharaId_result[0];
                 $sim2Trad_SimMap_query  = mysqli_query($con, $sim2Trad_SimMap_sql);
                 $sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query);
-        
+                
                 while (is_array($sim2Trad_SimMap_result)) {
                     $sim2Trad_getTradChara_sql    = "SELECT * FROM `Character_simtrad_list` WHERE `chara_id`=" . $sim2Trad_SimMap_result[1];
                     $sim2Trad_getTradChara_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getTradChara_sql));
@@ -97,7 +78,7 @@ include("fun/writeLog.inc.php");
                     $sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query);
                 }
             }
-
+            
             $charaCount = count($charaArray);
             if ($charaCount > 2) { ?>
                 <div class="generalBgDeeper" id="charaSimToTrad">
@@ -112,17 +93,17 @@ include("fun/writeLog.inc.php");
                 <?PHP
             }
             ?>
-
+            
             <?PHP
             if ($charaCount > 2) $charaCount = 1;
             if ($charaCount <= 2) {
                 for ($i = 0; $i < $charaCount; $i++) {
                     ?>
-                    
+
                     <div id="wanshyuResult">
                         <div class="generalBgDeeper" id="charaHead">
                             <div class="generalBg" id="charaHeadSqu"><span style="top: -10px;"><?PHP echo "$charaArray[$i]" ?></span></div>
-
+                            
                             <?PHP
                             $query_inKuangyon_sql   = "SELECT * FROM `YKuangyon` WHERE `chara`='" . $charaArray[$i] . "'";
                             $query_inKuangyon_query = mysqli_query($con, $query_inKuangyon_sql);
@@ -147,18 +128,18 @@ include("fun/writeLog.inc.php");
                                 if (is_array($query_inFanwan_result)) {
                                     do {
                                         ?>
-                                        
-                                        <table class="generalForm" id="wanshyuResultFanwan">
+
+                                        <table class="general-form" id="wanshyuResultFanwan">
                                             <tr>
-                                                <td width="12.5%">序號</td>
-                                                <td width="50%">韻部 - 小韻</td>
-                                                <td width="25%">聲-韻-調</td>
+                                                <td class="column2-20">序號</td>
+                                                <td class="column10-20">韻部 - 小韻</td>
+                                                <td class="column5-20">聲-韻-調</td>
                                                 <td rowspan="2" class="hlFontRed">
                                                     <?PHP
                                                     if ($query_inFanwan_result[9] <> '0') echo $query_inFanwan_result[9];
                                                     echo $query_inFanwan_result[10] . $query_inFanwan_result[11];
                                                     ?>
-                                                    
+
                                                 </td>
                                             </tr>
                                             <tr>
@@ -167,11 +148,11 @@ include("fun/writeLog.inc.php");
                                                 <td><?PHP echo $query_inFanwan_result[6]
                                                         . '-' . $query_inFanwan_result[7]
                                                         . '-' . $query_inFanwan_result[8]; ?>
-                                                    
+
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td colspan="5"><?PHP echo $query_inFanwan_result[5]; ?></td>
+                                                <td colspan="4"><?PHP echo $query_inFanwan_result[5]; ?></td>
                                             </tr>
                                         </table>
                                         <?PHP
@@ -191,8 +172,8 @@ include("fun/writeLog.inc.php");
                                 $JingwaaPronounCount = count($JingwaaArray);
                                 if ($JingwaaPronounCount > 0) {
                                     ?>
-                                    
-                                    <table class="generalForm" id="wanshyuResultYingwaa">
+
+                                    <table class="general-form" id="wanshyuResultYingwaa">
                                         <tr>
                                             <td width="12.5%">序號</td>
                                             <td width="12.5%">葉碼</td>
@@ -206,7 +187,7 @@ include("fun/writeLog.inc.php");
                                                     echo ( ($JingwaaArray[$j][10]<>'_NULL') ? ' ('.$JingwaaArray[$j][10].')' : '');
                                                 }
                                                 ?>
-                                                
+
                                             </td>
                                         </tr>
                                         <tr>
@@ -216,7 +197,7 @@ include("fun/writeLog.inc.php");
                                                     echo $JingwaaArray[$j][0];
                                                 }
                                                 ?>
-                                                
+
                                             </td>
                                             <td><?PHP echo $JingwaaArray[0][1]; ?></td>
                                             <td><?PHP echo $JingwaaArray[0][2]
@@ -230,7 +211,7 @@ include("fun/writeLog.inc.php");
                                                     echo ( ($JingwaaArray[$j][11]<>'_NULL') ? ' ('.$JingwaaArray[$j][11].')' : '');
                                                 }
                                                 ?>
-                                                
+
                                             </td>
                                         </tr>
                                     </table>
@@ -241,7 +222,7 @@ include("fun/writeLog.inc.php");
                                     <?PHP
                                 }
                                 ?>
-                                
+
                             </div>
                         </div>
                     </div>
@@ -251,14 +232,14 @@ include("fun/writeLog.inc.php");
             ?>
             <div id="regionalResult">
                 <div class="generalBgDeeper" id="regionalResultForm">
-                    <table class="generalForm">
+                    <table id="regionalResultTable" class="general-form">
                         <?PHP
                         if ($charaCount <= 2) {
                             for ($i = 0; $i < $charaCount; $i++) {
                                 $query_inCityList_sql   = "SELECT * FROM `IAreaList`";
                                 $query_inCityList_query = mysqli_query($con, $query_inCityList_sql);
                                 ?>
-                        
+
                                 <tr>
                                     <td style='font-size: 22px; height: 36px;' colspan='4'><?PHP echo $charaArray[$i]; ?></td>
                                 </tr>
@@ -268,17 +249,17 @@ include("fun/writeLog.inc.php");
                                     $query_inCity_query = mysqli_query($con, $query_inCity_sql);
                                     while (is_array($inCityPron = mysqli_fetch_row($query_inCity_query))) {
                                         ?>
-                        
+
                                         <tr>
-                                            <td class='locOneth' style="width: 20%"><?PHP echo $cityList[3]; ?></td>
-                                            <td class='locThird' style="width: 15%"><?PHP echo $cityList[5]; ?></td>
-                                            <td>
+                                            <td class="locOneth column4-20 min-width60"><?PHP echo $cityList[3]; ?></td>
+                                            <td class="locThird column3-20 min-width45" style="width: 15%"><?PHP echo $cityList[5]; ?></td>
+                                            <td class="column6-20">
                                                 <?PHP
                                                 echo '<span class="hlFontRed">' . $inCityPron[2] . '</span>';
                                                 echo '<span class="hlFontGreen">' . $inCityPron[3] . '</span>';
                                                 echo '<span class="hlFontBlue">' . $inCityPron[4] . '</span>';
-                                                echo '<span class="hlFontPurple">' . $inCityPron[5] . '</span>';
-                                                echo '<span class="hlFontCyan" style="font-size: 0.9em;"> /' . $inCityPron[6] . '/</span>';
+                                                echo '<span class="hlFontYellow">' . $inCityPron[5] . '</span>';
+                                                echo '<span class="hlFontCyan ipa">  /' . $inCityPron[6] . '/</span>';
                                                 ?>
                                             </td>
                                             <td class="tips"> <?PHP
@@ -289,7 +270,7 @@ include("fun/writeLog.inc.php");
                                                     echo "])'>改音</span>";
                                                 }
                                                 
-                                                if (mb_strlen($inCityPron[7],'UTF8') > 4) {
+                                                if (mb_strlen($inCityPron[7],'UTF8') > 5) {
                                                     echo mb_substr($inCityPron[7], 0, 4, 'utf8') . "…";
                                                     echo "<span class='tipsMain'>$inCityPron[7]</span>";
                                                 } else
@@ -301,7 +282,7 @@ include("fun/writeLog.inc.php");
 //                                                    echo "])'>改註</span>";
 //                                                }
                                                 ?>
-                                                
+
                                             </td>
                                         </tr>
                                         <?PHP
@@ -311,14 +292,14 @@ include("fun/writeLog.inc.php");
                             }
                         }
                         ?>
-                        
+
                     </table>
                 </div>
                 <div class="generalBgDeeper" id="regionalResultMap">
                     <span style="margin: auto;">地圖</span>
                 </div>
             </div>
-        <?PHP
+            <?PHP
         }
         ?>
     </div>

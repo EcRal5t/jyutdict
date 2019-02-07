@@ -36,49 +36,6 @@
 //     }, 1500);
 // }
 
-function heightModify() {
-    document.body.style.height = window.innerHeight + "px";
-    //let heightModifyingFunc = setTimeout(function () { heightModify(); }, 1500);
-}
-
-function tabHighlightRectanglePos(which) {
-    let rectangle = document.getElementById("highlightRectangle");
-    let navBar = document.getElementById("leftNavBar");
-    rectangle.style.left = navBar.style.width*which + "px";
-}
-
-
-function initial(which) {
-    //tabHighlightRectanglePos(which);
-
-    // heightModify();
-    // setTimeout(function () {
-    //      heightModify();
-    //      }, 2500);
-}
-
-function annexForm(whichcol) {
-    let elementArray = document.getElementsByClassName(whichcol);
-    let nowInnerHTML = elementArray[0].innerHTML;
-    for (i=1, through=0, start=0; i < elementArray.length; i++) {
-        if ((elementArray[i].innerHTML !== nowInnerHTML) || (elementArray[i].innerHTML === "")) {
-            elementArray[start].rowSpan = through+1;
-            for (k=start+1; k<i; k++) {
-                elementArray[k].style.display = "none";
-            }
-            start = i;
-            through = 0;
-            nowInnerHTML = elementArray[i].innerHTML;
-        }
-        else {
-            through++;
-        }
-    }
-    elementArray[start].rowSpan = through+1;
-    for (k=start+1; k<i; k++) {
-        elementArray[k].style.display = "none";
-    }
-}
 
 function editPron(originalData) {
     orininalPron = originalData[0] + ' ' + originalData[1] + ' ' + originalData[2] + ' ' + originalData[3] + ' ' + originalData[6];
@@ -86,7 +43,7 @@ function editPron(originalData) {
     if (prom!==null) {
         let newPron = prom.split(" ");
         let abReg   = /^[a-z]{0,6}$/;
-        let dgReg   = /^\d\d?$/;
+        let dgReg   = /^\d\d?`?$/;
         let ipaReg  = /^.{1,6}\d{1,3}$/;
         //暫時衹在這裏檢測合法性吧…
         //IPA怎麼檢測我還真不知道（
@@ -95,7 +52,7 @@ function editPron(originalData) {
             let newData = "ty=1&on="+newPron[0]+"&nu="+newPron[1]+"&co="+newPron[2]+"&to="+newPron[3]+"&cs="+originalData[4]+"&id="+originalData[5]+"&ip="+newPron[4];
             xmlhttp.onreadystatechange = function() {
                 if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-                    alert(newData);
+                    //alert(newData);
                     location.reload();
                 }
             };
@@ -114,16 +71,16 @@ function editPronNote(originalData) {
     if (prom!==null) {
         //改備註用的，暫時放著
         if ((newPron.length === 5) && (ipaReg.test(newPron[4])) && (dgReg.test(newPron[3])) && (abReg.test(newPron[2])) && (abReg.test(newPron[1])) && (abReg.test(newPron[0]))) {
-            let xmlhttp = new XMLHttpRequest();
+            let xmlHttp = new XMLHttpRequest();
             let newData = "ty=1&on="+newPron[0]+"&nu="+newPron[1]+"&co="+newPron[2]+"&to="+newPron[3]+"&cs="+originalData[4]+"&id="+originalData[5]+"&ip="+newPron[4];
-            xmlhttp.onreadystatechange = function() {
-                if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState==4 && xmlHttp.status==200) {
                     alert(newData);
                     location.reload();
                 }
             };
-            xmlhttp.open("GET","fun/modifyCharaSheet.php?"+newData,true);
-            xmlhttp.send();
+            xmlHttp.open("GET","fun/modifyCharaSheet.php?"+newData,true);
+            xmlHttp.send();
 
         } else {
             alert(newPron + "不合條件!");
