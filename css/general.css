@@ -117,19 +117,19 @@
 #sidenav {
   position: fixed;
   height: 100%;
-  width: 240px;
-  min-width: 240px;
+  width: 220px;
+  min-width: 220px;
   background-color: #70a;
   z-index: 10;
   display: block;
   -webkit-box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   -moz-box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-  -webkit-transform: translate3d(-240px, 0, 0);
-  -moz-transform: translate3d(-240px, 0, 0);
-  -ms-transform: translate3d(-240px, 0, 0);
-  -o-transform: translate3d(-240px, 0, 0);
-  transform: translate3d(-240px, 0, 0);
+  -webkit-transform: translate3d(-220px, 0, 0);
+  -moz-transform: translate3d(-220px, 0, 0);
+  -ms-transform: translate3d(-220px, 0, 0);
+  -o-transform: translate3d(-220px, 0, 0);
+  transform: translate3d(-220px, 0, 0);
   -webkit-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
   -moz-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
   -ms-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
@@ -331,4 +331,3 @@ body {
 #searching #inputButton:active {
   background-color: rgba(128, 196, 255, 0.5);
 }
-/*# sourceMappingURL=general.css.map */

@@ -9,9 +9,9 @@ function showSidenav() {
 }
 
 function annexForm(name, maxCol,whichCol, begin, max) {
-    whichCol = whichCol||0;
-    begin    = begin||0;
-    max      = max||65535;
+    whichCol = whichCol || 0;
+    begin    = begin || 0;
+    max      = max || 65535;
     let trs  = document.querySelector(name).children[0].children;
     let tdText = "";
     let rowspancount = 1;
