@@ -29,7 +29,6 @@ include("connectDB.php");
     var vowelFormat = /^(ng|m|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y)/;
     
     
-
     function inputAnalyse(input) {                                  //划分粤拼音节
         var pron = input.value;
         for (let i=0; i<13; i++) {

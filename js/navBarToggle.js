@@ -1,5 +1,3 @@
-
-
 function toggleLeftNavBar() {
     let navBar = document.getElementById("leftNavBar");
     let highlightRec = document.getElementById("highlightRectangle");

@@ -36,7 +36,6 @@
 //     }, 1500);
 // }
 
-
 function editPron(originalData) {
     orininalPron = originalData[0] + ' ' + originalData[1] + ' ' + originalData[2] + ' ' + originalData[3] + ' ' + originalData[6];
     let prom = prompt("1月16: 現在不要改先！按“聲母 韻腹 韻尾 聲調 IPA”順序輸入（無引號，有英文空格）", orininalPron);

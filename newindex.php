@@ -222,7 +222,7 @@ if (!empty($_REQUEST['character'])) {
                                     <?PHP
                                 }
                                 ?>
-
+                                
                             </div>
                         </div>
                     </div>
@@ -292,7 +292,7 @@ if (!empty($_REQUEST['character'])) {
                             }
                         }
                         ?>
-
+                        
                     </table>
                 </div>
                 <div class="generalBgDeeper" id="regionalResultMap">
