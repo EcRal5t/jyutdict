@@ -521,22 +521,22 @@ div#highlightRectangle {
 
 
 /* hl means highlight */
-.hlFontRed {
+.hl-font-red {
     color: #C00000;
 }
-.hlFontGreen {
+.hl-font-green {
      color: #00A000;
  }
-.hlFontBlue {
+.hl-font-blue {
     color: #0000C0;
 }
-.hlFontYellow {
+.hl-font-yellow {
     color: #C0A000;
 }
-.hlFontPurple {
+.hl-font-purple {
     color: #A000C0;
 }
-.hlFontCyan {
+.hl-font-cyan {
     color: #70C0C0;
 }
 

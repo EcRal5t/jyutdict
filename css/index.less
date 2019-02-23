@@ -1,18 +1,19 @@
 @import "general.less";
 
-//本頁面
+//查字頁
+
 
 #charaSimToTrad {
-    margin-top: 50px;
+    margin-bottom: 25px;
     width: 100%;
     height: 50px;
     display: flex;
-    
-    background: lawngreen;
+    text-align: center;
+    font-size: 18px;
+    .bgc(lawngreen);
 }
 #charaSimToTrad span {
     margin: auto;
-    float: left;
 }
 #charaSimToTradHead {
     width: 100px;
@@ -20,30 +21,23 @@
 #charaSimToTradMain {
     width: calc(100% - 100px) ;
     padding-right: 100px;
-    font-size: 18px;
-    
-    background: violet;
+    .bgc(violet);
 }
 
 
 #wanshyuResult {
-    margin-top: 50px;
     float: left;
     width: 100%;
     ///*background: crimson;*/
     text-align: center;
-    
-    span {
-        margin: auto;
-        position: relative;
-    }
-    
+    margin-top: 25px;
+    margin-bottom: 25px;
     #charaHead {
         width: 150px;
         /*height: 150px;*/
         float: left;
-        background: blueviolet;
-        margin-right: 50px;
+        .bgc(blueviolet);
+        .box-shadow(@generalBoxShadow);
         
         @media screen and (max-width: 830px) {
             float: none;
@@ -52,119 +46,72 @@
     
         #charaHeadSqu {
             width: 100%;
-            height: 123px;
+            height: 120px;
             font-size: 100px;
-            display: flex;
-    
-            background: greenyellow;
+            top: 50px;
+            position: relative;
+            text-align: center;
+            
+            .bgc(greenyellow);
         }
         #oldPronounce {
             text-align: center;
             width: 100%;
-            height: 27px;
+            height: 20px;
             font-size: 12px;
-            display: flex;
     
-            background: teal;
-            //background: #F0FFFF40;
+            .bgc(teal);
         }
     }
     
     #wanshyuResultForm {
-        width: calc(100% - 200px) ;
-        float: left;
-    
-        background: skyblue;
+        width: calc(100% - 175px) ;
+        float: right;
+        line-height: 26px;
+        .bgc(mediumspringgreen);
+        text-align: center;
+        .box-shadow(@generalBoxShadow);
+        
         @media screen and (max-width: 830px) {
-            margin-top: 50px;
+            margin-top: 25px;
+            
             width: 100%;
             float: none;
         }
-    }
-    
-    .wanshyuResultBlock {
-        width: 100%;
-        float: left;
-    
-        background: mediumspringgreen;
-        
-        table {
-            width: 100%;
-            padding: 0;
-    
-            td {
-                text-align: center;
-                line-height: 27px;
-                padding: 0;
-            }
-        }
-    
-        span {
-            margin: auto;
-        }
-    }
-    
-    .wanshyuResultFormHead {
-        width: 50px;
-        height: 100%;
-        float: left;
-        font-size: 22px;
-        line-height: 22px;
-        padding: 0 5px 0 5px;
-        box-sizing: border-box;
-        background: royalblue;
-    }
-    
-    #wanshyuResultFanwan {
-        width: calc(100% - 50px) ;
-        float: right;
-        line-height: 27px;
-    
-        background: hotpink;
-    }
-    
-    #wanshyuResultYingwaa {
-        width: calc(100% - 50px) ;
-        float: right;
-        line-height: 27px;
-        
-        background: plum;
     }
 }
 
 
 
 #regionalResult {
-    margin-top: 50px;
-    margin-bottom: 50px;
     width: 100%;
     float: left;
     font-size: 16px;
-    background: limegreen;
+    .bgc(limegreen);
     
     #regionalResultForm {
         width: calc(100% - 450px) ;
         float: left;
         margin-right: 50px;
         
-        background: orangered;
+        .bgc(orangered);
         
         @media screen and (max-width: 1030px) and (min-width: 773px) {
             width: 600px ;
             float: none;
             padding: 0;
-            margin: 0 calc(50% - 300px) 50px calc(50% - 300px) ;
+            margin: 0 calc(50% - 300px) ;
         }
         @media screen and (max-width: 773px) {
             width: 100%;
             float: none;
             padding: 0;
-            margin: 0 0 50px 0;
+            margin: 0;
         }
     }
     
     #regionalResultEdit {
-        background: blue;
+        .bgc(blue);
         width: 100%;
         margin-top: 50px;
         /*background: orangered;*/
@@ -183,7 +130,7 @@
     }
     
     #regionalResultEdit {
-        background: blue;
+        .bgc(blue);
         width: 100%;
         margin-top: 50px;
         /*background: orangered;*/
@@ -203,72 +150,70 @@
     }
     
     .tips {
-        position:relative;
+        position: relative;
         font-size: 0.9em;
-        z-index:2;
         
         &:hover {
-            z-index:3;
             background:none;
     
             .tipsMain {
-                display: block;
-                position: absolute;
-                top: 0;
-                border:1px solid black;
-                background-color:#ccFFFF;
-                padding: 3px;
-                color:black;
-                @media screen and (min-width: 1030px) {
-                    left: 100% ;
-                    width: 20em;
-                }
-                @media screen and (max-width: 1030px) {
-                    right: calc(50% + 2em) ;
-                    width: 10em;
-                }
-        
+                filter: opacity(1);
+                visibility: visible;
             }
         }
     
         .tipsMain {
-            display: none;
+            visibility: hidden;
+            border-radius: 5px;
+            background-color: rgba(68,68,68,0.8);
+            padding: 3px;
+            color: #FFFFFF;
+            position: absolute;
+            filter: opacity(0);
+            .transition(@transitionCurveFast);
+            @media screen and (min-width: 1030px) {
+                left: 100% ;
+                width: 20em;
+            }
+            @media screen and (max-width: 1030px) {
+                right: calc(50% + 2em) ;
+                width: 10em;
+            }
         }
     }
     
     
-    #regionalResultMap {
+    div[id^="mapContainer"] {
         width: 400px;
         height: 400px;
-        font-size: 50px;
-        float: left;
-        display: flex;
-        
-        background: goldenrod;
-    
+        display: block;
+        margin: auto;
+        .bgc(goldenrod);
+        //background-color: goldenrod;
         @media screen and (max-width: 1030px) {
-            float: none;
-            margin: auto;
-        }
-        @media screen and (max-width: 530px) {
+            margin-top: 25px;
             width: 100%;
-            float: none;
-            margin: auto;
         }
-    
         
-        #mapContainer {
-            height: inherit;
-            width: inherit;
-    
-            .locale-label {
-                font-size: 13px;
-                color:#ffffff;
-                text-align : center;
-                width: 4em;
-                background-color: #00000088;
-                line-height : 14px;
-            }
+        
+        .locale-label {
+            font-size: 13px;
+            color:#ffffff;
+            text-align : center;
+            min-width: 4em;
+            background-color: rgba(0,0,0,0.5);
+            line-height : 18px;
+            position: relative;
+            top: 2.5em;//要不然会偏上1em
+        }
+        .label-triangle {
+            top: -12px;
+            position: absolute;
+            .setSize(0,0);
+            border: 6px solid;
+            left: 5px;
+            border-color: transparent transparent rgba(0,0,0,0.5) transparent;
+            
         }
     }
 }

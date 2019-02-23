@@ -1,48 +1,6 @@
 @import "general.less";
 
-//本頁面
-
-
-#searching {
-    max-width: 700px;
-    padding: 0 100px;
-    margin: 110px auto 0 auto;
-    @media screen and (max-width: 600px) {
-        padding: 0;
-        width: @smallestContentWidth;
-    }
-    
-    form#inputForm {
-        width: 100%;
-    }
-    #inputText, #inputButton {
-        height: 36px;
-        font-size: 1pc;
-        text-align: center;
-        float: left;
-    }
-    #inputText{
-        width: 72.5%;
-        .transition(@transitionCurveFast);
-        &:hover, &:focus {
-            background-color: rgba(128,255,255,0.5);
-        }
-    }
-    .text-invalid {
-        background-color: rgba(255,0,64,0.75) !important;
-        &:hover, &:focus {
-            background-color: rgba(255,64,128,0.75) !important;
-        }
-    }
-    #inputButton {
-        margin-left: 5%;
-        width: 22.5%;
-        .transition(@transitionCurveFast);
-        &:hover, &:active {
-            background-color: rgba(128,196,255,0.5);
-        }
-    }
-}
+//查音頁
 
 #result {
     overflow: hidden;
@@ -51,32 +9,17 @@
 
 .wanshyu-result, .regional-result {
     min-width: @smallestContentWidth;
-    margin: 50px auto 0 auto;
+    margin: 0 auto;
     padding: 0 50px;
-    .bgc(#fbe);
+    
     overflow: hidden;
-    .transition(@transitionCurveFast;background-color);
+    .transition(@transitionCurveFast; background-color);
     
     @media screen and (max-width: 500px) {
         padding: 0;
         width: @smallestContentWidth;
     }
-}
-
-.wanshyu-result {
-    &:hover {
-        .bgc(#f9c);
-    }
-    .fanwan-result, .jingwaa-result {
-        margin-top: 10px;
-        .transition(@transitionCurveFaster; background-color);
-        &:hover {
-            .bgc(#f9e);
-        }
-    }
-}
-
-.regional-result {
+    
     &:hover {
         .bgc(#f9c);
     }
@@ -84,5 +27,6 @@
         .bgc(#f9e);
     }
 }
+
 
 
