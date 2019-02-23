@@ -20,7 +20,7 @@
 
 <body>
 <nav>
-    <a class="home" href="./index.php">粵典</a>
+    <a class="home" href="oldindex.php">粵典</a>
     <a href="./search.php">詞彙</a>
     <a>aa</a>
     <a>bb</a>
@@ -50,7 +50,7 @@ if (!empty($_POST['login'])) {
         if (md5($_POST['pw']) == $rs[2]) {
             $nickname = $rs[0];
             setcookie("login", "$nickname");
-            echo "<script>alert('登錄成功');location.href = './index.php'</script>";
+            echo "<script>alert('登錄成功');location.href = 'oldoldindex.php'</script>";
         } else $validPwCorrect = false;
     } else $validIDExist = false;
     unset($rs, $_POST['pw']);

@@ -20,7 +20,7 @@
 
 <body>
 <nav>
-    <a class="home" href="index.php">粵典</a>
+    <a class="home" href="oldindex.php">粵典</a>
     <a href="search.php">詞彙</a>
     <a>aa</a>
     <a>bb</a>

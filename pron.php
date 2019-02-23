@@ -16,11 +16,10 @@ include_once ("Jyutping.class.php");
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>泛粵大典</title>
-    <link rel="stylesheet" type="text/css" href="./css/newindex.css?<?PHP echo rand(); ?>">
-    <!--    <link rel="icon" href="./img/favicon.png">-->
+    <link rel="stylesheet" type="text/css" href="./css/pron.css?<?PHP echo rand(); ?>">
+    <link rel="icon" href="./img/favicon.ico">
+    
     <script src="./js/general.js?<?PHP echo rand(); ?>"></script>
-<!--
-<script src="./js/newindex.js?--><?PHP //echo rand(); ?><!--"></script>-->
 </head>
 
 <?PHP
@@ -52,7 +51,6 @@ if ($valid) {
 <body onload="annexTableShell('.annex-form', 1);">
 
 <script>
-    //[不安全]暂时先不在后端做检测了…
     var format = /^[a-z]{1,10}\d{0,2}$/;
     var initialFormat = /^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl])(?=[aeoiuy])/;
     var codaFormat    = /[aoreiwu](n[ng]?|[mptkh])\d{0,2}$/;
@@ -79,7 +77,7 @@ if ($valid) {
                     vowels[count] = nuclei.substr(pos).match(vowelFormat)[0];   //从前到后用正则检测元音
                 } else {
                     document.querySelector('#inputText').setAttribute("class", "general-bg-deeper text-invalid");
-                    document.querySelector('#inputButton').disabled = true;           //虽然[不安全]…放一下再改好点
+                    document.querySelector('#inputButton').disabled = true;
                     return;                                                     //元音输入有误，直接退出并改输入框背景色
                 }
                 document.querySelector('#temp'+(count+4)).innerHTML = vowels[count];
@@ -107,22 +105,7 @@ if ($valid) {
 </script>
 
 <div id="wrapper" class="wrapper">
-    
-    <div class="sidenav-overlay" onclick="hideSidenav()"></div>
-    
-    <div id="sidenav">
-        <div id="sidenav-head"><span class="font-64">粤</span>dict</div>
-        <ul id="sidenav-list">
-            <li class="sidenav-link"><a href="./newindex.php">字</a></li>
-            <li class="sidenav-link"><a href="./pron.php">韻</a></li>
-            <li class="sidenav-link"><a>說明</a></li>
-            <li class="sidenav-link"><a>泛粵表</a></li>
-            <li class="divider"></li>
-            <li class="sidenav-link">
-                <a ><!--href="./about.php">-->關於<?PHP Info::showVersion(); ?></a>
-            </li>
-        </ul>
-    </div>
+    <?PHP Info::showSidenav(); ?>
     
     <div id="container">
         <button class="sidenav-show-btn" onclick="showSidenav()"></button>
@@ -176,7 +159,7 @@ if ($valid) {
             
                         foreach ($wanshyuListArray as $eachWanshyu)  {   //对每个韻書：
                             $query_inWanshyu_sql   = "
-                                SELECT *
+                                SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
                                 FROM `" . $eachWanshyu[1] . "`
                                 WHERE `nuclei`='" . $nuclei . "' AND `initial`='" . $initial . "' AND `coda`='" . $coda . "' ";
                             if (!empty($tone) AND $tone!="*") {

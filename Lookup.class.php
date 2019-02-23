@@ -63,7 +63,7 @@ class Sim2TradLookup extends Lookup {
                         <?PHP
                         unset($charaArray[0]);
                         foreach($charaArray as $chara) {
-                            echo " <a href=\"newindex.php?character=" . $chara . "\">" . $chara . "</a>";
+                            echo " <a href=\"index.php?character=" . $chara . "\">" . $chara . "</a>";
                         } //end foreach
                         ?>
                     </span>
