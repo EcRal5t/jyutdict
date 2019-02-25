@@ -1,8 +1,7 @@
 <?php
-include_once ("Jyutping.class.php");
 
 abstract class Lookup {
-    abstract protected function query($character, $con);
+    abstract protected function query($character, $dbh);
     abstract protected function show($charArray);
 }
 
@@ -21,35 +20,39 @@ class Sim2TradLookup extends Lookup {
         return self::$instance;
     }
     
-    public function query($character, $con) {
+    public function query($character, $dbh) {   ///到時候會大改一遍的…
         $charaArray = array($character);
         $sim2Trad_getCharaId_sql = "
             SELECT chara_id
             FROM `Character_simtrad_list`
-            WHERE`chara` = '$character'";  #从字表中查询列出符合输入的字
-        $sim2Trad_getCharaId_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getCharaId_sql));
+            WHERE`chara` = :chara";  #从字表中查询列出符合输入的字
+        $sim2Trad_getCharaId_stmt = $dbh->prepare($sim2Trad_getCharaId_sql);
+        $sim2Trad_getCharaId_stmt->execute(array(':chara'=>$character));
+        $sim2Trad_getCharaId_result = $sim2Trad_getCharaId_stmt->fetchAll(PDO::FETCH_ASSOC);
+        
         #执行SQL语句返回结果集数列
-        if (is_array($sim2Trad_getCharaId_result)) {#如果结果集存在
+        if ($sim2Trad_getCharaId_result!=[]) {#如果结果集存在
             $sim2Trad_SimMap_sql = "
-                SELECT chara_id_trad
+                SELECT `chara_id_trad`
                 FROM `Character_simtrad_map`
-                WHERE `chara_id_sim` = $sim2Trad_getCharaId_result[0]";
-            $sim2Trad_SimMap_query = mysqli_query($con, $sim2Trad_SimMap_sql);
-            #查找简繁映射表
-            $sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query);
-            while (is_array($sim2Trad_SimMap_result)) {
+                WHERE `chara_id_sim` =" . $sim2Trad_getCharaId_result[0]['chara_id'];#查找简繁映射表
+            $sim2Trad_SimMap_stmt = $dbh->prepare($sim2Trad_SimMap_sql);
+            $sim2Trad_SimMap_stmt->execute();
+            $sim2Trad_SimMap_result = $sim2Trad_SimMap_stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            foreach ($sim2Trad_SimMap_result as $items) {
                 $sim2Trad_getTradChara_sql = "
                     SELECT `chara`
                     FROM `Character_simtrad_list`
-                    WHERE `chara_id` = $sim2Trad_SimMap_result[0]";
-                $sim2Trad_getTradChara_result = mysqli_fetch_row(mysqli_query($con, $sim2Trad_getTradChara_sql));
-                if ($character != $sim2Trad_getTradChara_result[0]) array_push($charaArray, $sim2Trad_getTradChara_result[0]);
-                $sim2Trad_SimMap_result = mysqli_fetch_row($sim2Trad_SimMap_query);
-            }#end while(is_array)
-            return $charaArray;
-        } else {
-            return $charaArray;
-        }#end if(is_array)
+                    WHERE `chara_id` =" . $items['chara_id_trad'];
+                $sim2Trad_getTradChara_stmt = $dbh->prepare($sim2Trad_getTradChara_sql);
+                $sim2Trad_getTradChara_stmt->execute();
+                
+                $result = $sim2Trad_getTradChara_stmt->fetchAll(PDO::FETCH_ASSOC);
+                if ($character != $result[0]['chara']) array_push($charaArray, $result[0]['chara']);
+            }#end foreach
+        }#end if(!=[])
+        return $charaArray;
     }#end function query
     
     public function show($charaArray) {
@@ -91,17 +94,14 @@ class FanWanDict extends Lookup {
         }
     }
     
-    function query($character, $con) {
-        $query_inFanwan_sql = "
+    function query($character, $dbh) {
+        $inFanwan_sql = "
             SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`, `siuwan`, `meaning`, `initial_ch`, `final_ch`, `yunbu`, `tone_ch`
             FROM `YFanwan`
-            WHERE `chara`='" . $character. "'";
-        $resultArray = array();         #多维数组每个维用来存储结果数列
-        $resultSet   = mysqli_query($con, $query_inFanwan_sql);#结果集
-        for($result = mysqli_fetch_row($resultSet); is_array($result); $result = mysqli_fetch_row($resultSet)) {
-            $resultArray[] = $result;#插入结果数列到下一维度
-        }//end for
-        return $resultArray;#返回结果数列，会可能返回一个空的数列
+            WHERE `chara`=:chara";
+        $inFanwan_stmt = $dbh->prepare($inFanwan_sql);
+        $inFanwan_stmt->execute(array(':chara'=>$character));
+        return $inFanwan_stmt->fetchAll(PDO::FETCH_ASSOC);
     }//end function query
     
     function show($charArray) {
@@ -114,7 +114,7 @@ class FanWanDict extends Lookup {
             <table class="general-form annex-form">
                 <?PHP
                 foreach ($charArray as $resultItem) { #将数组一个个输出
-                    $jyutping->set($resultItem[2], $resultItem[3], $resultItem[4], $resultItem[5])
+                    $jyutping->set($resultItem['initial'], $resultItem['nuclei'], $resultItem['coda'], $resultItem['tone'])
                     ?>
                     <tr>
                         <td class="column2-20 font-22">分韻</td>
@@ -126,12 +126,12 @@ class FanWanDict extends Lookup {
                     </tr>
                     <tr>
                         <td>分韻</td>
-                        <td><?PHP echo "$resultItem[10] - $resultItem[6]"; ?></td>
-                        <td><?PHP echo "$resultItem[8] - $resultItem[9] - $resultItem[11]"; ?></td>
+                        <td><?PHP echo $resultItem['yunbu'] . "-" . $resultItem['siuwan']; ?></td>
+                        <td><?PHP echo $resultItem['initial_ch'].'-'.$resultItem['final_ch'].'-'.$resultItem['tone_ch']; ?></td>
                     </tr>
                     <tr>
                         <td>分韻</td>
-                        <td colspan="4" style="border-top: none;"><?PHP echo $resultItem[7] ?></td>
+                        <td colspan="4" style="border-top: none;"><?PHP echo $resultItem['meaning'] ?></td>
                     </tr>
                     
                     <?PHP
@@ -163,19 +163,14 @@ class JingWaaDict extends Lookup {
         }
     }
     
-    function query($character, $con) {
-       $query_inJingwaa_sql = "
+    function query($character, $dbh) {
+        $inJingwaa_sql = "
             SELECT `id`, `page`, `initial`, `nuclei`, `coda`, `tone`, `pron`, `radical`, `radical_stroke`, `extra_stroke`, `page`, `state`, `order`
             FROM `YJingwaa`
-            WHERE `chara`='" . $character . "'";
-        $query_inJingwaa_query = mysqli_query($con, $query_inJingwaa_sql);
-        $JingwaaArray          = [];
-        for($result = mysqli_fetch_row($query_inJingwaa_query);
-            is_array($result);
-            $result = mysqli_fetch_row($query_inJingwaa_query)) {
-            $JingwaaArray[] = $result; #插入结果数列到下一维度
-        }//end for
-        return $JingwaaArray;
+            WHERE `chara`=:chara";
+        $inJingwaa_stmt = $dbh->prepare($inJingwaa_sql);
+        $inJingwaa_stmt->execute(array(':chara'=>$character));
+        return $inJingwaa_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     function show($charArray) {
@@ -194,18 +189,18 @@ class JingWaaDict extends Lookup {
                 </tr>
                 <?PHP
                 $lastOrder = 0;
-                foreach ($charArray as $key => $JingwaaArray) {
-                    $jyutping->set($JingwaaArray[2],$JingwaaArray[3],$JingwaaArray[4],$JingwaaArray[5]);
+                foreach ($charArray as $resultItem) {
+                    $jyutping->set($resultItem['initial'], $resultItem['nuclei'], $resultItem['coda'], $resultItem['tone']);
                     ?>
                     <tr>
                         <td>英華</td>
-                        <td><?PHP echo $JingwaaArray[10] ?></td>
-                        <td><?PHP echo "$JingwaaArray[8]($JingwaaArray[7])+$JingwaaArray[9]" ?></td>
-                        <td class="<?PHP echo ($lastOrder==$JingwaaArray[12]?"hl-font-gray":"") ?> alphabet"><?PHP echo $JingwaaArray[6] ?></td>
+                        <td><?PHP echo $resultItem['page']; ?></td>
+                        <td><?PHP echo $resultItem['radical_stroke'].'('.$resultItem['radical'].')+'.$resultItem['extra_stroke']; ?></td>
+                        <td class="<?PHP echo ($lastOrder==$resultItem['order']?"hl-font-gray":"") ?> alphabet"><?PHP echo $resultItem['pron'] ?></td>
                         <td><?PHP $jyutping->printWithColor("red", "green", "green"); ?></td>
                     </tr>
                     <?PHP
-                    $lastOrder = $JingwaaArray[12];
+                    $lastOrder = $resultItem['order'];
                 }
                 ?>
                 
@@ -233,31 +228,21 @@ class LocalDictionary extends Lookup implements displayInMap {
         return self::$instance;
     }
     
-    private function getCityList($con) {
-        $query_inCityList_sql = "
+    private function getCityList($dbh) {
+        $inCityList_sql = "
             SELECT `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`
             FROM `IAreaList`"; #獲取城市信息
-        $query_inCityList_query = mysqli_query($con, $query_inCityList_sql);
-        $cityListArray = [];
-        for($cityList = mysqli_fetch_row($query_inCityList_query); is_array($cityList); $cityList = mysqli_fetch_row($query_inCityList_query)) {
-            $cityListArray[] = $cityList;
-        }
-        //var_dump($cityListArray);
-        return $cityListArray;
+        $inCityList_stmt = $dbh->prepare($inCityList_sql);
+        $inCityList_stmt->execute();
+        return $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function query($character,$con) {
-        $cityListArray = $this->getCityList($con);
+    public function query($character, $dbh) {
+        $cityListArray = $this->getCityList($dbh);
         $resultArray = [];
         foreach ($cityListArray as $eachCity) {
-            $result = [
-                "longitude" => $eachCity[0],
-                "latitude"  => $eachCity[1],
-                "first"     => $eachCity[2],
-                "second"    => $eachCity[3],
-                "third"     => $eachCity[4]
-            ];#一个数组五个键名
-            $pronArray = $this->charaQueryInSheet($character, $eachCity[5], $con);
+            $result = $eachCity;
+            $pronArray = $this->charaQueryInSheet($character, $eachCity['sheetname'], $dbh);
             if(!empty($pronArray)) {
                 $resultArray[] = array_merge($result,$pronArray);
             }
@@ -265,24 +250,19 @@ class LocalDictionary extends Lookup implements displayInMap {
         return $resultArray;
     }
     
-    private function charaQueryInSheet($character, $sheetName, $con) {
-        $resultArray = [];
-        $query_sql = "
+    private function charaQueryInSheet($character, $sheetName, $dbh) {
+        $inSheet_sql = "
             SELECT `chara`, `initial`, `nuclei`, `coda`, `tone`, `ipa`, `note`
-            FROM ".$sheetName."
-            WHERE `chara` = '".$character."'";
-        $resultSet = mysqli_query($con, $query_sql);
-        for($result = mysqli_fetch_row($resultSet);
-            is_array($result);
-            $result = mysqli_fetch_row($resultSet)) {
-            $resultArray[] = $result;
-        }
-        return $resultArray;
+            FROM `$sheetName`
+            WHERE `chara`=:chara";
+        $inSheet_stmt = $dbh->prepare($inSheet_sql);
+        $inSheet_stmt->execute(array(':chara'=>$character));
+        return $inSheet_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     public function show($charaArray, $showMap=TRUE) {
         if(!empty($charaArray)){
-            $character = $charaArray[0][0][0]; #从第一个结果里面取得字
+            $character = $charaArray[0][0]['chara']; #从第一个结果里面取得字
             ?>
             <div id="regionalResult">
                 <div class="general-bg-deeper" id="regionalResultForm">
@@ -293,45 +273,45 @@ class LocalDictionary extends Lookup implements displayInMap {
                         <?PHP
                         $jyutping = new Jyutping();
                         for ($num = 0;$num < count($charaArray);$num++) {
-                            for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 5); $charaNum++) {   #多音字
-                                $locFirst  = $charaArray[$num]["first"];   #片
-                                $locSecond = $charaArray[$num]["second"];  #市
-                                $locThird  = $charaArray[$num]['third'];   #點
-                                $jyutping->set(
-                                        $charaArray[$num][$charaNum][1],
-                                        $charaArray[$num][$charaNum][2],
-                                        $charaArray[$num][$charaNum][3],
-                                        $charaArray[$num][$charaNum][4]
-                                        );
-                                $jyutping->setIpa($charaArray[$num][$charaNum][5]);
-                                $note   = $charaArray[$num][$charaNum][6];  #note
-                                ?>
-                                <tr>
-                                    <td class="column4-20 min-width60 "><?PHP echo $locFirst ?></td>
-                                    <td class="column3-20 min-width45">
-                                        <?PHP
-                                        echo $locSecond;
-                                        if (!empty($locThird)) echo "<br><span class='hl-font-cyan font-0p9em'>$locThird</span>";
-                                        ?>
-                                    </td>
-                                    <td class="alphabet">
-                                        <?PHP $jyutping->printWithColor(); ?>
-                                    </td>
-                                    <td class="column4-20 min-width45">
-                                        <?PHP $jyutping->printIpaWithColor(); ?>
-                                    </td>
-                                    <td class="tips">
-                                        <?PHP
-                                        if (mb_strlen($note,'UTF8') > 5) {
-                                            echo mb_substr($note, 0, 4, 'utf8')."…";
-                                            echo "<span class='tipsMain'>$note</span>";
-                                        } else {
-                                            echo $note;
-                                        }
-                                        ?>
-                                    </td>
-                                </tr>
-                                <?PHP
+                            for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) {   #多音字
+                            $locFirst  = $charaArray[$num]['first'];   #片
+                            $locSecond = $charaArray[$num]['second'];  #市
+                            $locThird  = $charaArray[$num]['third'];   #點
+                            $jyutping->set(
+                                    $charaArray[$num][$charaNum]['initial'],
+                                    $charaArray[$num][$charaNum]['nuclei'],
+                                    $charaArray[$num][$charaNum]['coda'],
+                                    $charaArray[$num][$charaNum]['tone']
+                                    );
+                            $jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
+                            $note   = $charaArray[$num][$charaNum]['note'];  #note
+                            ?>
+                            <tr>
+                                <td class="column4-20 min-width60 "><?PHP echo $locFirst ?></td>
+                                <td class="column3-20 min-width45">
+                                    <?PHP
+                                    echo $locSecond;
+                                    if (!empty($locThird)) echo "<br><span class='hl-font-cyan font-0p9em'>$locThird</span>";
+                                    ?>
+                                </td>
+                                <td class="alphabet">
+                                    <?PHP $jyutping->printWithColor(); ?>
+                                </td>
+                                <td class="column4-20 min-width45">
+                                    <?PHP $jyutping->printIpaWithColor(); ?>
+                                </td>
+                                <td class="tips">
+                                    <?PHP
+                                    if (mb_strlen($note,'UTF8') > 5) {
+                                        echo mb_substr($note, 0, 4, 'utf8')."…";
+                                        echo "<span class='tipsMain'>$note</span>";
+                                    } else {
+                                        echo $note;
+                                    }
+                                    ?>
+                                </td>
+                            </tr>
+                            <?PHP
                             }#end for(charaNum)
                         }#end for(num)
                         ?>
@@ -365,11 +345,11 @@ class LocalDictionary extends Lookup implements displayInMap {
                         
                         echo "var marker$num = new AMap.Marker({";
                             $pron = "";
-                            for($charaNum = 0; $charaNum < (count($charaArray[$num]) - 5); $charaNum++) {
-                                $initial = $charaArray[$num][$charaNum][1];
-                                $nuclei  = $charaArray[$num][$charaNum][2];
-                                $coda    = $charaArray[$num][$charaNum][3];
-                                $tone    = $charaArray[$num][$charaNum][4];
+                            for($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) {
+                                $initial = $charaArray[$num][$charaNum]['initial'];
+                                $nuclei  = $charaArray[$num][$charaNum]['nuclei'];
+                                $coda    = $charaArray[$num][$charaNum]['coda'];
+                                $tone    = $charaArray[$num][$charaNum]['tone'];
                                 $pron .= $initial.$nuclei.$coda.$tone.'<br>';
                             } #end for charaNum
                             echo "position: [$longitude,$latitude],";

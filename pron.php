@@ -43,7 +43,7 @@ if ($valid) {
     $initial = $_REQUEST["in"];
     $nuclei  = $_REQUEST["nu"];
     $coda    = $_REQUEST["co"];
-    $tone    = $_REQUEST["to"];
+    $tone    = ($_REQUEST["to"]==="" ? "%" : $_REQUEST["to"]);
 }
 
 ?>
@@ -51,11 +51,11 @@ if ($valid) {
 <body onload="annexTableShell('.annex-form', 1);">
 
 <script>
-    var format = /^[a-z]{1,10}\d{0,2}$/;
-    var initialFormat = /^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl])(?=[aeoiuy])/;
-    var codaFormat    = /[aoreiwu](n[ng]?|[mptkh])\d{0,2}$/;
+    var format = /^[a-z%]{1,10}\d{0,2}$/;
+    var initialFormat = /^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)(?=[aeoiuy%])/;
+    var codaFormat    = /[aoreiwu%](n[ng]?|[mptkh]|%)(\d{0,2})$/;
     var toneFormat    = /\d{1,2}$/;
-    var vowelFormat   = /^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y)/;
+    var vowelFormat   = /^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y|%$)/;
     
     
     function inputAnalyse(input) {                                  //划分粤拼音节
@@ -63,15 +63,15 @@ if ($valid) {
         for (var i=0; i<13; i++) {
             document.querySelector('#temp'+i).innerHTML = "";
         }
-
-        if (format.test(pron)) {
-            var tone = (pron.match(toneFormat) ? pron.match(toneFormat)[0] : "");
+        
+        if (pron.split("%").length<4 && format.test(pron)) {
+            var tone    = (pron.match(toneFormat) ? pron.match(toneFormat)[0] : "");
             var initial = (pron.match(initialFormat) ? pron.match(initialFormat)[1] : "");
-            var coda = (pron.match(codaFormat) ? pron.match(codaFormat)[1] : "");
-            var nuclei = pron.substr(initial.length, pron.length-initial.length-coda.length-tone.length);
-
+            var coda    = (pron.match(codaFormat) ? pron.match(codaFormat)[1] : "");
+            var nuclei  = pron.substr(initial.length, pron.length-initial.length-coda.length-tone.length);
+            
             var vowels = [];                                        //用于存放划分得出的各个元音
-
+            
             for (var count=0, pos=0; pos<nuclei.length; count++) {  //划分韵母
                 if (nuclei.substr(pos).match(vowelFormat)) {
                     vowels[count] = nuclei.substr(pos).match(vowelFormat)[0];   //从前到后用正则检测元音
@@ -112,7 +112,7 @@ if ($valid) {
         
         <div id="searching">
             <form id="inputForm" class="clearfix" method="get">
-                <label><input type="text" id="inputText" class="general-bg-deeper alphabet" name="pron" oninput="inputAnalyse(this);"></label>
+                <label><input type="text" id="inputText" autocomplete="off" class="general-bg-deeper alphabet" name="pron" oninput="inputAnalyse(this);"></label>
                 <input type="hidden" id="inputInitial" name="in">
                 <input type="hidden" id="inputNuclei" name="nu">
                 <input type="hidden" id="inputCoda" name="co">
@@ -124,11 +124,11 @@ if ($valid) {
         </div>
         
         <div>
-            <div style="background-color: #f11;display: inline;" id="temp0"></div>
-            <div style="background-color: #fa1;display: inline;" id="temp1"></div>
-            <div style="background-color: #af1;display: inline;" id="temp2"></div>
-            <div style="background-color: #1f1;display: inline;" id="temp3"></div>
-            <hr>
+            聲母<div style="background-color: #f11;display: inline;" id="temp0"></div>&nbsp;&nbsp;
+            韻腹<div style="background-color: #fa1;display: inline;" id="temp1"></div>&nbsp;&nbsp;
+            韻尾<div style="background-color: #af1;display: inline;" id="temp2"></div>&nbsp;&nbsp;
+            聲調<div style="background-color: #1f1;display: inline;" id="temp3"></div>&nbsp;&nbsp;
+            <br>
             <div style="background-color: #1fa;display: inline;" id="temp4"></div>
             <div style="background-color: #1af;display: inline;" id="temp5"></div>
             <div style="background-color: #11f;display: inline;" id="temp6"></div>
@@ -148,30 +148,34 @@ if ($valid) {
                 <div class="wanshyu-result">
                     <table id="wanshyuResultTable" class="general-form annex-form">
                         <?PHP
-                        $query_inWanshyuList_sql   = "
+                        $inWanshyuList_sql   = "
                             SELECT `name`, `sheetname`
                             FROM `IWanshyuList`";                      //獲取韻書列表
-                        $query_inWanshyuList_query = mysqli_query($con, $query_inWanshyuList_sql);
-                        $wanshyuListArray = [];
-                        for($wanshyuList = mysqli_fetch_row($query_inWanshyuList_query); is_array($wanshyuList); $wanshyuList = mysqli_fetch_row($query_inWanshyuList_query)) {
-                            $wanshyuListArray[] = $wanshyuList;
-                        }
-            
+                        $inWanshyuList_stmt = $dbh->prepare($inWanshyuList_sql);
+                        $inWanshyuList_stmt->execute();
+                        $wanshyuListArray = $inWanshyuList_stmt->fetchAll(PDO::FETCH_ASSOC);
+                        $inWanshyu_sql = "
+                            SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
+                            FROM `%s`
+                            WHERE `nuclei` LIKE :nuclei
+                              AND `initial` LIKE :initial
+                              AND `coda` LIKE :coda
+                              AND `tone` LIKE :tone";
                         foreach ($wanshyuListArray as $eachWanshyu)  {   //对每个韻書：
-                            $query_inWanshyu_sql   = "
-                                SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
-                                FROM `" . $eachWanshyu[1] . "`
-                                WHERE `nuclei`='" . $nuclei . "' AND `initial`='" . $initial . "' AND `coda`='" . $coda . "' ";
-                            if (!empty($tone) AND $tone!="*") {
-                                $query_inWanshyu_sql .= " AND `tone`='" . $tone . "'";
-                            }
-                
+                            $inWanshyu_stmt = $dbh->prepare(sprintf($inWanshyu_sql, $eachWanshyu['sheetname']));
+                            $inWanshyu_stmt->execute(array(
+                                ':initial'=>$initial,
+                                ':nuclei'=>$nuclei,
+                                ':coda'=>$coda,
+                                ':tone'=>$tone,
+                            ));
+                            $inWanshyu_result = $inWanshyu_stmt->fetchAll(PDO::FETCH_ASSOC);
+                            
                             $allPron = [];
-                
-                            $query_inWanshyu_query = mysqli_query($con, $query_inWanshyu_sql);
-                            while (is_array($inWanshyuPron = mysqli_fetch_row($query_inWanshyu_query))) {    //对每个符合条件的字：以jyut6为例
-                                $pron = $inWanshyuPron[2].$inWanshyuPron[3].$inWanshyuPron[4];                  //$pron==="jyut", $allPron["jyut"][6]==="月粤越…"
-                                $allPron[$pron][$inWanshyuPron[5]] = empty($allPron[$pron][$inWanshyuPron[5]]) ? $inWanshyuPron[1] : $allPron[$pron][$inWanshyuPron[5]].$inWanshyuPron[1];
+                            
+                            foreach ($inWanshyu_result as $inWanshyuPron) {//对每个符合条件的字：以jyut6为例
+                                $pron = $inWanshyuPron['initial'].$inWanshyuPron['nuclei'].$inWanshyuPron['coda'];                  //$pron==="jyut", $allPron["jyut"][6]==="月粤越…"
+                                $allPron[$pron][$inWanshyuPron['tone']] = empty($allPron[$pron][$inWanshyuPron['tone']]) ? $inWanshyuPron['chara'] : $allPron[$pron][$inWanshyuPron['tone']].$inWanshyuPron['chara'];
                             }
                 
                             foreach ($allPron as $pron => $toneArray) {
@@ -180,7 +184,7 @@ if ($valid) {
                                     <tr>
                                         <td class="column2-20 min-width45 line-height1em">
                                             <?PHP
-                                            echo $eachWanshyu[0];
+                                            echo $eachWanshyu['name'];
                                             ?>
                                         </td>
                                         <td class="column2-20 min-width60 font-14 alphabet"><?PHP echo $pron; ?></td>
@@ -204,30 +208,34 @@ if ($valid) {
                 <div class="regional-result">
                     <table id="regionalResultTable" class="general-form annex-form">
                         <?PHP
-                        $query_inCityList_sql   = "
+                        $inCityList_sql   = "
                             SELECT `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`
-                            FROM `IAreaList`";                      //获取城市（地点）列表
-                        $query_inCityList_query = mysqli_query($con, $query_inCityList_sql);
-                        $cityListArray = [];
-                        for($cityList = mysqli_fetch_row($query_inCityList_query); is_array($cityList); $cityList = mysqli_fetch_row($query_inCityList_query)) {
-                            $cityListArray[] = $cityList;
-                        }
-    
+                            FROM `IAreaList`";                      //獲取韻書列表
+                        $inCityList_stmt = $dbh->prepare($inCityList_sql);
+                        $inCityList_stmt->execute();
+                        $cityListArray = $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
+                        $inCity_sql = "
+                            SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
+                            FROM `%s`
+                            WHERE `nuclei` LIKE :nuclei
+                              AND `initial` LIKE :initial
+                              AND `coda` LIKE :coda
+                              AND `tone` LIKE :tone";
                         foreach ($cityListArray as $eachCity)  {   //对每个地点：
-                            $query_inCity_sql   = "
-                                SELECT *
-                                FROM `" . $eachCity[5] . "`
-                                WHERE `nuclei`='" . $nuclei . "' AND `initial`='" . $initial . "' AND `coda`='" . $coda . "' ";
-                            if (!empty($tone) AND $tone!="*") {
-                                $query_inCity_sql .= " AND `tone`='" . $tone . "'";
-                            }
-        
+                            $inCity_stmt = $dbh->prepare(sprintf($inCity_sql, $eachCity['sheetname']));
+                            $inCity_stmt->execute(array(
+                                ':initial'=>$initial,
+                                ':nuclei'=>$nuclei,
+                                ':coda'=>$coda,
+                                ':tone'=>$tone,
+                            ));
+                            $inCity_result = $inCity_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
                             $allPron = [];
-        
-                            $query_inCity_query = mysqli_query($con, $query_inCity_sql);
-                            while (is_array($inCityPron = mysqli_fetch_row($query_inCity_query))) {    //对每个符合条件的字：以jyut6为例
-                                $pron = $inCityPron[2].$inCityPron[3].$inCityPron[4];                  //$pron==="jyut", $allPron["jyut"][6]==="月粤越…"
-                                $allPron[$pron][$inCityPron[5]] = empty($allPron[$pron][$inCityPron[5]]) ? $inCityPron[1] : $allPron[$pron][$inCityPron[5]].$inCityPron[1];
+    
+                            foreach ($inCity_result as $inCityPron) {//对每个符合条件的字：以jyut6为例
+                                $pron = $inCityPron['initial'].$inCityPron['nuclei'].$inCityPron['coda'];                  //$pron==="jyut", $allPron["jyut"][6]==="月粤越…"
+                                $allPron[$pron][$inCityPron['tone']] = empty($allPron[$pron][$inCityPron['tone']]) ? $inCityPron['chara'] : $allPron[$pron][$inCityPron['tone']].$inCityPron['chara'];
                             }
         
                             foreach ($allPron as $pron => $toneArray) {
@@ -236,8 +244,8 @@ if ($valid) {
                                     <tr>
                                         <td class="column2-20 min-width45 line-height1em">
                                             <?PHP
-                                            echo $eachCity[3];
-                                            if (!empty($eachCity[4])) echo "<span class='hl-font-cyan font-0p9em'>$eachCity[4]</span>";
+                                            echo $eachCity['second'];
+                                            if (!empty($eachCity['third'])) echo "<span class='hl-font-cyan font-0p9em'>".$eachCity['third']."</span>";
                                             ?>
                                         </td>
                                         <td class="column2-20 min-width60 font-14 alphabet"><?PHP echo $pron; ?></td>

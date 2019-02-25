@@ -356,7 +356,6 @@ body {
   width: 100%;
   text-align: center;
   margin-top: 25px;
-  margin-bottom: 25px;
 }
 #wanshyuResult #charaHead {
   width: 150px;
@@ -406,6 +405,7 @@ body {
   width: 100%;
   float: left;
   font-size: 16px;
+  margin-top: 25px;
 }
 #regionalResult #regionalResultForm {
   width: calc(100% - 450px);

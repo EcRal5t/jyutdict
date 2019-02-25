@@ -15,11 +15,11 @@ class Jyutping {
     
     protected $ipa     = "";
     
-    const format = "/^[a-z]{1,10}\d{0,2}$/";
-    const initialFormat = '/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl])(?=[aeoiuy])/';
-    const codaFormat    = '/[aoreiwu](n[ng]?|[mptkh])\d{0,2}$/';
-    const toneFormat    = '/\d{1,2}$/';
-    const vowelFormat   = '/^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y)/';
+    const format = "/^[a-z%]{1,10}\d{0,2}$/";
+    const initialFormat = '/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)(?=[aeoiuy%])/';
+    const codaFormat    = '/[aoreiwu%](n[ng]?|[mptkh|%)(\d{0,2}|%)$/';
+    const toneFormat    = '/\d{1,2}|%$/';
+    const vowelFormat   = '/^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y|%$)/';
     
     const consonantIpa = [  //我要死了…
         "m"=>"m", "n"=>"n", "nj"=>"ȵ", "ng"=>"ŋ", "b"=>"p", "d"=>"t", "g"=>"k", "q"=>"ʔ", "p"=>"pʰ", "t"=>"tʰ", "k"=>"kʰ", "bb"=>"ɓ", "dd"=>"ɗ", "s"=>"s", "sh"=>"ʃ", "sr"=>"ʂ", "sj"=>"ɕ", "z"=>"ʦ", "zh"=>"ʧ", "zr"=>"ʈʂ", "zj"=>"ʨ", "c"=>"ʦʰ", "ch"=>"ʧʰ", "cr"=>"ʈʂʰ", "cj"=>"ʨʰ", "ph"=>"ɸ", "f"=>"f", "v"=>"v", "th"=>"θ", "h"=>"h", "w"=>"w", "j"=>"j", "sl"=>"ɬ", "zl"=>"tɬ", "cl"=>"tɬʰ", "l"=>"l", "gw"=>"kʷ", "kw"=>"kʷʰ", "gv"=>"kᵛ", "kv"=>"kᵛʰ", ""=>""
@@ -59,24 +59,20 @@ class Jyutping {
     }
     
     public function set($in, $nu, $co, $to) {
-        if (!preg_match('/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl])?$/', $in) ||
-            !preg_match('/^(n[ng]?|[mptkh])?$/', $co) ||
-            !preg_match('/^\d{0,2}$/', $to)
+        if (!preg_match('/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)?$/', $in) ||
+            !preg_match('/^(n[ng]?|[mptkh]|%)?$/', $co) ||
+            !preg_match('/^\d{0,2}|%?$/', $to) ||
+            $nu == ""
         )   return 0;
-    
-//        print_r(preg_match('/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl])?$/', $in));
-//        print_r(preg_match('/^(n[ng]?|[mptkh])?$/', $co));
-//        print_r(preg_match('/^\d{0,2}$/', $to));
+        if ((empty(preg_match('/%/',$in))+empty(preg_match('/%/',$nu))+empty(preg_match('/%/',$co))+empty(preg_match('/%/',$to)) < 2)) return 0;
         
         $tempResult = [];
         $vowels = [];
         
         for ($count=0, $pos=0; $pos<strlen($nu); $count++) {  //划分韵母
-            if (preg_match(self::vowelFormat ,substr($nu, $pos), $tempResult)) {
-                $vowels[$count] = $tempResult[0];   //从前到后用正则检测元音
-            } else {
-                return 0;                             //元音输入有误，直接退出
-            }
+            if (!preg_match(self::vowelFormat ,substr($nu, $pos), $tempResult))
+                return 0;                           //元音输入有误，直接退出
+            $vowels[$count] = $tempResult[0];       //从前到后用正则检测元音
             $pos += strlen($vowels[$count]);        //划分出几个字母，就向后几个字母继续划分
         }
     
