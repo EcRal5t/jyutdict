@@ -1,6 +1,6 @@
 <?PHP
 include ("const.php");
-include ("connectDB.php");
+include_once ("connectDB.php");
 include ("Lookup.class.php");
 include_once ("Jyutping.class.php")
 ?>
@@ -66,32 +66,36 @@ if (!empty($_REQUEST['character'])) {
         
         <?PHP
         if (!empty($_GET['character'])) {
-            $sim2trad = Sim2TradLookup::getInstance();          #获取简繁转换对象
-            $charaArray = $sim2trad -> query($submitChara, $con);
-            //var_dump($charaArray);
+            $sim2trad = Sim2TradLookup::getInstance();      #获取简繁转换对象
+            $charaArray = $sim2trad -> query($submitChara, $dbh);
             $charaCount = count($charaArray);
-            if ($charaCount > 2) $sim2trad -> show($charaArray);
-        }
-        
-        if (!empty($_GET['character'])){
-            if ($charaCount > 2) $charaCount = 1;
+            if ($charaCount > 2) {
+                $sim2trad -> show($charaArray);
+                $charaCount = 1;
+            }
+            
+            if ($options["wanshyu"]) {                      #prepared statement
+                $inKuangyon_sql = "
+                    SELECT `initial`,`rimeclass`,`rime`,`division`,`rounding`,`tone`,`transliteration`
+                    FROM `YKuangyon`
+                    WHERE `chara`=:chara";
+                $inKuangyon_stmt = $dbh->prepare($inKuangyon_sql);
+            }
+            
             for ($i = 0; $i < $charaCount; $i++) {
                 if ($options["wanshyu"]) {
                     ?>
                     <div id="wanshyuResult">
                         <div class="general-bg-deeper" id="charaHead">
                             <div id="charaHeadSqu"><?PHP echo "$charaArray[$i]" ?></div>
-            
                             <?PHP
-                            $query_inKuangyon_sql = "
-                            SELECT `initial`,`rimeclass`,`rime`,`division`,`rouding`,`tone`,`transliteration`
-                            FROM `YKuangyon`
-                            WHERE `chara`='" . $charaArray[$i] . "'";
-            
-                            $query_inKuangyon_query = mysqli_query($con, $query_inKuangyon_sql);
-                            while (is_array($query_inKuangyon_result = mysqli_fetch_row($query_inKuangyon_query))) {
+                            $inKuangyon_stmt->execute(array(':chara'=>$charaArray[$i]));
+                            $inKuangyon_result = $inKuangyon_stmt->fetchAll(PDO::FETCH_ASSOC);
+                            foreach ($inKuangyon_result as $inKuangyon_items) {
                                 echo '<div id="oldPronounce"><span>';
-                                echo $query_inKuangyon_result[0] . $query_inKuangyon_result[1] . $query_inKuangyon_result[2] . $query_inKuangyon_result[3] . $query_inKuangyon_result[4] . $query_inKuangyon_result[5] . ' (' . $query_inKuangyon_result[6] . ')';
+                                echo $inKuangyon_items['initial'] . $inKuangyon_items['rimeclass'] . $inKuangyon_items['rime'];
+                                echo $inKuangyon_items['division'] . $inKuangyon_items['rounding'] . $inKuangyon_items['tone'];
+                                echo ' (' . $inKuangyon_items['transliteration'] . ')';
                                 echo "</span></div>";
                             }
                             ?>
@@ -100,12 +104,12 @@ if (!empty($_REQUEST['character'])) {
                             <?PHP
                             if (!empty($_GET['character'])) {
                                 $pronFanwan = FanWanDict ::getInstance();
-                                $pronFanwan -> show($pronFanwan -> query($charaArray[$i], $con));
+                                $pronFanwan -> show($pronFanwan -> query($charaArray[$i], $dbh));
                                 ?>
                                 <div style="margin-top: 13px;"></div>
                                 <?PHP
                                 $pronJingwaa = JingWaaDict ::getInstance();
-                                $pronJingwaa -> show($pronJingwaa -> query($charaArray[$i], $con));
+                                $pronJingwaa -> show($pronJingwaa -> query($charaArray[$i], $dbh));
                             }
                             ?>
                         </div>
@@ -114,7 +118,7 @@ if (!empty($_REQUEST['character'])) {
                 }
                 if ($options["area"]) {
                     $pronArea = LocalDictionary ::getInstance();
-                    $pronArea -> show($pronArea->query($charaArray[$i], $con), $options["map"]);
+                    $pronArea -> show($pronArea->query($charaArray[$i], $dbh), $options["map"]);
                 }
             }#END for ($i = 0; $i < $charaCount; $i++)
         }//end if !empty get

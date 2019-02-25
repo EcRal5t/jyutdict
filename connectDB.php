@@ -1,5 +1,5 @@
 <?PHP
-$con = @mysqli_connect("localhost:3306","jyut","615v9qjVs1k8siMp","jyutdict")or die("Failed to connect Database.");
-mysqli_set_charset($con, "UTF8MB4");
-//  print_r($con);
+$dbh = new PDO('mysql:host=localhost;dbname=jyutdict', 'jyut', '615v9qjVs1k8siMp');
+$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$dbh->exec('SET NAMES UTF8MB4');
 ?>

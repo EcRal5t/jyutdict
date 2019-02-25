@@ -7,7 +7,7 @@
  */
 
 final class Info {
-    private static $version = "v0.8.29.14";
+    private static $version = "v0.8.30";
     
     public static function showVersion() {
         echo "<span style=\"float:right;color:#444444;font-size:0.6em\">".self::$version."</span>";
