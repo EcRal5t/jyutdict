@@ -42,7 +42,7 @@
   box-sizing: border-box;
 }
 .general-form td {
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid #ccd4d9;
 }
 .general-form .column1-20 {
   width: 5%;
@@ -200,6 +200,23 @@
   padding: 0 3pc;
   color: #333;
 }
+#sidenav-list .sidenav-info:after {
+  -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  display: block;
+  height: 0;
+  overflow: hidden;
+  white-space: pre;
+  text-align: center;
+  color: #444444;
+  font-size: 0.6em;
+  line-height: 1.2em;
+}
+#sidenav-list .sidenav-info:hover:after {
+  height: 9em;
+}
 .sidenav-show-btn,
 .sidenav-hide-btn {
   display: block;
@@ -207,6 +224,7 @@
   width: 48px;
   position: fixed;
   outline: none;
+  border-radius: 100%;
   -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
   -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
   -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
@@ -217,6 +235,7 @@
 .sidenav-show-btn:hover,
 .sidenav-hide-btn:hover {
   color: #444;
+  background-color: #C0D0E0FF;
 }
 .sidenav-show-btn {
   top: 50px;
@@ -224,7 +243,7 @@
 }
 .sidenav-show-btn:after {
   content: '≡';
-  font-size: 24px;
+  font-size: 30px;
 }
 .sidenav-overlay {
   position: fixed;
@@ -291,7 +310,7 @@ body {
 #searching {
   max-width: 700px;
   padding: 0 100px;
-  margin: 110px auto 25px auto;
+  margin: 110px auto 0 auto;
 }
 @media screen and (max-width: 600px) {
   #searching {
@@ -332,4 +351,48 @@ body {
 #searching #inputButton {
   margin-left: 5%;
   width: 22.5%;
+}
+#searching #inputCheck {
+  text-align: center;
+}
+#searching #inputCheck label {
+  margin-top: 10px;
+  padding: 3px 5px;
+  display: inline-block;
+  border-radius: 2px;
+  font-size: 16px;
+  -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
+}
+#searching #inputCheck label:hover {
+  background-color: #C0E0FA;
+}
+#searching input[type="checkbox"] {
+  position: relative;
+  height: 12px;
+  width: 24px;
+  vertical-align: center;
+  margin-right: 1px;
+}
+#searching input[type="checkbox"]:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #dddddd;
+  width: 100%;
+  height: 100%;
+  border: none;
+  -webkit-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  -moz-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  -o-transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+#searching input[type="checkbox"]:checked:before {
+  background-color: #37B048;
+}
+#searching input[type="checkbox"]:disabled:before {
+  background-color: #777777;
 }

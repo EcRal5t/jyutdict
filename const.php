@@ -7,7 +7,7 @@
  */
 
 final class Info {
-    private static $version = "v0.8.30";
+    private static $version = "v0.8.31/190721";
     
     public static function showVersion() {
         echo "<span style=\"float:right;color:#444444;font-size:0.6em\">".self::$version."</span>";
@@ -16,21 +16,34 @@ final class Info {
     public static function showSidenav() {
         $version = self::$version;
         echo <<< SIDENAV
+    <style>.sidenav-info:after{content:
+    '主版本:{$version} \A 廣州190719 \A 北海190219 | 亭子190222 \A 貴港190127 | 欽州190117 \A 廉州190219 | 南寧190117 \A 梧州190117 | 蒼梧190118 \A 鬱林190118';}
+    </style>
+    
     <div class="sidenav-overlay" onclick="hideSidenav()"></div>
     
     <div id="sidenav">
         <div id="sidenav-head"><span class="font-64">粤</span>dict</div>
         <ul id="sidenav-list">
             <li class="sidenav-link"><a href="./">字</a></li>
-            <li class="sidenav-link"><a href="./pron.php">韻</a></li>
-            <li class="sidenav-link"><a href="./sheet.php">泛粵表</a></li>
+            <li class="sidenav-link"><a href="./pron.php">音</a></li>
+            <li class="sidenav-link" style="text-decoration:line-through;"><a>　韻　</a></li>
+            <li class="sidenav-link" style="text-decoration:line-through;"><a>　詞　</a></li>
+            <li class="sidenav-link"><a href="./sheet.php">泛粵表<span style="font-size: 0.5em;">　需梯及電腦</span></a></li>
             <li class="divider"></li>
-            <li class="sidenav-link">
-                <a href="./about.php">說明<span style="float:right;color:#444444;font-size:0.6em">{$version}</span></a>
-            </li>
+            <li class="sidenav-link sidenav-info"><a href="./about.php">說明</a></li>
         </ul>
     </div>
 SIDENAV;
+        /*
+            <li class="sidenav-link">
+                <a href="./about.php">說明
+                    <span style="float:right;color:#444444;font-size:0.6em">
+                        {$version}
+                    </span>
+                </a>
+            </li>
+         */
     }
 }
 
