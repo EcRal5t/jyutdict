@@ -9,19 +9,19 @@ class Sim2TradLookup extends Lookup {
     private function _construct() {
         self::$instance = null;
     }
-    
+
     private static $instance;
     private function _clone() {}
-    
+
     public static function getInstance() {
         if (!self::$instance instanceof Sim2TradLookup) {
             self::$instance = new Sim2TradLookup();
         }
         return self::$instance;
     }
-    
+
     public function query($character, $dbh) {   ///到時候會大改一遍的…
-        $charaArray = array($character);
+        $charaArray = array($character);		//改的时候请好好规划
         $sim2Trad_getCharaId_sql = "
             SELECT chara_id
             FROM `Character_simtrad_list`
@@ -29,7 +29,7 @@ class Sim2TradLookup extends Lookup {
         $sim2Trad_getCharaId_stmt = $dbh->prepare($sim2Trad_getCharaId_sql);
         $sim2Trad_getCharaId_stmt->execute(array(':chara'=>$character));
         $sim2Trad_getCharaId_result = $sim2Trad_getCharaId_stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         #执行SQL语句返回结果集数列
         if ($sim2Trad_getCharaId_result!=[]) {#如果结果集存在
             $sim2Trad_SimMap_sql = "
@@ -39,7 +39,7 @@ class Sim2TradLookup extends Lookup {
             $sim2Trad_SimMap_stmt = $dbh->prepare($sim2Trad_SimMap_sql);
             $sim2Trad_SimMap_stmt->execute();
             $sim2Trad_SimMap_result = $sim2Trad_SimMap_stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             foreach ($sim2Trad_SimMap_result as $items) {
                 $sim2Trad_getTradChara_sql = "
                     SELECT `chara`
@@ -47,14 +47,14 @@ class Sim2TradLookup extends Lookup {
                     WHERE `chara_id` =" . $items['chara_id_trad'];
                 $sim2Trad_getTradChara_stmt = $dbh->prepare($sim2Trad_getTradChara_sql);
                 $sim2Trad_getTradChara_stmt->execute();
-                
+
                 $result = $sim2Trad_getTradChara_stmt->fetchAll(PDO::FETCH_ASSOC);
                 if ($character != $result[0]['chara']) array_push($charaArray, $result[0]['chara']);
             }#end foreach
         }#end if(!=[])
         return $charaArray;
     }#end function query
-    
+
     public function show($charaArray) {
         if (is_array($charaArray)) {
             $count = count($charaArray);
@@ -79,11 +79,11 @@ class Sim2TradLookup extends Lookup {
 
 class FanWanDict extends Lookup {
     private function _clone() {}
-    
+
     final private function __construct() {
         self::$instance = null;
     }
-    
+
     protected static $instance;
     static public function getInstance() {
         if (self::$instance instanceof self) {
@@ -93,7 +93,7 @@ class FanWanDict extends Lookup {
             return self::$instance;
         }
     }
-    
+
     function query($character, $dbh) {
         $inFanwan_sql = "
             SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`, `siuwan`, `meaning`, `initial_ch`, `final_ch`, `yunbu`, `tone_ch`
@@ -103,14 +103,14 @@ class FanWanDict extends Lookup {
         $inFanwan_stmt->execute(array(':chara'=>$character));
         return $inFanwan_stmt->fetchAll(PDO::FETCH_ASSOC);
     }//end function query
-    
+
     function show($charArray) {
         if(empty($charArray)) {
             echo "<span style='font-size: 20px;'>分韻冇見有</span>";
         } else {
             $jyutping = new Jyutping();
             ?>
-            
+
             <table class="general-form annex-form">
                 <?PHP
                 foreach ($charArray as $resultItem) { #将数组一个个输出
@@ -133,27 +133,27 @@ class FanWanDict extends Lookup {
                         <td>分韻</td>
                         <td colspan="4" style="border-top: none;"><?PHP echo $resultItem['meaning'] ?></td>
                     </tr>
-                    
+
                     <?PHP
                 }//end foreach
                 ?>
             </table>
-            
+
             <?PHP
         }//end if
     }//end function show
 }
 
 class JingWaaDict extends Lookup {
-    
+
     private function _clone() {}
-    
+
     final private function __construct() {
         self::$instance = null;
     }
-    
+
     static protected $instance;
-    
+
     static public function getInstance() {
         if (self::$instance instanceof self) {
             return self::$instance;
@@ -162,7 +162,7 @@ class JingWaaDict extends Lookup {
             return self::$instance;
         }
     }
-    
+
     function query($character, $dbh) {
         $inJingwaa_sql = "
             SELECT `id`, `page`, `initial`, `nuclei`, `coda`, `tone`, `pron`, `radical`, `radical_stroke`, `extra_stroke`, `page`, `state`, `order`
@@ -172,7 +172,7 @@ class JingWaaDict extends Lookup {
         $inJingwaa_stmt->execute(array(':chara'=>$character));
         return $inJingwaa_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     function show($charArray) {
         if (empty($charArray)) {
             echo "<span style='font-size: 20px;'>英華冇見有</span>";
@@ -203,7 +203,7 @@ class JingWaaDict extends Lookup {
                     $lastOrder = $resultItem['order'];
                 }
                 ?>
-                
+
             </table>
             <?PHP
         }//end if
@@ -215,19 +215,23 @@ interface displayInMap {
 }
 
 class LocalDictionary extends Lookup implements displayInMap {
+    private static $count = 0;
+
     private function _construct() {}
-    
+
     private static $instance;
-    
+
     private function _clone() {}
-    
+
     public static function getInstance() {
         if (!self::$instance instanceof LocalDictionary) {
             self::$instance = new LocalDictionary();
+        }else{
+            self::$count++;
         }
         return self::$instance;
     }
-    
+
     private function getCityList($dbh) {
         $inCityList_sql = "
             SELECT `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`
@@ -236,7 +240,7 @@ class LocalDictionary extends Lookup implements displayInMap {
         $inCityList_stmt->execute();
         return $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     public function query($character, $dbh) {
         $cityListArray = $this->getCityList($dbh);
         $resultArray = [];
@@ -249,7 +253,7 @@ class LocalDictionary extends Lookup implements displayInMap {
         }
         return $resultArray;
     }
-    
+
     private function charaQueryInSheet($character, $sheetName, $dbh) {
         $inSheet_sql = "
             SELECT `chara`, `initial`, `nuclei`, `coda`, `tone`, `ipa`, `note`
@@ -259,7 +263,7 @@ class LocalDictionary extends Lookup implements displayInMap {
         $inSheet_stmt->execute(array(':chara'=>$character));
         return $inSheet_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     public function show($charaArray, $showMap=TRUE) {
         if(!empty($charaArray)){
             $character = $charaArray[0][0]['chara']; #从第一个结果里面取得字
@@ -274,43 +278,42 @@ class LocalDictionary extends Lookup implements displayInMap {
                         $jyutping = new Jyutping();
                         for ($num = 0;$num < count($charaArray);$num++) {
                             for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) {   #多音字
-                            $locFirst  = $charaArray[$num]['first'];   #片
-                            $locSecond = $charaArray[$num]['second'];  #市
-                            $locThird  = $charaArray[$num]['third'];   #點
-                            $jyutping->set(
-                                    $charaArray[$num][$charaNum]['initial'],
-                                    $charaArray[$num][$charaNum]['nuclei'],
-                                    $charaArray[$num][$charaNum]['coda'],
-                                    $charaArray[$num][$charaNum]['tone']
-                                    );
-                            $jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
-                            $note   = $charaArray[$num][$charaNum]['note'];  #note
-                            ?>
-                            <tr>
-                                <td class="column4-20 min-width60 "><?PHP echo $locFirst ?></td>
-                                <td class="column3-20 min-width45">
+                                $locFirst  = $charaArray[$num]['first'];   #片
+                                $locSecond = $charaArray[$num]['second'];  #市
+                                $locThird  = $charaArray[$num]['third'];   #點
+                                $jyutping->set(
+                                        $charaArray[$num][$charaNum]['initial'],
+                                        $charaArray[$num][$charaNum]['nuclei'],
+                                        $charaArray[$num][$charaNum]['coda'],
+                                        $charaArray[$num][$charaNum]['tone']
+                                        );
+                                $jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
+                                $note   = $charaArray[$num][$charaNum]['note'];  #note
+                                ?>
+                                <tr>
+                                    <td class="column4-20 min-width60 "><?PHP echo $locFirst ?></td>
+                                    <td class="column3-20 min-width45 <?PHP if (!empty($locThird)) echo 'tips'; ?>">
+                                        <?PHP
+                                        echo $locSecond;
+                                        if (!empty($locThird)) echo "<span class='hl-font-cyan font-0p9em tipsMain' style='width: 50px;'>$locThird</span>";
+                                        ?>
+                                    </td>
+                                    <td class="alphabet">
+                                        <?PHP $jyutping->printWithColor(); ?>
+                                    </td>
+                                    <td class="column4-20 min-width45">
+                                        <?PHP $jyutping->printIpaWithColor(); ?>
+                                    </td>
                                     <?PHP
-                                    echo $locSecond;
-                                    if (!empty($locThird)) echo "<br><span class='hl-font-cyan font-0p9em'>$locThird</span>";
+                                        if (mb_strlen($note,'UTF8') > 5) {
+                                            
+                                            echo "<td class='tips font-0p9em'>".mb_substr($note, 0, 4, 'utf8')."…";
+                                            echo "<span class='tipsMain'>$note</span></td>";
+                                        } else {
+                                            echo "<td class='font-0p9em'>$note</td>";
+                                        }
                                     ?>
-                                </td>
-                                <td class="alphabet">
-                                    <?PHP $jyutping->printWithColor(); ?>
-                                </td>
-                                <td class="column4-20 min-width45">
-                                    <?PHP $jyutping->printIpaWithColor(); ?>
-                                </td>
-                                <td class="tips">
-                                    <?PHP
-                                    if (mb_strlen($note,'UTF8') > 5) {
-                                        echo mb_substr($note, 0, 4, 'utf8')."…";
-                                        echo "<span class='tipsMain'>$note</span>";
-                                    } else {
-                                        echo $note;
-                                    }
-                                    ?>
-                                </td>
-                            </tr>
+                                </tr>
                             <?PHP
                             }#end for(charaNum)
                         }#end for(num)
@@ -325,15 +328,19 @@ class LocalDictionary extends Lookup implements displayInMap {
     function display($charaArray) {
         if(!empty($charaArray)) {
             //print_r($charaArray);
+
+            echo "<script>var count = ".self::$count.";</script>";
+            echo "<div class=\"generalBgDeeper\" id=\"mapContainer".self::$count."\"></div>";
             ?>
-            <div class="generalBgDeeper" id="mapContainer"></div>
+            <script src="https://webapi.amap.com/maps?v=1.4.13&key=160f3ffdbe10ec13c75edac2fae17e3c"></script>
             <script type="text/javascript">
-                var amap;
-                window.init = function() {
-                    amap = new AMap.Map('mapContainer', {
+                var container = "mapContainer" + count;
+                window["amap" + count];
+
+                    window["amap" + count] = new AMap.Map(container, {
                         zoom : 6,
                         resizeEnable: true,
-                        center: [111.08,23.43],                         //中心点坐标
+                        center: [111.08,22.63],                         //中心点坐标
                         mapStyle:'amap://styles/16da0aa02241a5059605e5e35e40e2fd'
                     });
                     <?PHP
@@ -342,7 +349,7 @@ class LocalDictionary extends Lookup implements displayInMap {
                         $longitude = $charaArray[$num]['longitude'];
                         $latitude = $charaArray[$num]['latitude'];
                         #此处CONTENT是MAKER标记位置的内容 去掉默认CONTENT是一个小大头针
-                        
+
                         echo "var marker$num = new AMap.Marker({";
                             $pron = "";
                             for($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) {
@@ -355,14 +362,12 @@ class LocalDictionary extends Lookup implements displayInMap {
                             echo "position: [$longitude,$latitude],";
                             echo "content: \"<div class='locale-label'>$pron<div class='label-triangle'></div></div>\"";
                         echo "});";
-                        
-                        echo "marker$num.setMap(amap);";
+
+                        echo "marker$num.setMap(window[\"amap\"+count]);";
                     }#end for num
                     ?>
-                }
+
             </script>
-            <script src="https://webapi.amap.com/maps?v=1.4.13&key=160f3ffdbe10ec13c75edac2fae17e3c&callback=init"></script>
-            
             <?PHP
         }
     }
