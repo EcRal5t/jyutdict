@@ -73,7 +73,7 @@
         box-sizing: border-box;
     }
     td {
-        border: 1px solid rgba(0,0,0,0.15);
+        border: 1px solid rgb(204,212,217);
         //: 0 0 0 1px #7700AA44;
         //.transition(@transitionCurveFast);
     }
@@ -236,6 +236,24 @@
                 color: #333;
             }
         }
+        
+        .sidenav-info {
+            &:after {
+                .transition(@transitionCurveFast);
+                display: block;
+                height: 0;
+                overflow: hidden;
+                white-space: pre;
+                text-align: center;
+                color:#444444;
+                font-size:0.6em;
+                line-height: 1.2em;
+            }
+            
+            &:hover:after {
+                height: 9em;
+            }
+        }
     }
 }
 
@@ -245,11 +263,13 @@
     .setSize(48px, 48px);
     position: fixed;
     outline: none;
+    border-radius: 100%;
     .transition(@transitionCurveFast);
     background-color: rgba(0,0,0,0);
     color: #18d;
     &:hover {
         color: #444;
+        background-color: #C0D0E0FF;
     }
 }
 
@@ -260,7 +280,7 @@
     
     &:after {
         content: '≡';
-        font-size: 24px;
+        font-size: 30px;
     }
 }
 
@@ -337,7 +357,7 @@ body {
 #searching {
     max-width: 700px;
     padding: 0 100px;
-    margin: 110px auto 25px auto;
+    margin: 110px auto 0 auto;
     @media screen and (max-width: 600px) {
         padding: 0;
         width: @smallestContentWidth;
@@ -356,7 +376,7 @@ body {
             background-color: rgba(128,196,255,0.5);
         }
     }
-    #inputText{
+    #inputText {
         width: 72.5%;
     }
     .text-invalid {
@@ -368,5 +388,46 @@ body {
     #inputButton {
         margin-left: 5%;
         width: 22.5%;
+    }
+    
+    #inputCheck {
+        text-align: center;
+        
+        label {
+            margin-top: 10px;
+            padding: 3px 5px;
+            display: inline-block;
+            border-radius: 2px;
+            font-size: 16px;
+            .transition(@transitionCurveFast);
+            &:hover {
+                background-color: #C0E0FA;
+            }
+        }
+    }
+    
+    input[type="checkbox"] {
+        position: relative;
+        height: 12px;
+        width: 24px;
+        vertical-align: center;
+        margin-right: 1px;
+    }
+    input[type="checkbox"]:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #dddddd;
+        width: 100%;
+        height: 100%;
+        border: none;
+        .transition(@transitionCurve);
+    }
+    input[type="checkbox"]:checked:before {
+        background-color: #37B048;
+    }
+    input[type="checkbox"]:disabled:before {
+        background-color: #777777;
     }
 }

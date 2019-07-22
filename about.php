@@ -22,15 +22,27 @@ include ("const.php");
     <script src="./js/general.js?<?PHP echo rand(); ?>"></script>
 </head>
 
-<body onload="annexTableShell('.annex-form', 1);">
+<body>
 
 <div id="wrapper" class="wrapper">
     <?PHP Info::showSidenav(); ?>
-    <div id="container" class="container">
+    <div id="container" class="container" style="text-align: center;">
         <button class="sidenav-show-btn" onclick="showSidenav()"></button>
-        <div style="overflow: auto;">
-            <img src="./img/tone.png" alt="調值表" >
+        
+        <div class="info" style="margin-top: 100px;">
+            <h1>字表来源</h1>
+            
+            <div>暂时冇嘢講。</div>
         </div>
+        <hr style="margin: 25px 0;">
+        <div class="illustration">
+            
+            <div style="">
+                調值表（及調號）<br>
+                <img src="./img/tone_rotated.png" alt="調值表">
+            </div>
+        </div>
+        
         
         
 <!--        <table class="general-form annex-form">-->
