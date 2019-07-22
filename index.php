@@ -41,31 +41,32 @@ if (!empty($_REQUEST['character'])) {
     $submitChara = "粵";
 }
 
-
 ?>
 
-<body onload="annexTableShell('.annex-form', 2);">
+<body>
 
 <div id="wrapper" class="wrapper">
     <?PHP Info::showSidenav(); ?>
     
     <div id="container" class="container">
     
-        <button class="sidenav-show-btn" onclick="showSidenav()"></button>
+        <button id="sidenav-show-btn" class="sidenav-show-btn"></button>
         
         <div id="searching">
-            <form id="inputForm" class="clearfix" method="get">
+            <form id="inputForm" class="clearfix" method="post">
                 <label><input type="text" id="inputText" class="general-bg-deeper" name="character" <?PHP echo "value=\"$submitChara\""; ?>></label>
                 <input type="submit" id="inputButton" class="general-bg" value="耖">
-                <?PHP if ($editMode) echo '<input type="hidden" name="editmode">';?>
-                <label><input name="option[]" type="checkbox" value="wanshyu" <?PHP if ($options["wanshyu"]) echo "checked"; ?>>韻書音 </label>
-                <label><input name="option[]" type="checkbox" value="area" <?PHP if ($options["area"]) echo "checked"; ?>>地方音 </label>
-                <label><input name="option[]" type="checkbox" value="map" <?PHP if ($options["map"]) echo "checked"; ?>>地方音地圖 </label>
+                <?PHP if ($editMode) echo '<input type="text" name="editmode">';?>
+                <div id="inputCheck" style="text-align: center;">
+                    <label><input name="option[]" type="checkbox" value="wanshyu" <?PHP if ($options["wanshyu"]) echo "checked"; ?>>韻書音</label>
+                    <label><input name="option[]" type="checkbox" value="area" <?PHP if ($options["area"]) echo "checked"; ?> id="check-area">地方音</label>
+                    <label><input name="option[]" type="checkbox" value="map" <?PHP if ($options["map"]) echo "checked"; ?> id="check-map">地方音地圖</label>
+                </div>
             </form>
         </div>
         
         <?PHP
-        if (!empty($_GET['character'])) {
+        if (!empty($_REQUEST['character'])) {
             $sim2trad = Sim2TradLookup::getInstance();      #获取简繁转换对象
             $charaArray = $sim2trad -> query($submitChara, $dbh);
             $charaCount = count($charaArray);
@@ -102,7 +103,7 @@ if (!empty($_REQUEST['character'])) {
                         </div>
                         <div id="wanshyuResultForm" class="general-bg-deeper">
                             <?PHP
-                            if (!empty($_GET['character'])) {
+                            if (!empty($_REQUEST['character'])) {
                                 $pronFanwan = FanWanDict ::getInstance();
                                 $pronFanwan -> show($pronFanwan -> query($charaArray[$i], $dbh));
                                 ?>
@@ -125,6 +126,22 @@ if (!empty($_REQUEST['character'])) {
         ?>
     </div>
 </div>
-</body>
 
+<script type="text/javascript" src="//js.users.51.la/20205743.js"></script>
+<script>
+    document.querySelector('#sidenav-show-btn').onclick = function() {
+        showSidenav();
+    };
+    window.onload = function () {
+        annexTableShell('.annex-form', 2);
+    };
+    document.querySelector('#check-area').onclick = function() {
+        var chackmap = document.querySelector('#check-map');
+        if (this.checked === false) {
+            chackmap.checked = false;
+        }
+        chackmap.disabled = !this.checked;
+    };
+</script>
+</body>
 </html>
