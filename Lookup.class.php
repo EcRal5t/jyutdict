@@ -278,43 +278,42 @@ class LocalDictionary extends Lookup implements displayInMap {
                         $jyutping = new Jyutping();
                         for ($num = 0;$num < count($charaArray);$num++) {
                             for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) {   #多音字
-                            $locFirst  = $charaArray[$num]['first'];   #片
-                            $locSecond = $charaArray[$num]['second'];  #市
-                            $locThird  = $charaArray[$num]['third'];   #點
-                            $jyutping->set(
-                                    $charaArray[$num][$charaNum]['initial'],
-                                    $charaArray[$num][$charaNum]['nuclei'],
-                                    $charaArray[$num][$charaNum]['coda'],
-                                    $charaArray[$num][$charaNum]['tone']
-                                    );
-                            $jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
-                            $note   = $charaArray[$num][$charaNum]['note'];  #note
-                            ?>
-                            <tr>
-                                <td class="column4-20 min-width60 "><?PHP echo $locFirst ?></td>
-                                <td class="column3-20 min-width45">
+                                $locFirst  = $charaArray[$num]['first'];   #片
+                                $locSecond = $charaArray[$num]['second'];  #市
+                                $locThird  = $charaArray[$num]['third'];   #點
+                                $jyutping->set(
+                                        $charaArray[$num][$charaNum]['initial'],
+                                        $charaArray[$num][$charaNum]['nuclei'],
+                                        $charaArray[$num][$charaNum]['coda'],
+                                        $charaArray[$num][$charaNum]['tone']
+                                        );
+                                $jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
+                                $note   = $charaArray[$num][$charaNum]['note'];  #note
+                                ?>
+                                <tr>
+                                    <td class="column4-20 min-width60 "><?PHP echo $locFirst ?></td>
+                                    <td class="column3-20 min-width45 <?PHP if (!empty($locThird)) echo 'tips'; ?>">
+                                        <?PHP
+                                        echo $locSecond;
+                                        if (!empty($locThird)) echo "<span class='hl-font-cyan font-0p9em tipsMain' style='width: 50px;'>$locThird</span>";
+                                        ?>
+                                    </td>
+                                    <td class="alphabet">
+                                        <?PHP $jyutping->printWithColor(); ?>
+                                    </td>
+                                    <td class="column4-20 min-width45">
+                                        <?PHP $jyutping->printIpaWithColor(); ?>
+                                    </td>
                                     <?PHP
-                                    echo $locSecond;
-                                    if (!empty($locThird)) echo "<br><span class='hl-font-cyan font-0p9em'>$locThird</span>";
+                                        if (mb_strlen($note,'UTF8') > 5) {
+                                            
+                                            echo "<td class='tips font-0p9em'>".mb_substr($note, 0, 4, 'utf8')."…";
+                                            echo "<span class='tipsMain'>$note</span></td>";
+                                        } else {
+                                            echo "<td class='font-0p9em'>$note</td>";
+                                        }
                                     ?>
-                                </td>
-                                <td class="alphabet">
-                                    <?PHP $jyutping->printWithColor(); ?>
-                                </td>
-                                <td class="column4-20 min-width45">
-                                    <?PHP $jyutping->printIpaWithColor(); ?>
-                                </td>
-                                <td class="tips">
-                                    <?PHP
-                                    if (mb_strlen($note,'UTF8') > 5) {
-                                        echo mb_substr($note, 0, 4, 'utf8')."…";
-                                        echo "<span class='tipsMain'>$note</span>";
-                                    } else {
-                                        echo $note;
-                                    }
-                                    ?>
-                                </td>
-                            </tr>
+                                </tr>
                             <?PHP
                             }#end for(charaNum)
                         }#end for(num)
@@ -341,7 +340,7 @@ class LocalDictionary extends Lookup implements displayInMap {
                     window["amap" + count] = new AMap.Map(container, {
                         zoom : 6,
                         resizeEnable: true,
-                        center: [111.08,23.43],                         //中心点坐标
+                        center: [111.08,22.63],                         //中心点坐标
                         mapStyle:'amap://styles/16da0aa02241a5059605e5e35e40e2fd'
                     });
                     <?PHP

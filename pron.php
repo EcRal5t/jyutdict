@@ -35,7 +35,7 @@ if (isset($_REQUEST['option'])) {
 
 $submitPron =  (isset($_REQUEST["pron"]) ? $_REQUEST["pron"] : "");
 
-$countTime_begin = microtime(TRUE);
+//$countTime_begin = microtime(TRUE);
 $jyutping = new Jyutping();
 $valid = (isset($_REQUEST["in"], $_REQUEST["nu"], $_REQUEST["co"], $_REQUEST["to"]) &&
     $jyutping->set($_REQUEST["in"], $_REQUEST["nu"], $_REQUEST["co"], $_REQUEST["to"]));
@@ -45,10 +45,9 @@ if ($valid) {
     $coda    = $_REQUEST["co"];
     $tone    = ($_REQUEST["to"]==="" ? "%" : $_REQUEST["to"]);
 }
-
 ?>
 
-<body onload="annexTableShell('.annex-form', 1);">
+<body>
 
 <script>
     var format = /^[a-z%]{1,10}\d{0,2}$/;
@@ -78,7 +77,7 @@ if ($valid) {
                 } else {
                     document.querySelector('#inputText').setAttribute("class", "general-bg-deeper text-invalid");
                     document.querySelector('#inputButton').disabled = true;
-                    return;                                                     //元音输入有误，直接退出并改输入框背景色
+                    return;                                                     //元音输入有误，改输入框背景色并直接退出
                 }
                 document.querySelector('#temp'+(count+4)).innerHTML = vowels[count];
                 pos += vowels[count].length;                                    //划分出几个字母，就向后几个字母继续划分
@@ -108,37 +107,39 @@ if ($valid) {
     <?PHP Info::showSidenav(); ?>
     
     <div id="container">
-        <button class="sidenav-show-btn" onclick="showSidenav()"></button>
+        <button id="sidenav-show-btn" class="sidenav-show-btn"></button>
         
         <div id="searching">
-            <form id="inputForm" class="clearfix" method="get">
-                <label><input type="text" id="inputText" autocomplete="off" class="general-bg-deeper alphabet" name="pron" oninput="inputAnalyse(this);"></label>
+            <form id="inputForm" class="clearfix" method="post">
+                <label><input type="text" id="inputText" autocomplete="off" class="general-bg-deeper alphabet" name="pron"></label>
                 <input type="hidden" id="inputInitial" name="in">
                 <input type="hidden" id="inputNuclei" name="nu">
                 <input type="hidden" id="inputCoda" name="co">
                 <input type="hidden" id="inputTone" name="to">
                 <input type="submit" id="inputButton" class="general-bg" value="耖" disabled>
-                <label><input name="option[]" type="checkbox" value="wanshyu" <?PHP if ($options["wanshyu"]) echo "checked"; ?>>韻書音 </label>
-                <label><input name="option[]" type="checkbox" value="area" <?PHP if ($options["area"]) echo "checked"; ?>>地方音 </label>
+                <div id="inputCheck" style="">
+                    <label><input name="option[]" type="checkbox" value="wanshyu" <?PHP if ($options["wanshyu"]) echo "checked"; ?>>韻書音 </label>
+                    <label><input name="option[]" type="checkbox" value="area" <?PHP if ($options["area"]) echo "checked"; ?>>地方音 </label>
+                </div>
             </form>
         </div>
         
-        <div>
-            聲母<div style="background-color: #f11;display: inline;" id="temp0"></div>&nbsp;&nbsp;
-            韻腹<div style="background-color: #fa1;display: inline;" id="temp1"></div>&nbsp;&nbsp;
-            韻尾<div style="background-color: #af1;display: inline;" id="temp2"></div>&nbsp;&nbsp;
-            聲調<div style="background-color: #1f1;display: inline;" id="temp3"></div>&nbsp;&nbsp;
+        <div style="text-align: center;font-size: 0.5em;">
+            <div style="background-color: #ff111177;display: inline;" id="temp0"></div>&nbsp;
+            <div style="background-color: #ffaa1177;display: inline;" id="temp1"></div>&nbsp;
+            <div style="background-color: #aaff1177;display: inline;" id="temp2"></div>&nbsp;
+            <div style="background-color: #11ff1177;display: inline;" id="temp3"></div>&nbsp;
+            <div style="background-color: #11ffaa77;display: inline;" id="temp4"></div>
+            <div style="background-color: #11aaff77;display: inline;" id="temp5"></div>
+            <div style="background-color: #1111ff77;display: inline;" id="temp6"></div>
+            <div style="background-color: #aa11ff77;display: inline;" id="temp7"></div>
+            <div style="background-color: #ff11aa77;display: inline;" id="temp8"></div>
+            <div style="background-color: #ffaaaa77;display: inline;" id="temp9"></div>
+            <div style="background-color: #ffffaa77;display: inline;" id="temp10"></div>
+            <div style="background-color: #aaffaa77;display: inline;" id="temp11"></div>
+            <div style="background-color: #aaffff77;display: inline;" id="temp12"></div>
+            <div style="background-color: #aaaaff77;display: inline;" id="temp13"></div>
             <br>
-            <div style="background-color: #1fa;display: inline;" id="temp4"></div>
-            <div style="background-color: #1af;display: inline;" id="temp5"></div>
-            <div style="background-color: #11f;display: inline;" id="temp6"></div>
-            <div style="background-color: #a1f;display: inline;" id="temp7"></div>
-            <div style="background-color: #f1a;display: inline;" id="temp8"></div>
-            <div style="background-color: #faa;display: inline;" id="temp9"></div>
-            <div style="background-color: #ffa;display: inline;" id="temp10"></div>
-            <div style="background-color: #afa;display: inline;" id="temp11"></div>
-            <div style="background-color: #aff;display: inline;" id="temp12"></div>
-            <div style="background-color: #aaf;display: inline;" id="temp13"></div>
         </div>
         
         <div id="result">
@@ -263,8 +264,21 @@ if ($valid) {
             }
             ?>
         </div>
-        <?PHP print_r(round((microtime(TRUE) - $countTime_begin)*1000, 3)); ?>ms
+        <?PHP //print_r(round((microtime(TRUE) - $countTime_begin)*1000, 3)); ?>
     </div>
 </div>
+
+<script type="text/javascript" src="//js.users.51.la/20205743.js"></script>
+<script>
+    document.querySelector('#inputText').oninput = function () {
+        inputAnalyse(this);
+    };
+    document.querySelector('#sidenav-show-btn').onclick = function() {
+        showSidenav();
+    };
+    window.onload = function () {
+        annexTableShell('.annex-form', 1);
+    }
+</script>
 </body>
 </html>
