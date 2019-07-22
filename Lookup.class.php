@@ -294,25 +294,24 @@ class LocalDictionary extends Lookup implements displayInMap {
                         $jyutping = new Jyutping();
                         for ($num = 0;$num < count($charaArray);$num++) {
                             for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) {   #多音字
-<<<<<<< Updated upstream
-                                $locFirst  = $charaArray[$num]['first'];   #片
-                                $locSecond = $charaArray[$num]['second'];  #市
-                                $locThird  = $charaArray[$num]['third'];   #點
-                                $jyutping->set(
-                                        $charaArray[$num][$charaNum]['initial'],
-                                        $charaArray[$num][$charaNum]['nuclei'],
-                                        $charaArray[$num][$charaNum]['coda'],
-                                        $charaArray[$num][$charaNum]['tone']
-                                        );
-                                $jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
-                                $note   = $charaArray[$num][$charaNum]['note'];  #note
-                                ?>
-                                <tr>
-                                    <td class="column4-20 min-width60 "><?PHP echo $locFirst ?></td>
-                                    <td class="column3-20 min-width45 <?PHP if (!empty($locThird)) echo 'tips'; ?>">
-                                        <?PHP
-                                        echo $locSecond;
-                                        if (!empty($locThird)) echo "<span class='hl-font-cyan font-0p9em tipsMain' style='width: 50px;'>$locThird</span>";
+								$pin  = $charaArray[$num]['first'];   #片
+								$shi = $charaArray[$num]['second'];  #市
+								$dim  = $charaArray[$num]['third'];   #點
+								$jyutping->set(
+										$charaArray[$num][$charaNum]['initial'],
+										$charaArray[$num][$charaNum]['nuclei'],
+										$charaArray[$num][$charaNum]['coda'],
+										$charaArray[$num][$charaNum]['tone']
+										);
+								$jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
+								$note   = $charaArray[$num][$charaNum]['note'];  #note
+								?>
+								<tr>
+									<td class="column4-20 min-width60 "><?PHP echo $pin ?></td>
+									<td class="column3-20 min-width45">
+										<?PHP
+										echo $shi;
+										if (!empty($dim)) echo "<br><span class='hl-font-cyan font-0p9em'>$dim</span>";
                                         ?>
                                     </td>
                                     <td class="alphabet">
@@ -329,26 +328,6 @@ class LocalDictionary extends Lookup implements displayInMap {
                                         } else {
                                             echo "<td class='font-0p9em'>$note</td>";
                                         }
-=======
-                            $pin  = $charaArray[$num]['first'];   #片
-                            $shi = $charaArray[$num]['second'];  #市
-                            $dim  = $charaArray[$num]['third'];   #點
-                            $jyutping->set(
-                                    $charaArray[$num][$charaNum]['initial'],
-                                    $charaArray[$num][$charaNum]['nuclei'],
-                                    $charaArray[$num][$charaNum]['coda'],
-                                    $charaArray[$num][$charaNum]['tone']
-                                    );
-                            $jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
-                            $note   = $charaArray[$num][$charaNum]['note'];  #note
-                            ?>
-                            <tr>
-                                <td class="column4-20 min-width60 "><?PHP echo $pin ?></td>
-                                <td class="column3-20 min-width45">
-                                    <?PHP
-                                    echo $shi;
-                                    if (!empty($dim)) echo "<br><span class='hl-font-cyan font-0p9em'>$dim</span>";
->>>>>>> Stashed changes
                                     ?>
                                 </tr>
                             <?PHP
@@ -368,17 +347,6 @@ class LocalDictionary extends Lookup implements displayInMap {
             echo "<div class=\"generalBgDeeper\" id=\"mapContainer".self::$count."\"></div>";
             ?>
             <script type="text/javascript">
-<<<<<<< Updated upstream
-                var container = "mapContainer" + count;
-                window["amap" + count];
-
-                    window["amap" + count] = new AMap.Map(container, {
-                        zoom : 6,
-                        resizeEnable: true,
-                        center: [111.08,22.63],                         //中心点坐标
-                        mapStyle:'amap://styles/16da0aa02241a5059605e5e35e40e2fd'
-                    });
-=======
 				mapList['m' + count] =  L.map('mapContainer' + count).setView([23.43,111.08], 6.5);
 				L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
 					attribution: 'Performed By Lingnaam Jyutjam',
@@ -386,7 +354,6 @@ class LocalDictionary extends Lookup implements displayInMap {
 					id: 'mapbox.streets',
 					accessToken: 'pk.eyJ1IjoiemVuYW0iLCJhIjoiY2p4bjh5MjFxMGM4aTNobGF0dXNoejlseiJ9.BPrObTer-_5w5L3oEaEWfQ'
 				}).addTo(mapList['m' + count]);
->>>>>>> Stashed changes
                     <?PHP
                     #此处插入要显示的标签
                     for($num = 0; $num < count($charaArray); $num++) 
