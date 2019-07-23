@@ -227,8 +227,20 @@ class LocalDictionary extends Lookup implements displayInMap {
         if (!self::$instance instanceof LocalDictionary) {
             self::$instance = new LocalDictionary();
 			#当第一次显示地图的时候 初始化
+			/*
+				B版更新方案
+				加入了DivIcon 
+				下边的嵌入式CSS 的Class 是Divicon的Class
+				<div class = "divIconDefault"></div>
+			*/
             echo "<script>var count = ".self::$count.";</script>";
 			?>
+			<style>
+				.divIconDefault
+				{
+					background-color: none;
+				}
+			</style>
 			<script>var mapList = new Array();/*用于存储地图列表*/</script>	
 			<!-- leaflet 的前置CSS和JS -->
 			 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
@@ -348,19 +360,29 @@ class LocalDictionary extends Lookup implements displayInMap {
             ?>
             <script type="text/javascript">
 				mapList['m' + count] =  L.map('mapContainer' + count).setView([23.43,111.08], 6.5);
-				L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+				
+				L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png', {
+					tms: false,
 					attribution: 'Performed By Lingnaam Jyutjam',
-					maxZoom: 18,
-					id: 'mapbox.streets',
-					accessToken: 'pk.eyJ1IjoiemVuYW0iLCJhIjoiY2p4bjh5MjFxMGM4aTNobGF0dXNoejlseiJ9.BPrObTer-_5w5L3oEaEWfQ'
+					maxZoom: 18
 				}).addTo(mapList['m' + count]);
                     <?PHP
-                    #此处插入要显示的标签
+                    #这段JSCODE 是展示如何用Mapbox自定义(我没有搞清楚怎样自定义的 先替换成用OPENSTREEETMAP)
+					/*
+					L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+						attribution: 'Performed By Lingnaam Jyutjam',
+						maxZoom: 18,
+						id: 'mapbox.streets',
+						accessToken: 'pk.eyJ1IjoiemVuYW0iLCJhIjoiY2p4bjh5MjFxMGM4aTNobGF0dXNoejlseiJ9.BPrObTer-_5w5L3oEaEWfQ'
+					}).addTo(mapList['m' + count]);
+					*/
+					#此处插入要显示的标签
+					
                     for($num = 0; $num < count($charaArray); $num++) 
 					{
                         $longitude = $charaArray[$num]['longitude'];
                         $latitude = $charaArray[$num]['latitude'];
-						$pron = $charaArray[$num]['first'].$charaArray[$num]['second'].$charaArray[$num]['third'].'<br/>';
+						$pron = $charaArray[$num]['second'].$charaArray[$num]['third'].'<br/>';
 						for($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) 
 						{
 							$initial = $charaArray[$num][$charaNum]['initial'];
@@ -369,14 +391,28 @@ class LocalDictionary extends Lookup implements displayInMap {
 							$tone    = $charaArray[$num][$charaNum]['tone'];
 							$pron .= $initial.$nuclei.$coda.$tone.'<br/>';	//将要显示的合并
 							#下面这个显示中 color和Fillcolor可考虑 在表中添加一个color列 此处用 $color捕获 并塞入 下面的属性中 可以产生不同颜色
+							/*
+								B版方案之更新
+								可以插入Maker 使用其之icon属性 指定一个icon Object(此处使用Leaflet之DivIcon 即div当ICON之演示)
+								下列divIcon里边的html意思是
+								<div class="divIconDefault"><!-- html内容 --></div>
+							*/
 							echo <<<CIRCLE
 							
 L.circle([$latitude, $longitude], {
 	color: '#00eeff', 
 	fillColor: '#a34',
 	fillOpacity: 0.5,
-	radius: 10000
-}).addTo(mapList['m' + count]).bindPopup("$pron");
+	radius: 1000
+}).addTo(mapList['m' + count]);
+L.marker([$latitude, $longitude], {
+	icon: L.divIcon({
+		className: 'divIconDefault',
+		html: 
+		"<div style='background-color: #a34;font-size:11px;color:white;'>$pron</div>",
+		iconSize: [60,]
+	})
+}).addTo(mapList['m' + count]);
 
 CIRCLE;
 						} #end for charaNum
