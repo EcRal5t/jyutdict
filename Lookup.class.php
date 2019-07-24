@@ -2,7 +2,7 @@
 
 abstract class Lookup {
     abstract protected function query($character, $dbh);
-    abstract protected function show($charArray);
+    abstract protected function show($charaArray);
 }
 
 class Sim2TradLookup extends Lookup {
@@ -54,7 +54,17 @@ class Sim2TradLookup extends Lookup {
         }#end if(!=[])
         return $charaArray;
     }#end function query
-
+/*
+这个Show是用来展示多个简繁异体转换的页面的 即 2个以上一简对多的情况出现是 会显示以下页面
+<div class="general-bg-deeper" id="charaSimToTrad">
+	<span id="charaSimToTradHead">简转繁</span>
+	<span id="charaSimToTradMain">
+	 <a href="index.php?character=發">發</a> 
+	 <a href="index.php?character=髮">髮</a>
+	</span>
+</div>
+*/
+#charaArray的格式为 $charaArray[整数序号] => String（字们）; 
     public function show($charaArray) {
         if (is_array($charaArray)) {
             $count = count($charaArray);
@@ -103,9 +113,9 @@ class FanWanDict extends Lookup {
         $inFanwan_stmt->execute(array(':chara'=>$character));
         return $inFanwan_stmt->fetchAll(PDO::FETCH_ASSOC);
     }//end function query
-
-    function show($charArray) {
-        if(empty($charArray)) {
+#传入之数组 $charaArray[整数序号] => String（字们）; 
+    function show($charaArray) {
+        if(empty($charaArray)) {
             echo "<span style='font-size: 20px;'>分韻冇見有</span>";
         } else {
             $jyutping = new Jyutping();
@@ -113,7 +123,7 @@ class FanWanDict extends Lookup {
 
             <table class="general-form annex-form">
                 <?PHP
-                foreach ($charArray as $resultItem) { #将数组一个个输出
+                foreach ($charaArray as $resultItem) { #将数组一个个输出
                     $jyutping->set($resultItem['initial'], $resultItem['nuclei'], $resultItem['coda'], $resultItem['tone'])
                     ?>
                     <tr>
@@ -172,9 +182,9 @@ class JingWaaDict extends Lookup {
         $inJingwaa_stmt->execute(array(':chara'=>$character));
         return $inJingwaa_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    function show($charArray) {
-        if (empty($charArray)) {
+#传入之数组 $charaArray[整数序号] => String（字们）; 
+    function show($charaArray) {
+        if (empty($charaArray)) {
             echo "<span style='font-size: 20px;'>英華冇見有</span>";
         } else {
             $jyutping = new Jyutping();
@@ -189,7 +199,7 @@ class JingWaaDict extends Lookup {
                 </tr>
                 <?PHP
                 $lastOrder = 0;
-                foreach ($charArray as $resultItem) {
+                foreach ($charaArray as $resultItem) {
                     $jyutping->set($resultItem['initial'], $resultItem['nuclei'], $resultItem['coda'], $resultItem['tone']);
                     ?>
                     <tr>
@@ -211,7 +221,7 @@ class JingWaaDict extends Lookup {
 }//end class JingWaaDict
 
 interface displayInMap {
-    public function display($charArray);
+    public function display($charaArray);
 }
 
 class LocalDictionary extends Lookup implements displayInMap {
@@ -256,33 +266,48 @@ class LocalDictionary extends Lookup implements displayInMap {
 			?>
 			<script>++count//js中地图编号+1</script>
 			<?PHP
-        }
+        }#end if (!self::$instance instanceof LocalDictionary)
         return self::$instance;
     }
-	#从DB中获取城市列表 (包括了各地音表表名字)
-    private function getCityList($dbh) {
+	#从DB中获取城市列表 (包括了各地音表表名字) 返回值为一个二维数组 每个一维数组里边 索引为列明 值为查询之值 (有Null)
+    #查询的结果里面 longtitue latitude纬经度 first 分片 second 城市 third 城市下之小区 sheetname 为每个字表在数据库中之名 color为这个片区应有的颜色
+	private function getCityList($dbh) {
         $inCityList_sql = "
-            SELECT `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`
+            SELECT `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`,`color`
             FROM `IAreaList`"; #獲取城市信息
         $inCityList_stmt = $dbh->prepare($inCityList_sql);
         $inCityList_stmt->execute();
         return $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    }#end private function getCityList($dbh)
+	
 	#从DB中获取数据的操作
+	#Character为每个字
     public function query($character, $dbh) {
         $cityListArray = $this->getCityList($dbh);
-        $resultArray = [];
-        foreach ($cityListArray as $eachCity) {
+        $resultArray = [];	#用于收集从各字表中获得的结果
+        foreach ($cityListArray as $eachCity) #Foreach遍历 提出在二维数组中的一维数组
+		{ 
             $result = $eachCity;
             $pronArray = $this->charaQueryInSheet($character, $eachCity['sheetname'], $dbh);
-            if(!empty($pronArray)) {
-                $resultArray[] = array_merge($result,$pronArray);
-            }
-        }
+            if(!empty($pronArray)) 
+			{	#费事加入空数组入来
+                $resultArray[] = array_merge($result,$pronArray);	#会是一个二维数组 每个一位数组里面 的索引和值是
+	/*	
+	{'chara' => string 字
+	'initial' => string 声母
+	'nuclei' => string 韵腹 
+	'coda' => string 韵尾
+	'tone' => string  音调
+	'ipa' => string IPA
+	'note' => string 附加说明 }
+	*/
+            }#end  if(!empty($pronArray)) 
+        } #end foreach ($cityListArray as $eachCity)
         return $resultArray;
-    }
+    }#end public function query($character, $dbh) 
 	#传入查询的字 表名 即可在各地字表中查字并返回结果
-    private function charaQueryInSheet($character, $sheetName, $dbh) {
+    private function charaQueryInSheet($character, $sheetName, $dbh) 
+	{
         $inSheet_sql = "
             SELECT `chara`, `initial`, `nuclei`, `coda`, `tone`, `ipa`, `note`
             FROM `$sheetName`
@@ -290,10 +315,31 @@ class LocalDictionary extends Lookup implements displayInMap {
         $inSheet_stmt = $dbh->prepare($inSheet_sql);
         $inSheet_stmt->execute(array(':chara'=>$character));
         return $inSheet_stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function show($charaArray, $showMap=TRUE) {
-        if(!empty($charaArray)){
+    }# private function charaQueryInSheet($character, $sheetName, $dbh) 
+	/*
+	此处的charaArray是一个结果集
+	结果集的格式为 结果集是一个三维数组 
+	第三维 代表每个字表 索引为整数 值为具体字表的二维数组
+	第二维 代表著每个字表的详细信息 索引和值为 
+	{'longitude' => string 纬度 
+	'latitude' => string 经度 
+	'first' => string 分片
+	'second' => string 城市
+	'third' => string  城市下片区
+	'sheetname' => string 字表名字
+	多个'数字序号',字音详细}
+	第一维 代表著具体子音 索引和值如下
+	{'chara' => string 字
+	'initial' => string 声母
+	'nuclei' => string 韵腹 
+	'coda' => string 韵尾
+	'tone' => string  音调
+	'ipa' => string IPA
+	'note' => string 附加说明 }
+	*/
+    public function show($charaArray, $showMap=TRUE) 
+	{	
+        if(!empty($charaArray)){						
             $character = $charaArray[0][0]['chara']; #从第一个结果里面取得字
             ?>
             <div id="regionalResult">
@@ -304,19 +350,28 @@ class LocalDictionary extends Lookup implements displayInMap {
                         </tr>
                         <?PHP
                         $jyutping = new Jyutping();
-                        for ($num = 0;$num < count($charaArray);$num++) {
-                            for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) {   #多音字
-								$pin  = $charaArray[$num]['first'];   #片
-								$shi = $charaArray[$num]['second'];  #市
-								$dim  = $charaArray[$num]['third'];   #點
-								$jyutping->set(
-										$charaArray[$num][$charaNum]['initial'],
-										$charaArray[$num][$charaNum]['nuclei'],
-										$charaArray[$num][$charaNum]['coda'],
-										$charaArray[$num][$charaNum]['tone']
-										);
-								$jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
-								$note   = $charaArray[$num][$charaNum]['note'];  #note
+                        for ($num = 0;$num < count($charaArray);$num++) 
+						{
+							$pin  = $charaArray[$num]['first'];   #片
+							$shi = $charaArray[$num]['second'];  #市
+							$dim  = $charaArray[$num]['third'];   #點
+							#二维数组Foreach出来 Key键索引跳过
+							foreach($charaArray[$num] as $k => $v)
+							{
+								if(is_numeric($k))	#二维数组里面毕竟不是全部数组 Foreach遍历到数字即指向详细字音的数组时 才开始记低字音
+								{
+										$jyutping->set(
+												$charaArray[$num][$k]['initial'],
+												$charaArray[$num][$k]['nuclei'],
+												$charaArray[$num][$k]['coda'],
+												$charaArray[$num][$k]['tone']
+												);
+										$jyutping->setIpa($charaArray[$num][$k]['ipa']);
+										$note   = $charaArray[$num][$k]['note'];  #note										
+								}#end if(is_numeric($k))
+								unset($v);	#听说最后一个foreach值会被缓存 释放下先
+								unset($k);
+							}#end foreach($charaArray[$num] as $k => $v)
 								?>
 								<tr>
 									<td class="column4-20 min-width60 "><?PHP echo $pin ?></td>
@@ -339,20 +394,22 @@ class LocalDictionary extends Lookup implements displayInMap {
                                             echo "<span class='tipsMain'>$note</span></td>";
                                         } else {
                                             echo "<td class='font-0p9em'>$note</td>";
-                                        }
+                                        }#end if (mb_strlen($note,'UTF8') > 5)
                                     ?>
                                 </tr>
                             <?PHP
-                            }#end for(charaNum)
-                        }#end for(num)
+
+                        }#end for ($num = 0;$num < count($charaArray);$num++) 
                         ?>
                     </table>
                 </div>
                 <?PHP
                     if ($showMap) $this->display($charaArray);
             echo "</div>";
-        }
-    }
+        }#end if(!empty($charaArray))
+    }#end public function show($charaArray, $showMap=TRUE)
+	
+	#用来显示地图的 传入和 show方法(显示子音的)中 一样的CharaArray
     function display($charaArray) {
         if(!empty($charaArray)) {
             //print_r($charaArray);
@@ -367,6 +424,7 @@ class LocalDictionary extends Lookup implements displayInMap {
 					maxZoom: 18
 				}).addTo(mapList['m' + count]);
                     <?PHP
+
                     #这段JSCODE 是展示如何用Mapbox自定义(我没有搞清楚怎样自定义的 先替换成用OPENSTREEETMAP)
 					/*
 					L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
@@ -376,20 +434,31 @@ class LocalDictionary extends Lookup implements displayInMap {
 						accessToken: 'pk.eyJ1IjoiemVuYW0iLCJhIjoiY2p4bjh5MjFxMGM4aTNobGF0dXNoejlseiJ9.BPrObTer-_5w5L3oEaEWfQ'
 					}).addTo(mapList['m' + count]);
 					*/
-					#此处插入要显示的标签
-					
-                    for($num = 0; $num < count($charaArray); $num++) 
+          #此处插入要显示的标签
+					for ($num = 0;$num < count($charaArray);$num++) 
 					{
-                        $longitude = $charaArray[$num]['longitude'];
-                        $latitude = $charaArray[$num]['latitude'];
-						$pron = $charaArray[$num]['second'].$charaArray[$num]['third'].'<br/>';
-						for($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) 
+						$pron 	=	"";
+						$pin	=	$charaArray[$num]['first'];   #片
+						$shi	=	$charaArray[$num]['second'];  #市
+						$dim	=	$charaArray[$num]['third'];   #點
+						$latitude	=	$charaArray[$num]['latitude'];
+						$longitude 	=	$charaArray[$num]['longitude'];
+						$color	=	$charaArray[$num]['color'];
+						#二维数组Foreach出来 Key键索引跳过
+						foreach($charaArray[$num] as $k => $v)
 						{
-							$initial = $charaArray[$num][$charaNum]['initial'];
-							$nuclei  = $charaArray[$num][$charaNum]['nuclei'];
-							$coda    = $charaArray[$num][$charaNum]['coda'];
-							$tone    = $charaArray[$num][$charaNum]['tone'];
-							$pron .= $initial.$nuclei.$coda.$tone.'<br/>';	//将要显示的合并
+							if(is_numeric($k) )	#二维数组里面毕竟不是全部数组 Foreach遍历到数字即指向详细字音的数组时 才开始记低字音
+							{
+								$pron .= $charaArray[$num][$k]['initial'].
+								$charaArray[$num][$k]['nuclei'].
+								$charaArray[$num][$k]['coda'].
+								$charaArray[$num][$k]['tone'].
+								'<br/>';	//将要显示的合并
+								
+							}#end if(is_numeric($k))
+							unset($v);	#听说最后一个foreach值会被缓存 释放下先
+							unset($k);
+						}#end foreach($charaArray[$num] as $k => $v)
 							#下面这个显示中 color和Fillcolor可考虑 在表中添加一个color列 此处用 $color捕获 并塞入 下面的属性中 可以产生不同颜色
 							/*
 								B版方案之更新
@@ -399,9 +468,9 @@ class LocalDictionary extends Lookup implements displayInMap {
 							*/
 							echo <<<CIRCLE
 							
-L.circle([$latitude, $longitude], {
-	color: '#00eeff', 
-	fillColor: '#a34',
+L.circle([$latitude, $longitude], { 
+	color :	'$color',
+	fillColor: '$color',
 	fillOpacity: 0.5,
 	radius: 1000
 }).addTo(mapList['m' + count]);
@@ -415,8 +484,7 @@ L.marker([$latitude, $longitude], {
 }).addTo(mapList['m' + count]);
 
 CIRCLE;
-						} #end for charaNum
-                    }#end for num
+                    }#end for($num = 0; $num < count($charaArray); $num++) 
                     ?>
             </script>
             <?PHP
