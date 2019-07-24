@@ -478,7 +478,7 @@ L.marker([$latitude, $longitude], {
 	icon: L.divIcon({
 		className: 'divIconDefault',
 		html: 
-		"<div style='background-color: #a34;font-size:11px;color:white;'>$pron</div>",
+		"<div style='background-color: $color;border-radius:1rem;text-align:center'><span style='font-size:11px;color:#2F2F2F;'>$pron</span></div>",
 		iconSize: [60,]
 	})
 }).addTo(mapList['m' + count]);
