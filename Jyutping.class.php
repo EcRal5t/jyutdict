@@ -103,7 +103,7 @@ class Jyutping {
         echo "<span class=\"hl-font-$coColor\">$this->coda</span>";
         echo "<span class=\"hl-font-$toColor\">$this->tone</span>";
     }
-    public function printIpaWithColor($ipaColor="cyan") {
+    public function printIpaWithColor($ipaColor="grayish") {
         echo "<span class=\"hl-font-$ipaColor alphabet font-0p9em\">$this->ipa</span>";
     }
     public function printWithoutColor() {
