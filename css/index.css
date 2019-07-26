@@ -566,6 +566,7 @@ body {
   height: 350px;
   display: block;
   margin: auto;
+  z-index: 0;
 }
 @media screen and (max-width: 1030px) {
   #regionalResult div[id^="mapContainer"] {
@@ -574,21 +575,19 @@ body {
   }
 }
 #regionalResult div[id^="mapContainer"] .locale-label {
-  font-size: 13px;
-  color: #ffffff;
+  font-size: 11px;
   text-align: center;
+  border-radius: 0.15rem;
   min-width: 4em;
-  background-color: rgba(0, 0, 0, 0.5);
-  line-height: 18px;
+  line-height: 16px;
   position: relative;
-  top: 2.5em;
+  transform: translateY(7px);
 }
 #regionalResult div[id^="mapContainer"] .label-triangle {
-  top: -12px;
+  transform: translate(26px, -8px);
   position: absolute;
   height: 0;
   width: 0;
-  border: 6px solid;
-  left: 5px;
-  border-color: transparent transparent rgba(0, 0, 0, 0.5) transparent;
+  border: 4px solid;
+  border-color: transparent;
 }

@@ -2,26 +2,26 @@
 
 abstract class Lookup {
     abstract protected function query($character, $dbh);
-    abstract protected function show($charArray);
+    abstract protected function show($charaArray);
 }
 
 class Sim2TradLookup extends Lookup {
     private function _construct() {
         self::$instance = null;
     }
-
+    
     private static $instance;
     private function _clone() {}
-
+    
     public static function getInstance() {
         if (!self::$instance instanceof Sim2TradLookup) {
             self::$instance = new Sim2TradLookup();
         }
         return self::$instance;
     }
-
+    
     public function query($character, $dbh) {   ///到時候會大改一遍的…
-        $charaArray = array($character);		//改的时候请好好规划
+        $charaArray = array($character);        //改的时候请好好规划
         $sim2Trad_getCharaId_sql = "
             SELECT chara_id
             FROM `Character_simtrad_list`
@@ -29,7 +29,7 @@ class Sim2TradLookup extends Lookup {
         $sim2Trad_getCharaId_stmt = $dbh->prepare($sim2Trad_getCharaId_sql);
         $sim2Trad_getCharaId_stmt->execute(array(':chara'=>$character));
         $sim2Trad_getCharaId_result = $sim2Trad_getCharaId_stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        
         #执行SQL语句返回结果集数列
         if ($sim2Trad_getCharaId_result!=[]) {#如果结果集存在
             $sim2Trad_SimMap_sql = "
@@ -39,7 +39,7 @@ class Sim2TradLookup extends Lookup {
             $sim2Trad_SimMap_stmt = $dbh->prepare($sim2Trad_SimMap_sql);
             $sim2Trad_SimMap_stmt->execute();
             $sim2Trad_SimMap_result = $sim2Trad_SimMap_stmt->fetchAll(PDO::FETCH_ASSOC);
-
+            
             foreach ($sim2Trad_SimMap_result as $items) {
                 $sim2Trad_getTradChara_sql = "
                     SELECT `chara`
@@ -47,14 +47,24 @@ class Sim2TradLookup extends Lookup {
                     WHERE `chara_id` =" . $items['chara_id_trad'];
                 $sim2Trad_getTradChara_stmt = $dbh->prepare($sim2Trad_getTradChara_sql);
                 $sim2Trad_getTradChara_stmt->execute();
-
+                
                 $result = $sim2Trad_getTradChara_stmt->fetchAll(PDO::FETCH_ASSOC);
                 if ($character != $result[0]['chara']) array_push($charaArray, $result[0]['chara']);
             }#end foreach
         }#end if(!=[])
         return $charaArray;
     }#end function query
-
+    /*
+    这个Show是用来展示多个简繁异体转换的页面的 即 2个以上一简对多的情况出现是 会显示以下页面
+    <div class="general-bg-deeper" id="charaSimToTrad">
+        <span id="charaSimToTradHead">简转繁</span>
+        <span id="charaSimToTradMain">
+         <a href="index.php?character=發">發</a>
+         <a href="index.php?character=髮">髮</a>
+        </span>
+    </div>
+    */
+    #charaArray的格式为 $charaArray[整数序号] => String（字们）;
     public function show($charaArray) {
         if (is_array($charaArray)) {
             $count = count($charaArray);
@@ -79,11 +89,11 @@ class Sim2TradLookup extends Lookup {
 
 class FanWanDict extends Lookup {
     private function _clone() {}
-
+    
     final private function __construct() {
         self::$instance = null;
     }
-
+    
     protected static $instance;
     static public function getInstance() {
         if (self::$instance instanceof self) {
@@ -93,7 +103,7 @@ class FanWanDict extends Lookup {
             return self::$instance;
         }
     }
-
+    
     function query($character, $dbh) {
         $inFanwan_sql = "
             SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`, `siuwan`, `meaning`, `initial_ch`, `final_ch`, `yunbu`, `tone_ch`
@@ -103,9 +113,9 @@ class FanWanDict extends Lookup {
         $inFanwan_stmt->execute(array(':chara'=>$character));
         return $inFanwan_stmt->fetchAll(PDO::FETCH_ASSOC);
     }//end function query
-
-    function show($charArray) {
-        if(empty($charArray)) {
+    #传入之数组 $charaArray[整数序号] => String（字们）;
+    function show($charaArray) {
+        if(empty($charaArray)) {
             echo "<span style='font-size: 20px;'>分韻冇見有</span>";
         } else {
             $jyutping = new Jyutping();
@@ -113,7 +123,7 @@ class FanWanDict extends Lookup {
     
             <table class="general-form annex-form general-bg-deeper">
                 <?PHP
-                foreach ($charArray as $resultItem) { #将数组一个个输出
+                foreach ($charaArray as $resultItem) { #将数组一个个输出
                     $jyutping->set($resultItem['initial'], $resultItem['nuclei'], $resultItem['coda'], $resultItem['tone'])
                     ?>
                     <tr>
@@ -133,27 +143,27 @@ class FanWanDict extends Lookup {
                         <td>分韻</td>
                         <td colspan="4"><?PHP echo $resultItem['meaning'] ?></td>
                     </tr>
-            
+                    
                     <?PHP
                 }//end foreach
                 ?>
             </table>
-
+            
             <?PHP
         }//end if
     }//end function show
 }
 
 class JingWaaDict extends Lookup {
-
+    
     private function _clone() {}
-
+    
     final private function __construct() {
         self::$instance = null;
     }
-
+    
     static protected $instance;
-
+    
     static public function getInstance() {
         if (self::$instance instanceof self) {
             return self::$instance;
@@ -162,7 +172,7 @@ class JingWaaDict extends Lookup {
             return self::$instance;
         }
     }
-
+    
     function query($character, $dbh) {
         $inJingwaa_sql = "
             SELECT `id`, `page`, `initial`, `nuclei`, `coda`, `tone`, `pron`, `radical`, `radical_stroke`, `extra_stroke`, `page`, `state`, `order`
@@ -172,9 +182,9 @@ class JingWaaDict extends Lookup {
         $inJingwaa_stmt->execute(array(':chara'=>$character));
         return $inJingwaa_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    function show($charArray) {
-        if (empty($charArray)) {
+    #传入之数组 $charaArray[整数序号] => String（字们）;
+    function show($charaArray) {
+        if (empty($charaArray)) {
             echo "<span style='font-size: 20px;'>英華冇見有</span>";
         } else {
             $jyutping = new Jyutping();
@@ -189,7 +199,7 @@ class JingWaaDict extends Lookup {
                 </tr>
                 <?PHP
                 $lastOrder = 0;
-                foreach ($charArray as $resultItem) {
+                foreach ($charaArray as $resultItem) {
                     $jyutping->set($resultItem['initial'], $resultItem['nuclei'], $resultItem['coda'], $resultItem['tone']);
                     ?>
                     <tr>
@@ -203,7 +213,7 @@ class JingWaaDict extends Lookup {
                     $lastOrder = $resultItem['order'];
                 }
                 ?>
-    
+            
             </table>
             <?PHP
         }//end if
@@ -211,7 +221,7 @@ class JingWaaDict extends Lookup {
 }//end class JingWaaDict
 
 interface displayInMap {
-    public function display($charArray);
+    public function display($charaArray);
 }
 
 class LocalDictionary extends Lookup implements displayInMap {
@@ -226,51 +236,78 @@ class LocalDictionary extends Lookup implements displayInMap {
     public static function getInstance() {
         if (!self::$instance instanceof LocalDictionary) {
             self::$instance = new LocalDictionary();
-			#当第一次显示地图的时候 初始化
+            #当第一次显示地图的时候 初始化
+            /*
+                B版更新方案
+                加入了DivIcon
+                下边的嵌入式CSS 的Class 是Divicon的Class
+                <div class = "divIconDefault"></div>
+            */
             echo "<script>var count = ".self::$count.";</script>";
-			?>
-			<script>var mapList = new Array();/*用于存储地图列表*/</script>
-			<!-- leaflet 的前置CSS和JS -->
-			 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
-			  integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-			  crossorigin=""/>
-			   <!-- Make sure you put this AFTER Leaflet's CSS -->
-			<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
-			  integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
-			  crossorigin=""></script>
-			  <?PHP
+            ?>
+            <style>
+                .divIconDefault
+                {
+                    background-color: none;
+                }
+            </style>
+            <script>var mapList = new Array();/*用于存储地图列表*/</script>
+            <!-- leaflet 的前置CSS和JS -->
+             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+              integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+              crossorigin=""/>
+               <!-- Make sure you put this AFTER Leaflet's CSS -->
+            <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+              integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+              crossorigin=""></script>
+              <?PHP
         }else{
             self::$count++;
-			?>
-			<script>++count//js中地图编号+1</script>
-			<?PHP
-        }
+            ?>
+            <script>++count//js中地图编号+1</script>
+            <?PHP
+        }#end if (!self::$instance instanceof LocalDictionary)
         return self::$instance;
     }
-	#从DB中获取城市列表 (包括了各地音表表名字)
+    #从DB中获取城市列表 (包括了各地音表表名字) 返回值为一个二维数组 每个一维数组里边 索引为列明 值为查询之值 (有Null)
+    #查询的结果里面 longtitue latitude纬经度 first 分片 second 城市 third 城市下之小区 sheetname 为每个字表在数据库中之名 color为这个片区应有的颜色
     private function getCityList($dbh) {
         $inCityList_sql = "
-            SELECT `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`
+            SELECT `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`,`color`
             FROM `IAreaList`"; #獲取城市信息
         $inCityList_stmt = $dbh->prepare($inCityList_sql);
         $inCityList_stmt->execute();
         return $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-	#从DB中获取数据的操作
+    }#end private function getCityList($dbh)
+    
+    #从DB中获取数据的操作
+    #Character为每个字
     public function query($character, $dbh) {
         $cityListArray = $this->getCityList($dbh);
-        $resultArray = [];
-        foreach ($cityListArray as $eachCity) {
+        $resultArray = [];    #用于收集从各字表中获得的结果
+        foreach ($cityListArray as $eachCity) #Foreach遍历 提出在二维数组中的一维数组
+        {
             $result = $eachCity;
             $pronArray = $this->charaQueryInSheet($character, $eachCity['sheetname'], $dbh);
-            if(!empty($pronArray)) {
-                $resultArray[] = array_merge($result,$pronArray);
-            }
-        }
+            if(!empty($pronArray))
+            {    #费事加入空数组入来
+                $resultArray[] = array_merge($result,$pronArray);    #会是一个二维数组 每个一位数组里面 的索引和值是
+    /*
+    {'chara' => string 字
+    'initial' => string 声母
+    'nuclei' => string 韵腹
+    'coda' => string 韵尾
+    'tone' => string  音调
+    'ipa' => string IPA
+    'note' => string 附加说明 }
+    */
+            }#end  if(!empty($pronArray))
+        } #end foreach ($cityListArray as $eachCity)
         return $resultArray;
-    }
-	#传入查询的字 表名 即可在各地字表中查字并返回结果
-    private function charaQueryInSheet($character, $sheetName, $dbh) {
+    }#end public function query($character, $dbh)
+    #传入查询的字 表名 即可在各地字表中查字并返回结果
+    private function charaQueryInSheet($character, $sheetName, $dbh)
+    {
         $inSheet_sql = "
             SELECT `chara`, `initial`, `nuclei`, `coda`, `tone`, `ipa`, `note`
             FROM `$sheetName`
@@ -278,8 +315,28 @@ class LocalDictionary extends Lookup implements displayInMap {
         $inSheet_stmt = $dbh->prepare($inSheet_sql);
         $inSheet_stmt->execute(array(':chara'=>$character));
         return $inSheet_stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
+    }# private function charaQueryInSheet($character, $sheetName, $dbh)
+    /*
+    此处的charaArray是一个结果集
+    结果集的格式为 结果集是一个三维数组
+    第三维 代表每个字表 索引为整数 值为具体字表的二维数组
+    第二维 代表著每个字表的详细信息 索引和值为
+    {'longitude' => string 纬度
+    'latitude' => string 经度
+    'first' => string 分片
+    'second' => string 城市
+    'third' => string  城市下片区
+    'sheetname' => string 字表名字
+    多个'数字序号',字音详细}
+    第一维 代表著具体子音 索引和值如下
+    {'chara' => string 字
+    'initial' => string 声母
+    'nuclei' => string 韵腹
+    'coda' => string 韵尾
+    'tone' => string  音调
+    'ipa' => string IPA
+    'note' => string 附加说明 }
+    */
     public function show($charaArray, $showMap=TRUE) {
         if(!empty($charaArray)){
             $character = $charaArray[0][0]['chara']; #从第一个结果里面取得字
@@ -293,7 +350,7 @@ class LocalDictionary extends Lookup implements displayInMap {
                         <?PHP
                         $jyutping = new Jyutping();
                         for ($num = 0;$num < count($charaArray);$num++) {
-                            for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) {   #多音字
+                            for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 7); $charaNum++) {   #多音字
 								$pin  = $charaArray[$num]['first'];   #片
 								$shi = $charaArray[$num]['second'];  #市
 								$dim  = $charaArray[$num]['third'];   #點
@@ -341,46 +398,90 @@ class LocalDictionary extends Lookup implements displayInMap {
             echo "</div>";
         }
     }
+    
+    #用来显示地图的 传入和 show方法(显示子音的)中 一样的CharaArray
     function display($charaArray) {
         if(!empty($charaArray)) {
             //print_r($charaArray);
             echo "<div class=\"generalBgDeeper\" id=\"mapContainer".self::$count."\"></div>";
             ?>
             <script type="text/javascript">
-				mapList['m' + count] =  L.map('mapContainer' + count).setView([23.43,111.08], 6.5);
-				L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-					attribution: 'Performed By Lingnaam Jyutjam',
-					maxZoom: 18,
-					id: 'mapbox.streets',
-					accessToken: 'pk.eyJ1IjoiemVuYW0iLCJhIjoiY2p4bjh5MjFxMGM4aTNobGF0dXNoejlseiJ9.BPrObTer-_5w5L3oEaEWfQ'
-				}).addTo(mapList['m' + count]);
+                mapList['m' + count] =  L.map('mapContainer' + count).setView([22.6,111], 6);
+                
+                L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png', {
+                    tms: false,
+                    attribution: 'Performed By Lingnaam Jyutjam',
+                    maxZoom: 12
+                }).addTo(mapList['m' + count]);
                     <?PHP
-                    #此处插入要显示的标签
-                    for($num = 0; $num < count($charaArray); $num++) 
-					{
-                        $longitude = $charaArray[$num]['longitude'];
-                        $latitude = $charaArray[$num]['latitude'];
-						$pron = $charaArray[$num]['first'].$charaArray[$num]['second'].$charaArray[$num]['third'].'<br/>';
-						for($charaNum = 0; $charaNum < (count($charaArray[$num]) - 6); $charaNum++) 
-						{
-							$initial = $charaArray[$num][$charaNum]['initial'];
-							$nuclei  = $charaArray[$num][$charaNum]['nuclei'];
-							$coda    = $charaArray[$num][$charaNum]['coda'];
-							$tone    = $charaArray[$num][$charaNum]['tone'];
-							$pron .= $initial.$nuclei.$coda.$tone.'<br/>';	//将要显示的合并
-							#下面这个显示中 color和Fillcolor可考虑 在表中添加一个color列 此处用 $color捕获 并塞入 下面的属性中 可以产生不同颜色
-							echo <<<CIRCLE
-							
-L.circle([$latitude, $longitude], {
-	color: '#00eeff', 
-	fillColor: '#a34',
-	fillOpacity: 0.5,
-	radius: 10000
-}).addTo(mapList['m' + count]).bindPopup("$pron");
+
+                    #这段JSCODE 是展示如何用Mapbox自定义(我没有搞清楚怎样自定义的 先替换成用OPENSTREEETMAP)
+                    /*
+                    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+                        attribution: 'Performed By Lingnaam Jyutjam',
+                        maxZoom: 18,
+                        id: 'mapbox.streets',
+                        accessToken: 'pk.eyJ1IjoiemVuYW0iLCJhIjoiY2p4bjh5MjFxMGM4aTNobGF0dXNoejlseiJ9.BPrObTer-_5w5L3oEaEWfQ'
+                    }).addTo(mapList['m' + count]);
+                    */
+          #此处插入要显示的标签
+                    for ($num = 0;$num < count($charaArray);$num++) {
+                        $pron     =    "";
+                        $pin    =    $charaArray[$num]['first'];   #片
+                        $shi    =    $charaArray[$num]['second'];  #市
+                        $dim    =    $charaArray[$num]['third'];   #點
+                        $latitude    =    $charaArray[$num]['latitude'];
+                        $longitude     =    $charaArray[$num]['longitude'];
+                        $color    =    $charaArray[$num]['color'];
+                        #二维数组Foreach出来 Key键索引跳过
+                        foreach($charaArray[$num] as $k => $v) {
+                            if(is_numeric($k)) {  #二维数组里面毕竟不是全部数组 Foreach遍历到数字即指向详细字音的数组时 才开始记低字音
+                                $pron .= $charaArray[$num][$k]['initial'].
+                                $charaArray[$num][$k]['nuclei'].
+                                $charaArray[$num][$k]['coda'].
+                                $charaArray[$num][$k]['tone'].
+                                '<br/>';    //将要显示的合并
+                            }#end if(is_numeric($k))
+                            unset($v);    #听说最后一个foreach值会被缓存 释放下先
+                            unset($k);
+                        }#end foreach($charaArray[$num] as $k => $v)
+                            #下面这个显示中 color和Fillcolor可考虑 在表中添加一个color列 此处用 $color捕获 并塞入 下面的属性中 可以产生不同颜色
+                            /*
+                                B版方案之更新
+                                可以插入Maker 使用其之icon属性 指定一个icon Object(此处使用Leaflet之DivIcon 即div当ICON之演示)
+                                下列divIcon里边的html意思是
+                                <div class="divIconDefault"><!-- html内容 --></div>
+                            */
+                            
+                            //梓：調整樣式
+                            $color = $color . "BB";     //小半透明
+                            $fontcolorArr = str_split(hex2bin(substr($color,1)));
+                            if ((ord($fontcolorArr[0])+ord($fontcolorArr[1])+ord($fontcolorArr[2])) < 384) {
+                                $fontcolor = "#F4F4EE"; //背景很暗則用亮色字體
+                            } else {
+                                $fontcolor = "#2F2F2F"; //背景足夠亮用暗色字體
+                            }
+                            //調整樣式結束
+                            
+                            echo <<<CIRCLE
+                            
+L.circle([$latitude, $longitude], { 
+    color :    '$color',
+    fillColor: '$color',
+    fillOpacity: 0.5,
+    radius: 1000
+}).addTo(mapList['m' + count]);
+L.marker([$latitude, $longitude], {
+    icon: L.divIcon({
+        className: 'divIconDefault',
+        html: 
+        "<div class='locale-label' style='background-color: $color;'><div class='label-triangle' style='border-bottom-color: $color'></div><span style='color:$fontcolor;'>$pron</span></div>",
+        iconSize: [60,]
+    })
+}).addTo(mapList['m' + count]);
 
 CIRCLE;
-						} #end for charaNum
-                    }#end for num
+                    }#end for($num = 0; $num < count($charaArray); $num++) 
                     ?>
             </script>
             <?PHP
