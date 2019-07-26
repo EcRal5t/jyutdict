@@ -368,10 +368,11 @@ class LocalDictionary extends Lookup implements displayInMap {
 												);
 										$jyutping->setIpa($charaArray[$num][$k]['ipa']);
 										$note   = $charaArray[$num][$k]['note'];  #note										
+								}else{
+									continue;
 								}#end if(is_numeric($k))
 								unset($v);	#听说最后一个foreach值会被缓存 释放下先
 								unset($k);
-							}#end foreach($charaArray[$num] as $k => $v)
 								?>
 								<tr>
 									<td class="column4-20 min-width60 "><?PHP echo $pin ?></td>
@@ -398,7 +399,7 @@ class LocalDictionary extends Lookup implements displayInMap {
                                     ?>
                                 </tr>
                             <?PHP
-
+							}#end foreach($charaArray[$num] as $k => $v)
                         }#end for ($num = 0;$num < count($charaArray);$num++) 
                         ?>
                     </table>
