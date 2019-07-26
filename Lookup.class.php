@@ -337,7 +337,8 @@ class LocalDictionary extends Lookup implements displayInMap {
     'ipa' => string IPA
     'note' => string 附加说明 }
     */
-    public function show($charaArray, $showMap=TRUE) {
+    public function show($charaArray, $showMap=TRUE)
+	{
         if(!empty($charaArray)){
             $character = $charaArray[0][0]['chara']; #从第一个结果里面取得字
             ?>
@@ -349,19 +350,29 @@ class LocalDictionary extends Lookup implements displayInMap {
                         </tr>
                         <?PHP
                         $jyutping = new Jyutping();
-                        for ($num = 0;$num < count($charaArray);$num++) {
-                            for ($charaNum = 0; $charaNum < (count($charaArray[$num]) - 7); $charaNum++) {   #多音字
-								$pin  = $charaArray[$num]['first'];   #片
-								$shi = $charaArray[$num]['second'];  #市
-								$dim  = $charaArray[$num]['third'];   #點
-								$jyutping->set(
-										$charaArray[$num][$charaNum]['initial'],
-										$charaArray[$num][$charaNum]['nuclei'],
-										$charaArray[$num][$charaNum]['coda'],
-										$charaArray[$num][$charaNum]['tone']
-										);
-								$jyutping->setIpa($charaArray[$num][$charaNum]['ipa']);
-								$note   = $charaArray[$num][$charaNum]['note'];  #note
+                        for ($num = 0;$num < count($charaArray);$num++)
+						{
+							$pin  = $charaArray[$num]['first'];   #片
+							$shi = $charaArray[$num]['second'];  #市
+							$dim  = $charaArray[$num]['third'];   #點
+							#二维数组Foreach出来 Key键索引跳过
+							foreach($charaArray[$num] as $k => $v)
+							{
+								if(is_numeric($k))	#二维数组里面毕竟不是全部数组 Foreach遍历到数字即指向详细字音的数组时 才开始记低字音
+								{
+										$jyutping->set(
+												$charaArray[$num][$k]['initial'],
+												$charaArray[$num][$k]['nuclei'],
+												$charaArray[$num][$k]['coda'],
+												$charaArray[$num][$k]['tone']
+												);
+										$jyutping->setIpa($charaArray[$num][$k]['ipa']);
+										$note   = $charaArray[$num][$k]['note'];  #note
+								}else{
+									continue;
+								}#end if(is_numeric($k))
+								unset($v);	#听说最后一个foreach值会被缓存 释放下先
+								unset($k);
 								?>
 								<tr>
 									<td class="column4-20 min-width60 "><?PHP echo $pin ?></td>
@@ -384,20 +395,20 @@ class LocalDictionary extends Lookup implements displayInMap {
                                             echo "<span class='tipsMain'>$note</span></td>";
                                         } else {
                                             echo "<td class='font-0p9em'>$note</td>";
-                                        }
+                                        }#end if (mb_strlen($note,'UTF8') > 5)
                                     ?>
                                 </tr>
                             <?PHP
-                            }#end for(charaNum)
-                        }#end for(num)
+							}#end foreach($charaArray[$num] as $k => $v)
+                        }#end for ($num = 0;$num < count($charaArray);$num++)
                         ?>
                     </table>
                 </div>
                 <?PHP
                     if ($showMap) $this->display($charaArray);
             echo "</div>";
-        }
-    }
+        }#end if(!empty($charaArray))
+    }#end public function show($charaArray, $showMap=TRUE)
     
     #用来显示地图的 传入和 show方法(显示子音的)中 一样的CharaArray
     function display($charaArray) {
