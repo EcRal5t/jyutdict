@@ -15,11 +15,17 @@
   margin: 8px 0;
 }
 .general-bg {
-  background: white;
+  -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
+  -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
+  background: rgba(238, 252, 254, 0.2);
   border-radius: 2px;
 }
 .general-bg-deeper {
-  background: white;
+  -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
+  -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
+  background: rgba(238, 252, 254, 0.3);
   border-radius: 2px;
 }
 .general-form {
@@ -109,7 +115,7 @@
   color: #0000C0;
 }
 .hl-font-yellow {
-  color: #C07000;
+  color: #C0A000;
 }
 .hl-font-purple {
   color: #A000C0;
@@ -120,11 +126,8 @@
 .hl-font-gray {
   color: #a0a0a0;
 }
-.hl-font-grayish {
-  color: #84896F;
-}
 .alphabet {
-  font-family: "Charis SIL", "Doulos SIL", Helvetica, "DejaVu Serif", Verdana, Century, Arial, Serif;
+  font-family: Verdana, "Charis SIL", Helvetica, Century, Arial, Serif;
 }
 #sidenav {
   position: fixed;
@@ -154,17 +157,20 @@
   -ms-transform: translate3d(0, 0, 0);
   -o-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
-  -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-  -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
 }
 #sidenav-head {
   height: 160px;
   width: 100%;
-  background-color: #FFFFFF;
+  background-color: #f0f0f0;
   color: #001020;
+  line-height: 25px;
+  font-size: 25px;
   text-align: center;
-  margin: 15px 0;
+  padding-top: 60px;
+  box-sizing: border-box;
 }
 #sidenav-list {
   line-height: 24px;
@@ -172,7 +178,6 @@
 #sidenav-list .sidenav-link {
   list-style-type: none;
   display: block;
-  margin: 0 1pc;
   -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
   -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
   -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
@@ -187,14 +192,13 @@
 }
 #sidenav-list .sidenav-link a {
   display: block;
-  line-height: 2.5pc;
+  line-height: 3pc;
   text-decoration: none;
   -ms-text-overflow: ellipsis;
   text-overflow: ellipsis;
   overflow: hidden;
-  padding: 0 2pc;
-  color: black;
-  margin: 0.5pc 0;
+  padding: 0 3pc;
+  color: #333;
 }
 #sidenav-list .sidenav-info:after {
   -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
@@ -216,8 +220,8 @@
 .sidenav-show-btn,
 .sidenav-hide-btn {
   display: block;
-  height: 50px;
-  width: 50px;
+  height: 48px;
+  width: 48px;
   position: fixed;
   outline: none;
   border-radius: 100%;
@@ -230,18 +234,16 @@
 }
 .sidenav-show-btn:hover,
 .sidenav-hide-btn:hover {
-  background-color: #DBDBCC;
-  -webkit-box-shadow: 0 0 10px 10px #DBDBCC;
-  -moz-box-shadow: 0 0 10px 10px #DBDBCC;
-  box-shadow: 0 0 10px 10px #DBDBCC;
+  color: #444;
+  background-color: #C0D0E0FF;
 }
 .sidenav-show-btn {
   top: 50px;
   left: 50px;
-  background-image: url("../img/favicon.ico");
-  background-position: 50% 50%;
-  background-size: 48px;
-  background-repeat: no-repeat;
+}
+.sidenav-show-btn:after {
+  content: '≡';
+  font-size: 30px;
 }
 .sidenav-overlay {
   position: fixed;
@@ -281,7 +283,7 @@ body {
   font-weight: 400;
   line-height: 20px;
   color: black;
-  background-color: #F4F4EE;
+  background-color: aliceblue;
 }
 #wrapper {
   min-height: 100%;
@@ -334,7 +336,7 @@ body {
 #searching #inputButton:hover,
 #searching #inputText:focus,
 #searching #inputButton:focus {
-  background-color: #DBDBCC77;
+  background-color: rgba(128, 196, 255, 0.5);
 }
 #searching #inputText {
   width: 72.5%;
@@ -365,7 +367,7 @@ body {
   transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
 }
 #searching #inputCheck label:hover {
-  background-color: #DBDBCC;
+  background-color: #C0E0FA;
 }
 #searching input[type="checkbox"] {
   position: relative;
@@ -389,206 +391,8 @@ body {
   transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
 }
 #searching input[type="checkbox"]:checked:before {
-  background-color: #D32913;
+  background-color: #37B048;
 }
 #searching input[type="checkbox"]:disabled:before {
   background-color: #777777;
-}
-#charaSimToTrad {
-  margin-bottom: 25px;
-  width: 100%;
-  height: 50px;
-  display: flex;
-  text-align: center;
-  font-size: 18px;
-}
-#charaSimToTrad span {
-  margin: auto;
-}
-#charaSimToTradHead {
-  width: 100px;
-}
-#charaSimToTradMain {
-  width: calc(100% - 100px);
-  padding-right: 100px;
-}
-#wanshyuResult {
-  float: left;
-  width: 100%;
-  text-align: center;
-  margin-top: 25px;
-}
-#wanshyuResult #charaHead {
-  width: 150px;
-  /*height: 150px;*/
-  float: left;
-  -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-}
-@media screen and (max-width: 830px) {
-  #wanshyuResult #charaHead {
-    float: none;
-    margin: auto;
-  }
-}
-#wanshyuResult #charaHead #charaHeadSqu {
-  width: 100%;
-  height: 120px;
-  font-size: 100px;
-  top: 50px;
-  position: relative;
-  text-align: center;
-}
-#wanshyuResult #charaHead #oldPronounce {
-  text-align: center;
-  width: 100%;
-  height: 20px;
-  font-size: 12px;
-}
-#wanshyuResult #wanshyuResultForm {
-  width: calc(100% - 175px);
-  float: right;
-  line-height: 26px;
-  text-align: center;
-}
-#wanshyuResult #wanshyuResultForm table {
-  -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-}
-@media screen and (max-width: 830px) {
-  #wanshyuResult #wanshyuResultForm {
-    margin-top: 25px;
-    width: 100%;
-    float: none;
-  }
-}
-#regionalResult {
-  width: 100%;
-  float: left;
-  font-size: 16px;
-  margin-top: 25px;
-}
-#regionalResult #regionalResultForm {
-  width: calc(100% - 450px);
-  float: left;
-  margin-right: 50px;
-}
-@media screen and (max-width: 1030px) and (min-width: 773px) {
-  #regionalResult #regionalResultForm {
-    width: 600px ;
-    float: none;
-    padding: 0;
-    margin: 0 calc(50% - 300px);
-  }
-}
-@media screen and (max-width: 773px) {
-  #regionalResult #regionalResultForm {
-    width: 100%;
-    float: none;
-    padding: 0;
-    margin: 0;
-  }
-}
-#regionalResult #regionalResultEdit {
-  width: 100%;
-  margin-top: 50px;
-  /*background: orangered;*/
-}
-#regionalResult #editingText {
-  resize: none;
-}
-#regionalResult #editingForm {
-  /*background: blue;*/
-  width: 20%;
-  height: 100%;
-  border: none;
-  padding: 0;
-  float: left;
-}
-#regionalResult #regionalResultEdit {
-  width: 100%;
-  margin-top: 50px;
-  /*background: orangered;*/
-}
-#regionalResult #editingText {
-  /*background: blue;*/
-  resize: none;
-}
-#regionalResult #editingForm {
-  /*background: blue;*/
-  width: 20%;
-  height: 100%;
-  border: none;
-  padding: 0;
-  float: left;
-}
-#regionalResult .tips {
-  position: relative;
-  text-decoration: underline;
-}
-#regionalResult .tips:hover {
-  background: none;
-}
-#regionalResult .tips:hover .tipsMain {
-  filter: opacity(1);
-  visibility: visible;
-}
-#regionalResult .tips .tipsMain {
-  z-index: 1;
-  visibility: hidden;
-  border-radius: 5px;
-  background-color: rgba(68, 68, 68, 0.7);
-  padding: 2px;
-  color: #FFFFFF;
-  position: absolute;
-  filter: opacity(0);
-  -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
-  -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
-  -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
-  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
-}
-@media screen and (min-width: 1030px) {
-  #regionalResult .tips .tipsMain {
-    left: 100% ;
-    width: 20em;
-  }
-}
-@media screen and (max-width: 1030px) {
-  #regionalResult .tips .tipsMain {
-    right: calc(50% + 2em);
-    width: 10em;
-  }
-}
-#regionalResult div[id^="mapContainer"] {
-  width: 400px;
-  height: 350px;
-  display: block;
-  margin: auto;
-}
-@media screen and (max-width: 1030px) {
-  #regionalResult div[id^="mapContainer"] {
-    margin-top: 25px;
-    width: 100%;
-  }
-}
-#regionalResult div[id^="mapContainer"] .locale-label {
-  font-size: 13px;
-  color: #ffffff;
-  text-align: center;
-  min-width: 4em;
-  background-color: rgba(0, 0, 0, 0.5);
-  line-height: 18px;
-  position: relative;
-  top: 2.5em;
-}
-#regionalResult div[id^="mapContainer"] .label-triangle {
-  top: -12px;
-  position: absolute;
-  height: 0;
-  width: 0;
-  border: 6px solid;
-  left: 5px;
-  border-color: transparent transparent rgba(0, 0, 0, 0.5) transparent;
 }

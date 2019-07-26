@@ -110,8 +110,8 @@ class FanWanDict extends Lookup {
         } else {
             $jyutping = new Jyutping();
             ?>
-
-            <table class="general-form annex-form">
+    
+            <table class="general-form annex-form general-bg-deeper">
                 <?PHP
                 foreach ($charArray as $resultItem) { #将数组一个个输出
                     $jyutping->set($resultItem['initial'], $resultItem['nuclei'], $resultItem['coda'], $resultItem['tone'])
@@ -120,7 +120,7 @@ class FanWanDict extends Lookup {
                         <td class="column2-20 font-22">分韻</td>
                         <td class="column8-20">韻部 - 小韻</td>
                         <td class="column6-20">聲 - 韻 - 調</td>
-                        <td rowspan="2" class="" style="border-bottom: none;">
+                        <td rowspan="2" class="alphabet">
                             <?PHP $jyutping->printWithColor("red", "green", "green"); ?>
                         </td>
                     </tr>
@@ -131,9 +131,9 @@ class FanWanDict extends Lookup {
                     </tr>
                     <tr>
                         <td>分韻</td>
-                        <td colspan="4" style="border-top: none;"><?PHP echo $resultItem['meaning'] ?></td>
+                        <td colspan="4"><?PHP echo $resultItem['meaning'] ?></td>
                     </tr>
-
+            
                     <?PHP
                 }//end foreach
                 ?>
@@ -179,7 +179,7 @@ class JingWaaDict extends Lookup {
         } else {
             $jyutping = new Jyutping();
             ?>
-            <table class="annex-form general-form">
+            <table class="annex-form general-form general-bg-deeper">
                 <tr>
                     <td class="column2-20 font-22">英華</td>
                     <td class="column4-20">葉碼</td>
@@ -197,13 +197,13 @@ class JingWaaDict extends Lookup {
                         <td><?PHP echo $resultItem['page']; ?></td>
                         <td><?PHP echo $resultItem['radical_stroke'].'('.$resultItem['radical'].')+'.$resultItem['extra_stroke']; ?></td>
                         <td class="<?PHP echo ($lastOrder==$resultItem['order']?"hl-font-gray":"") ?> alphabet"><?PHP echo $resultItem['pron'] ?></td>
-                        <td><?PHP $jyutping->printWithColor("red", "green", "green"); ?></td>
+                        <td class="alphabet"><?PHP $jyutping->printWithColor("red", "green", "green"); ?></td>
                     </tr>
                     <?PHP
                     $lastOrder = $resultItem['order'];
                 }
                 ?>
-
+    
             </table>
             <?PHP
         }//end if
@@ -229,7 +229,7 @@ class LocalDictionary extends Lookup implements displayInMap {
 			#当第一次显示地图的时候 初始化
             echo "<script>var count = ".self::$count.";</script>";
 			?>
-			<script>var mapList = new Array();/*用于存储地图列表*/</script>	
+			<script>var mapList = new Array();/*用于存储地图列表*/</script>
 			<!-- leaflet 的前置CSS和JS -->
 			 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
 			  integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
@@ -308,10 +308,10 @@ class LocalDictionary extends Lookup implements displayInMap {
 								?>
 								<tr>
 									<td class="column4-20 min-width60 "><?PHP echo $pin ?></td>
-									<td class="column3-20 min-width45">
+									<td class="column3-20 min-width45 <?PHP if (!empty($dim)) echo 'tips'; ?>">
 										<?PHP
 										echo $shi;
-										if (!empty($dim)) echo "<br><span class='hl-font-cyan font-0p9em'>$dim</span>";
+										if (!empty($dim)) echo "<span class='hl-font-grayish font-0p9em tipsMain' style='width: 50px;'>$dim</span>";
                                         ?>
                                     </td>
                                     <td class="alphabet">

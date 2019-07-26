@@ -50,16 +50,15 @@
 
 .general-bg {
     //box-shadow: 0 0 5px 0 rgba(0, 34, 68, 0.05);
-    //.box-shadow(@generalBoxShadow);
-    //background: rgba(238, 252, 254, 0.2);
-    background: white;
+    .box-shadow(@generalBoxShadow);
+    background: rgba(238, 252, 254, 0.2);
+    
     border-radius: 2px;
 }
 .general-bg-deeper {
     //box-shadow: 0 0 10px 0 rgba(0, 34, 68, 0.07);
-    //.box-shadow(@generalBoxShadowDeep);
-    //background: rgba(238, 252, 254, 0.3);
-    background: white;
+    .box-shadow(@generalBoxShadowDeep);
+    background: rgba(238, 252, 254, 0.3);
     border-radius: 2px;
 }
 .general-form {
@@ -153,7 +152,7 @@
     color: #0000C0;
 }
 .hl-font-yellow {
-    color: #C07000;
+    color: #C0A000;
 }
 .hl-font-purple {
     color: #A000C0;
@@ -164,12 +163,9 @@
 .hl-font-gray {
     color: #a0a0a0;
 }
-.hl-font-grayish {
-    color: #84896F;
-}
 
 .alphabet {
-    font-family: "Charis SIL", "Doulos SIL", Helvetica, "DejaVu Serif", Verdana,  Century, Arial, Serif;
+    font-family: Verdana, "Charis SIL", Helvetica, Century, Arial, Serif;
 }
 
 
@@ -195,19 +191,20 @@
         //width: @sidenavWidth;
         //min-width: @sidenavWidth;
         .transform(translate3d(0,0,0));
-        .box-shadow(0 0 10px 0 rgba(0,0,0,0.2));
-        //border-right: 2px solid gray;
+        .box-shadow(0 0 25px 0 rgba(0,0,0,0.1));
     }
     
     &-head {
         .setSize(160px);
         .bgc(#047);
-        background-color: #FFFFFF;
+        background-color: #f0f0f0;
+        //color: #fff;
         color: #001020;
+        line-height: 25px;
+        font-size: 25px;
         text-align: center;
-        margin: 15px 0;
-        
-        
+        padding-top: 60px;
+        box-sizing: border-box;
     }
     
     &-list {
@@ -216,7 +213,7 @@
             list-style-type: none;
             display: block;
             .bgc(#f70);
-            margin: 0 1pc;
+            
             .transition(@transitionCurveFast);
             
             &:hover {
@@ -230,14 +227,13 @@
             
             a {
                 display: block;
-                line-height: 2.5pc;
+                line-height: 3pc;
                 text-decoration: none;
                 -ms-text-overflow: ellipsis;
                 text-overflow: ellipsis;
                 overflow: hidden;
-                padding: 0 2pc;
-                color: black;
-                margin: 0.5pc 0;
+                padding: 0 3pc;
+                color: #333;
             }
         }
         
@@ -264,7 +260,7 @@
 .sidenav-show-btn,
 .sidenav-hide-btn {
     display: block;
-    .setSize(50px, 50px);
+    .setSize(48px, 48px);
     position: fixed;
     outline: none;
     border-radius: 100%;
@@ -272,20 +268,19 @@
     background-color: rgba(0,0,0,0);
     color: #18d;
     &:hover {
-        background-color: #DBDBCC;
-        .box-shadow(0 0 10px 10px #DBDBCC);
+        color: #444;
+        background-color: #C0D0E0FF;
     }
 }
 
 .sidenav-show-btn {
+    
     top: 50px;
     left: 50px;
-    background-image: url("../img/favicon.ico");
-    background-position: 50% 50%;
-    background-size: 48px;
-    background-repeat: no-repeat;
+    
     &:after {
-        //content: '≡';font-size: 30px;
+        content: '≡';
+        font-size: 30px;
     }
 }
 
@@ -332,7 +327,7 @@ body {
     font-weight: 400;
     line-height: 20px;
     color: black;
-    background-color: #F4F4EE;
+    background-color: aliceblue;
 }
 
 #wrapper {
@@ -378,7 +373,7 @@ body {
         float: left;
         .transition(@transitionCurveFast);
         &:hover, &:focus {
-            background-color: #DBDBCC77;
+            background-color: rgba(128,196,255,0.5);
         }
     }
     #inputText {
@@ -406,7 +401,7 @@ body {
             font-size: 16px;
             .transition(@transitionCurveFast);
             &:hover {
-                background-color: #DBDBCC;
+                background-color: #C0E0FA;
             }
         }
     }
@@ -430,7 +425,7 @@ body {
         .transition(@transitionCurve);
     }
     input[type="checkbox"]:checked:before {
-        background-color: #D32913;
+        background-color: #37B048;
     }
     input[type="checkbox"]:disabled:before {
         background-color: #777777;

@@ -52,12 +52,12 @@ if (!empty($_REQUEST['character'])) {
     
         <button id="sidenav-show-btn" class="sidenav-show-btn"></button>
         
-        <div id="searching">
+        <div id="searching" style="<?PHP if (empty($_REQUEST['character'])) echo "margin-top: 220px;" ?>">
             <form id="inputForm" class="clearfix" method="post">
                 <label><input type="text" id="inputText" class="general-bg-deeper" name="character" <?PHP echo "value=\"$submitChara\""; ?>></label>
                 <input type="submit" id="inputButton" class="general-bg" value="耖">
                 <?PHP if ($editMode) echo '<input type="text" name="editmode">';?>
-                <div id="inputCheck" style="text-align: center;">
+                <div id="inputCheck">
                     <label><input name="option[]" type="checkbox" value="wanshyu" <?PHP if ($options["wanshyu"]) echo "checked"; ?>>韻書音</label>
                     <label><input name="option[]" type="checkbox" value="area" <?PHP if ($options["area"]) echo "checked"; ?> id="check-area">地方音</label>
                     <label><input name="option[]" type="checkbox" value="map" <?PHP if ($options["map"]) echo "checked"; ?> id="check-map">地方音地圖</label>
@@ -101,7 +101,7 @@ if (!empty($_REQUEST['character'])) {
                             }
                             ?>
                         </div>
-                        <div id="wanshyuResultForm" class="general-bg-deeper">
+                        <div id="wanshyuResultForm" class="">
                             <?PHP
                             if (!empty($_REQUEST['character'])) {
                                 $pronFanwan = FanWanDict ::getInstance();
