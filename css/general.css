@@ -219,6 +219,7 @@
   height: 50px;
   width: 50px;
   position: fixed;
+  z-index: 1;
   outline: none;
   border-radius: 100%;
   -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
@@ -239,7 +240,10 @@
   top: 50px;
   left: 50px;
   background-image: url("../img/favicon.ico");
-  background-position: 50% 50%;
+  background-position: center;
+  -moz-background-size: 48px;
+  -o-background-size: 48px;
+  -webkit-background-size: 48px;
   background-size: 48px;
   background-repeat: no-repeat;
 }
@@ -334,7 +338,7 @@ body {
 #searching #inputButton:hover,
 #searching #inputText:focus,
 #searching #inputButton:focus {
-  background-color: #DBDBCC77;
+  background-color: rgba(219, 219, 204, 0.5);
 }
 #searching #inputText {
   width: 72.5%;

@@ -465,7 +465,7 @@ class LocalDictionary extends Lookup implements displayInMap {
                             */
                             
                             //梓：調整樣式
-                            $color = $color . "BB";     //小半透明
+                            //$color = $color . "BB";     //小半透明 //一些瀏覽器不支持
                             $fontcolorArr = str_split(hex2bin(substr($color,1)));
                             if ((ord($fontcolorArr[0])+ord($fontcolorArr[1])+ord($fontcolorArr[2])) < 384) {
                                 $fontcolor = "#F4F4EE"; //背景很暗則用亮色字體
@@ -486,7 +486,7 @@ L.marker([$latitude, $longitude], {
     icon: L.divIcon({
         className: 'divIconDefault',
         html: 
-        "<div class='locale-label' style='background-color: $color;'><div class='label-triangle' style='border-bottom-color: $color'></div><span style='color:$fontcolor;'>$pron</span></div>",
+        "<div class='locale-label' style='background-color: $color;opacity: 0.85;'><div class='label-triangle' style='border-bottom-color: $color'></div><span style='color:$fontcolor;'>$pron</span></div>",
         iconSize: [60,]
     })
 }).addTo(mapList['m' + count]);

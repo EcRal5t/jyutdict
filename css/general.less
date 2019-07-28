@@ -266,6 +266,7 @@
     display: block;
     .setSize(50px, 50px);
     position: fixed;
+    z-index: 1;
     outline: none;
     border-radius: 100%;
     .transition(@transitionCurveFast);
@@ -281,7 +282,10 @@
     top: 50px;
     left: 50px;
     background-image: url("../img/favicon.ico");
-    background-position: 50% 50%;
+    background-position: center;
+    -moz-background-size: 48px;
+    -o-background-size: 48px;
+    -webkit-background-size: 48px;
     background-size: 48px;
     background-repeat: no-repeat;
     &:after {
@@ -378,7 +382,7 @@ body {
         float: left;
         .transition(@transitionCurveFast);
         &:hover, &:focus {
-            background-color: #DBDBCC77;
+            background-color: rgba(219, 219, 204, 0.5);
         }
     }
     #inputText {
