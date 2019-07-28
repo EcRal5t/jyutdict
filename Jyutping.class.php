@@ -19,13 +19,13 @@ class Jyutping {
     const initialFormat = '/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)(?=[aeoiuy%])/';
     const codaFormat    = '/[aoreiwu%](n[ng]?|[mptkh|%)(\d{0,2}|%)$/';
     const toneFormat    = '/\d{1,2}|%$/';
-    const vowelFormat   = '/^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y|%$)/';
+    const vowelFormat   = '/^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y|z|%$)/';
     
     const consonantIpa = [  //我要死了…
         "m"=>"m", "n"=>"n", "nj"=>"ȵ", "ng"=>"ŋ", "b"=>"p", "d"=>"t", "g"=>"k", "q"=>"ʔ", "p"=>"pʰ", "t"=>"tʰ", "k"=>"kʰ", "bb"=>"ɓ", "dd"=>"ɗ", "s"=>"s", "sh"=>"ʃ", "sr"=>"ʂ", "sj"=>"ɕ", "z"=>"ʦ", "zh"=>"ʧ", "zr"=>"ʈʂ", "zj"=>"ʨ", "c"=>"ʦʰ", "ch"=>"ʧʰ", "cr"=>"ʈʂʰ", "cj"=>"ʨʰ", "ph"=>"ɸ", "f"=>"f", "v"=>"v", "th"=>"θ", "h"=>"h", "w"=>"w", "j"=>"j", "sl"=>"ɬ", "zl"=>"tɬ", "cl"=>"tɬʰ", "l"=>"l", "gw"=>"kʷ", "kw"=>"kʷʰ", "gv"=>"kᵛ", "kv"=>"kᵛʰ", ""=>""
     ];
     const vowelIpa = [      //我真的要死了…
-        "i"=>"i", "yu"=>"y", "y"=>"y", "ii"=>"ɨ", "uu"=>"ʉ", "ur"=>"ɯ", "u"=>"u", "iw"=>"ɪ", "yw"=>"ʏ", "uw"=>"ʊ", "ee"=>"e", "ew"=>"ø", "ir"=>"ɘ", "eo"=>"ɵ", "or"=>"ɤ", "oo"=>"o", "ea"=>"ə", "e"=>"ɛ", "oe"=>"œ", "aw"=>"ɜ", "ow"=>"ɞ", "er"=>"ʌ", "o"=>"ɔ", "ae"=>"æ", "a"=>"ɐ", "aa"=>"a", "ao"=>"ɶ", "ar"=>"ɑ", "oa"=>"ɒ", "m"=>"m", "n"=>"n", "ng"=>"ŋ"
+        "i"=>"i", "yu"=>"y", "y"=>"y", "ii"=>"ɨ", "uu"=>"ʉ", "ur"=>"ɯ", "u"=>"u", "iw"=>"ɪ", "yw"=>"ʏ", "uw"=>"ʊ", "ee"=>"e", "ew"=>"ø", "ir"=>"ɘ", "eo"=>"ɵ", "or"=>"ɤ", "oo"=>"o", "ea"=>"ə", "e"=>"ɛ", "oe"=>"œ", "aw"=>"ɜ", "ow"=>"ɞ", "er"=>"ʌ", "o"=>"ɔ", "ae"=>"æ", "a"=>"ɐ", "aa"=>"a", "ao"=>"ɶ", "ar"=>"ɑ", "oa"=>"ɒ", "m"=>"m", "n"=>"n", "ng"=>"ŋ", "z"=>"z"
     ];
     
     public function __construct($jyutping = "") {
