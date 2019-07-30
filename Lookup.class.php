@@ -253,13 +253,9 @@ class LocalDictionary extends Lookup implements displayInMap {
             </style>
             <script>var mapList = new Array();/*用于存储地图列表*/</script>
             <!-- leaflet 的前置CSS和JS -->
-             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
-              integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-              crossorigin=""/>
+             <link rel="stylesheet" href="css/leaflet.css"/>
                <!-- Make sure you put this AFTER Leaflet's CSS -->
-            <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
-              integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
-              crossorigin=""></script>
+            <script src="js/leaflet.js"></script>
               <?PHP
         }else{
             self::$count++;
@@ -419,7 +415,7 @@ class LocalDictionary extends Lookup implements displayInMap {
             <script type="text/javascript">
                 mapList['m' + count] =  L.map('mapContainer' + count).setView([22.6,111], 6);
                 
-                L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png', {
+                L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     tms: false,
                     attribution: 'Performed By Lingnaam Jyutjam',
                     maxZoom: 12

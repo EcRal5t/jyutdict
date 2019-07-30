@@ -74,6 +74,11 @@
 
 <br><br>
 ## 更新記錄
+#### 170730 v0.8.34.3
+  * MODIFY
+	* 修改了地图样式
+  * ADD
+	* 添加了LeaFlet的JS
 #### 170728 v0.8.34.2
   * MODIFY
     * 完全merge了指南的Lookup.class
