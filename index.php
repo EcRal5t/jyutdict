@@ -2,7 +2,7 @@
 include ("const.php");
 include_once ("connectDB.php");
 include ("Lookup.class.php");
-include_once ("Jyutping.class.php")
+include_once ("Jyutping.class.php");
 ?>
 
 <!DOCTYPE html>
