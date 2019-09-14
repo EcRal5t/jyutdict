@@ -15,17 +15,11 @@
   margin: 8px 0;
 }
 .general-bg {
-  -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  background: rgba(238, 252, 254, 0.2);
+  background: white;
   border-radius: 2px;
 }
 .general-bg-deeper {
-  -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
-  background: rgba(238, 252, 254, 0.3);
+  background: white;
   border-radius: 2px;
 }
 .general-form {
@@ -115,7 +109,7 @@
   color: #0000C0;
 }
 .hl-font-yellow {
-  color: #C0A000;
+  color: #C07000;
 }
 .hl-font-purple {
   color: #A000C0;
@@ -126,8 +120,11 @@
 .hl-font-gray {
   color: #a0a0a0;
 }
+.hl-font-grayish {
+  color: #84896F;
+}
 .alphabet {
-  font-family: Verdana, "Charis SIL", Helvetica, Century, Arial, Serif;
+  font-family: "Charis SIL", "Doulos SIL", Helvetica, "DejaVu Serif", Verdana, Century, Arial, Serif;
 }
 #sidenav {
   position: fixed;
@@ -157,20 +154,17 @@
   -ms-transform: translate3d(0, 0, 0);
   -o-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
-  -webkit-box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
-  box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
 }
 #sidenav-head {
   height: 160px;
   width: 100%;
-  background-color: #f0f0f0;
+  background-color: #FFFFFF;
   color: #001020;
-  line-height: 25px;
-  font-size: 25px;
   text-align: center;
-  padding-top: 60px;
-  box-sizing: border-box;
+  margin: 15px 0;
 }
 #sidenav-list {
   line-height: 24px;
@@ -178,6 +172,7 @@
 #sidenav-list .sidenav-link {
   list-style-type: none;
   display: block;
+  margin: 0 1pc;
   -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
   -moz-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
   -o-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
@@ -192,13 +187,14 @@
 }
 #sidenav-list .sidenav-link a {
   display: block;
-  line-height: 3pc;
+  line-height: 2.5pc;
   text-decoration: none;
   -ms-text-overflow: ellipsis;
   text-overflow: ellipsis;
   overflow: hidden;
-  padding: 0 3pc;
-  color: #333;
+  padding: 0 2pc;
+  color: black;
+  margin: 0.5pc 0;
 }
 #sidenav-list .sidenav-info:after {
   -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
@@ -220,9 +216,10 @@
 .sidenav-show-btn,
 .sidenav-hide-btn {
   display: block;
-  height: 48px;
-  width: 48px;
+  height: 50px;
+  width: 50px;
   position: fixed;
+  z-index: 1;
   outline: none;
   border-radius: 100%;
   -webkit-transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
@@ -234,16 +231,21 @@
 }
 .sidenav-show-btn:hover,
 .sidenav-hide-btn:hover {
-  color: #444;
-  background-color: #C0D0E0FF;
+  background-color: #DBDBCC;
+  -webkit-box-shadow: 0 0 10px 10px #DBDBCC;
+  -moz-box-shadow: 0 0 10px 10px #DBDBCC;
+  box-shadow: 0 0 10px 10px #DBDBCC;
 }
 .sidenav-show-btn {
   top: 50px;
   left: 50px;
-}
-.sidenav-show-btn:after {
-  content: '≡';
-  font-size: 30px;
+  background-image: url("../img/favicon.ico");
+  background-position: center;
+  -moz-background-size: 48px;
+  -o-background-size: 48px;
+  -webkit-background-size: 48px;
+  background-size: 48px;
+  background-repeat: no-repeat;
 }
 .sidenav-overlay {
   position: fixed;
@@ -283,7 +285,7 @@ body {
   font-weight: 400;
   line-height: 20px;
   color: black;
-  background-color: aliceblue;
+  background-color: #F4F4EE;
 }
 #wrapper {
   min-height: 100%;
@@ -336,7 +338,7 @@ body {
 #searching #inputButton:hover,
 #searching #inputText:focus,
 #searching #inputButton:focus {
-  background-color: rgba(128, 196, 255, 0.5);
+  background-color: rgba(219, 219, 204, 0.5);
 }
 #searching #inputText {
   width: 72.5%;
@@ -367,7 +369,7 @@ body {
   transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
 }
 #searching #inputCheck label:hover {
-  background-color: #C0E0FA;
+  background-color: #DBDBCC;
 }
 #searching input[type="checkbox"] {
   position: relative;
@@ -391,7 +393,7 @@ body {
   transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
 }
 #searching input[type="checkbox"]:checked:before {
-  background-color: #37B048;
+  background-color: #D32913;
 }
 #searching input[type="checkbox"]:disabled:before {
   background-color: #777777;
@@ -453,6 +455,8 @@ body {
   float: right;
   line-height: 26px;
   text-align: center;
+}
+#wanshyuResult #wanshyuResultForm table {
   -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
   -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.05);
@@ -561,34 +565,33 @@ body {
     width: 10em;
   }
 }
-#regionalResult div[id^="mapContainer"] {
+#regionalResult div[id^="map"] {
   width: 400px;
   height: 350px;
   display: block;
   margin: auto;
+  z-index: 0;
 }
 @media screen and (max-width: 1030px) {
-  #regionalResult div[id^="mapContainer"] {
+  #regionalResult div[id^="map"] {
     margin-top: 25px;
     width: 100%;
   }
 }
-#regionalResult div[id^="mapContainer"] .locale-label {
-  font-size: 13px;
-  color: #ffffff;
+#regionalResult div[id^="map"] .locale-label {
+  font-size: 11px;
   text-align: center;
+  border-radius: 0.15rem;
   min-width: 4em;
-  background-color: rgba(0, 0, 0, 0.5);
-  line-height: 18px;
+  line-height: 16px;
   position: relative;
-  top: 2.5em;
+  transform: translateY(7px);
 }
-#regionalResult div[id^="mapContainer"] .label-triangle {
-  top: -12px;
+#regionalResult div[id^="map"] .label-triangle {
+  transform: translate(26px, -8px);
   position: absolute;
   height: 0;
   width: 0;
-  border: 6px solid;
-  left: 5px;
-  border-color: transparent transparent rgba(0, 0, 0, 0.5) transparent;
+  border: 4px solid;
+  border-color: transparent;
 }
