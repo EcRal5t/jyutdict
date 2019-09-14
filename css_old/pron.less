@@ -1,0 +1,31 @@
+@import "general.less";
+
+//查音頁
+#result {
+    overflow: hidden;
+    .bgc(#7a0);
+}
+
+.wanshyu-result, .regional-result {
+    min-width: @smallestContentWidth;
+    margin: 0 auto;
+    padding: 0 50px;
+    
+    overflow: hidden;
+    .transition(@transitionCurveFast; background-color);
+    
+    @media screen and (max-width: 500px) {
+        padding: 0;
+        width: @smallestContentWidth;
+    }
+    
+    &:hover {
+        .bgc(#f9c);
+    }
+    :hover {
+        .bgc(#f9e);
+    }
+}
+
+
+

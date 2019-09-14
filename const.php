@@ -7,7 +7,7 @@
  */
 
 final class Info {
-    private static $version = "v0.8.31/190721";
+    private static $version = "v0.8.34.2/170728";
     
     public static function showVersion() {
         echo "<span style=\"float:right;color:#444444;font-size:0.6em\">".self::$version."</span>";
@@ -23,7 +23,11 @@ final class Info {
     <div class="sidenav-overlay" onclick="hideSidenav()"></div>
     
     <div id="sidenav">
-        <div id="sidenav-head"><span class="font-64">粤</span>dict</div>
+    
+        <div id="sidenav-head">
+            <embed src="img/LOGO.svg" width="160" type="image/svg+xml" pluginspage="https://www.jyutdict.org/" />
+        </div>
+        
         <ul id="sidenav-list">
             <li class="sidenav-link"><a href="./">字</a></li>
             <li class="sidenav-link"><a href="./pron.php">音</a></li>

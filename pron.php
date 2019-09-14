@@ -117,7 +117,7 @@ if ($valid) {
                 <input type="hidden" id="inputCoda" name="co">
                 <input type="hidden" id="inputTone" name="to">
                 <input type="submit" id="inputButton" class="general-bg" value="耖" disabled>
-                <div id="inputCheck" style="">
+                <div id="inputCheck">
                     <label><input name="option[]" type="checkbox" value="wanshyu" <?PHP if ($options["wanshyu"]) echo "checked"; ?>>韻書音 </label>
                     <label><input name="option[]" type="checkbox" value="area" <?PHP if ($options["area"]) echo "checked"; ?>>地方音 </label>
                 </div>
