@@ -2,7 +2,7 @@
 include ("const.php");
 include_once ("connectDB.php");
 include ("Lookup.class.php");
-include_once ("Jyutping.class.php")
+include_once ("Jyutping.class.php");
 ?>
 
 <!DOCTYPE html>
@@ -122,6 +122,20 @@ if (!empty($_REQUEST['character'])) {
                 if ($options["area"]) {
                     $pronArea = LocalDictionary ::getInstance();
                     $pronArea -> show($pronArea->query($charaArray[$i], $dbh), $options["map"]);
+                    if($i == 0 && $options["map"])
+                    {
+                        echo<<<JS
+                        <!-- leaflet 的前置CSS和JS -->
+                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+                        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+                        crossorigin=""/>
+                        <!-- Make sure you put this AFTER Leaflet's CSS -->
+                        <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+                        integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+                        crossorigin=""></script>
+JS;
+                    }
+                    echo("<script>loadmap();</script>");
                 }
             }#END for ($i = 0; $i < $charaCount; $i++)
         }//end if !empty get
