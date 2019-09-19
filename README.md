@@ -74,6 +74,9 @@
 
 <br><br>
 ## 更新記錄
+#### 170919 v0.8.34.2b
+ * ADD
+  * 補上了meta信息、404頁面，改動了robots.txt
 #### 170728 v0.8.34.2
   * MODIFY
     * 完全merge了指南的Lookup.class
