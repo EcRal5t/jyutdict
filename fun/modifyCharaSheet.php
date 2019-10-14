@@ -1,6 +1,6 @@
 <?php
 include("../connectDB.php");
-//include("writeLog.inc.php");
+include("writeLog.inc.php");
 switch ($_GET['ty']) {
     case 1: {
         //改讀音
