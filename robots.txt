@@ -1,4 +1,2 @@
 User-agent: *
-Allow: /about
-Allow: /index
 Disallow: /

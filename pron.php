@@ -16,7 +16,7 @@ include_once ("Jyutping.class.php");
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>泛粵大典</title>
-    <link rel="stylesheet" type="text/css" href="./css/pron.css">
+    <link rel="stylesheet" type="text/css" href="./css/pron.css?<?PHP echo rand(); ?>">
     <link rel="icon" href="./img/favicon.ico">
     
     <script src="./js/general.js?<?PHP echo rand(); ?>"></script>
