@@ -2,7 +2,7 @@
 include ("const.php");
 include_once ("connectDB.php");
 include ("Lookup.class.php");
-include_once ("Jyutping.class.php");
+include_once ("Jyutping.class.php")
 ?>
 
 <!DOCTYPE html>
@@ -15,11 +15,13 @@ include_once ("Jyutping.class.php");
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="description" content="泛粵大典旨在收集現時各地讀音與歷史韻書讀音，並提供向大眾一些基礎的查詢功能，同時通過泛粵表展示泛粵各地的特色字及其讀音">
+    <meta name="keywords" content="粵語 泛粵 嶺南 Cantonese 廣州 粵語查詢 泛粵大典">
     <title>泛粵大典</title>
-    <link rel="stylesheet" type="text/css" href="./css/index.css?<?PHP echo rand(); ?>">
+    <link rel="stylesheet" type="text/css" href="./css/index.css">
     <link rel="icon" href="./img/favicon.ico">
-    <script src="./js/index.js?<?PHP echo rand(); ?>"></script>
-    <script src="./js/general.js?<?PHP echo rand(); ?>"></script>
+    <script src="./js/index.js"></script>
+    <script src="./js/general.js"></script>
 </head>
 
 <?PHP
@@ -120,20 +122,6 @@ if (!empty($_REQUEST['character'])) {
                 if ($options["area"]) {
                     $pronArea = LocalDictionary ::getInstance();
                     $pronArea -> show($pronArea->query($charaArray[$i], $dbh), $options["map"]);
-                    if($i == 0 && $options["map"])
-                    {
-                        echo<<<JS
-                        <!-- leaflet 的前置CSS和JS -->
-                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
-                        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-                        crossorigin=""/>
-                        <!-- Make sure you put this AFTER Leaflet's CSS -->
-                        <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
-                        integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
-                        crossorigin=""></script>
-JS;
-                    }
-                    echo("<script>loadmap();</script>");
                 }
             }#END for ($i = 0; $i < $charaCount; $i++)
         }//end if !empty get
@@ -148,6 +136,7 @@ JS;
     };
     window.onload = function () {
         annexTableShell('.annex-form', 2);
+        document.querySelector('#check-map').disabled = !(document.querySelector('#check-area').checked);
     };
     document.querySelector('#check-area').onclick = function() {
         var chackmap = document.querySelector('#check-map');
