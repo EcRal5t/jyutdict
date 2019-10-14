@@ -565,7 +565,7 @@ body {
     width: 10em;
   }
 }
-#regionalResult div[id^="map"] {
+#regionalResult div[id^="mapContainer"] {
   width: 400px;
   height: 350px;
   display: block;
@@ -573,12 +573,12 @@ body {
   z-index: 0;
 }
 @media screen and (max-width: 1030px) {
-  #regionalResult div[id^="map"] {
+  #regionalResult div[id^="mapContainer"] {
     margin-top: 25px;
     width: 100%;
   }
 }
-#regionalResult div[id^="map"] .locale-label {
+#regionalResult div[id^="mapContainer"] .locale-label {
   font-size: 11px;
   text-align: center;
   border-radius: 0.15rem;
@@ -587,7 +587,7 @@ body {
   position: relative;
   transform: translateY(7px);
 }
-#regionalResult div[id^="map"] .label-triangle {
+#regionalResult div[id^="mapContainer"] .label-triangle {
   transform: translate(26px, -8px);
   position: absolute;
   height: 0;
