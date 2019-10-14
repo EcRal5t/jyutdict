@@ -1,8 +1,12 @@
 <?PHP
-include ("const.php");
-include_once ("connectDB.php");
-include ("Lookup.class.php");
-include_once ("Jyutping.class.php")
+include("const.php");
+include_once("connectDB.php");
+include("Lookup.class.php");
+include_once("Jyutping.class.php");
+require_once("dict_data/Dictinfo.class.php");
+require_once("dict_data/DictData.class.php");
+require_once("dict_view/view.class.php");
+require_once("dict_presenter/IndexPresenter.class.php");
 ?>
 
 <!DOCTYPE html>
@@ -66,68 +70,41 @@ if (!empty($_REQUEST['character'])) {
                 </div>
             </form>
         </div>
-        
+
         <?PHP
         if (!empty($_REQUEST['character'])) {
             $sim2trad = Sim2TradLookup::getInstance();      #获取简繁转换对象
             $charaArray = $sim2trad -> query($submitChara, $dbh);
             $charaCount = count($charaArray);
             if ($charaCount > 2) {
-                $sim2trad -> show($charaArray);
-                $charaCount = 1;
+                $sim2trad->show($charaArray);
             }
-            
-            if ($options["wanshyu"]) {                      #prepared statement
-                $inKuangyon_sql = "
-                    SELECT `initial`,`rimeclass`,`rime`,`division`,`rounding`,`tone`,`transliteration`
-                    FROM `YKuangyon`
-                    WHERE `chara`=:chara";
-                $inKuangyon_stmt = $dbh->prepare($inKuangyon_sql);
-            }
-            
-            for ($i = 0; $i < $charaCount; $i++) {
-                if ($options["wanshyu"]) {
-                    ?>
-                    <div id="wanshyuResult">
-                        <div class="general-bg-deeper" id="charaHead">
-                            <div id="charaHeadSqu"><?PHP echo "$charaArray[$i]" ?></div>
-                            <?PHP
-                            $inKuangyon_stmt->execute(array(':chara'=>$charaArray[$i]));
-                            $inKuangyon_result = $inKuangyon_stmt->fetchAll(PDO::FETCH_ASSOC);
-                            foreach ($inKuangyon_result as $inKuangyon_items) {
-                                echo '<div id="oldPronounce"><span>';
-                                echo $inKuangyon_items['initial'] . $inKuangyon_items['rimeclass'] . $inKuangyon_items['rime'];
-                                echo $inKuangyon_items['division'] . $inKuangyon_items['rounding'] . $inKuangyon_items['tone'];
-                                echo ' (' . $inKuangyon_items['transliteration'] . ')';
-                                echo "</span></div>";
-                            }
-                            ?>
-                        </div>
-                        <div id="wanshyuResultForm" class="">
-                            <?PHP
-                            if (!empty($_REQUEST['character'])) {
-                                $pronFanwan = FanWanDict ::getInstance();
-                                $pronFanwan -> show($pronFanwan -> query($charaArray[$i], $dbh));
-                                ?>
-                                <div style="margin-top: 13px;"></div>
-                                <?PHP
-                                $pronJingwaa = JingWaaDict ::getInstance();
-                                $pronJingwaa -> show($pronJingwaa -> query($charaArray[$i], $dbh));
-                            }
-                            ?>
-                        </div>
-                    </div>
-                    <?PHP
-                }
-                if ($options["area"]) {
-                    $pronArea = LocalDictionary ::getInstance();
-                    $pronArea -> show($pronArea->query($charaArray[$i], $dbh), $options["map"]);
-                }
-            }#END for ($i = 0; $i < $charaCount; $i++)
-        }//end if !empty get
-        ?>
-    </div>
-</div>
+            $printTimes = 0;
+				foreach($charaArray as $chara) {
+					$presenter = new ShowViewFactory($dbh,$chara);
+					if ($options["wanshyu"])
+					{
+						$presenter->getDictPresenter('wanshyu')->show();
+					}
+					if ($options["area"])
+					{
+						$area = $presenter->getDictPresenter('area');
+						$area->printAreaFramework(BEGIN);
+						$area->show();
+						if ($options["map"]) 
+						{
+							if($printTimes++ == 0) $area->printMapDependency();
+							$area->prepareMap("map" . $printTimes );
+						}
+						$area->printAreaFramework(END);
+					}
+					if($charaCount > 2) break;
+				} #end foreach($charaArray as $chara)
+				if ($options["area"] && $options["map"]) {	$area->showMap();	}
+			} //end if !empty get
+			?>
+		</div>
+	</div>
 
 <script type="text/javascript" src="//js.users.51.la/20205743.js"></script>
 <script>
