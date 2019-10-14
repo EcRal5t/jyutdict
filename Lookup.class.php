@@ -78,5 +78,4 @@ class Sim2TradLookup  {
 		}
 	}
 }
-
 ?>
