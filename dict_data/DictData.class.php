@@ -43,7 +43,7 @@ require_once("ResultIterator.class.php");
     { return $this->getCurrentList()['id']; }    
 
     public final function getChara() : string
-    { return $this->getCurrentList()['chara']; }      
+    { return $this->chara; }      
 
     public final function getInitial() : string
     { return $this->getCurrentList()['initial']; }    

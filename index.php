@@ -72,7 +72,8 @@ if (!empty($_REQUEST['character'])) {
             </div>
 
 			<?PHP
-			if (!empty($_REQUEST['character'])) {
+			if (!empty($_REQUEST['character'])) 
+			{
 				$sim2trad = Sim2TradLookup::getInstance();      #获取简繁转换对象
 				$charaArray = $sim2trad->query($submitChara, $dbh);
 				$charaCount = count($charaArray);
@@ -93,13 +94,13 @@ if (!empty($_REQUEST['character'])) {
 							if ($printTimes++ == 0) $area->printMapDependency();
 							$area->prepareMap("map" . $printTimes);
 						}
-						$area->printAreaFramework(END);
 					}
 					if ($charaCount > 2) break;
 				} #end foreach($charaArray as $chara)
 				if ($options["area"] && $options["map"]) {
 					$area->showMap();
 				}
+				$area->printAreaFramework(END);
 			} //end if !empty get
 			?>
 		</div>
