@@ -62,10 +62,11 @@ class KuangyonPresenter extends DictPresenter{
   {
     $data = new DataKuangyon($this->dbh,$this->chara,"YKuangyon","","","");
     $view = new ViewKuangyon( ($data->listCount() > 0 ) );
+    $view->updateData($data);
+    $view->printFramework(BEGIN);
     for($time = 0;$data->hasNext();$data->next() )
     {
       $view->updateData($data);
-      if($time++ == 0) $view->printFramework(BEGIN);
       $view->printContentList();
     }
     $view->printFramework(END);
@@ -172,13 +173,20 @@ class AreaPresenter extends DictPresenter{
   {
     $info = new InfoArea($this->dbh);
     $view = new ViewMap($mapName);
-    $view->printMapDiv();
-    $view->initMap();
-    for(;$info->hasNext() ;$info->next() )
+    for($count = 0;$info->hasNext() ;$info->next() )
     {
+      
       $data = new DataArea($this->dbh,$this->chara,$info->getSheetname(),
-        $info->getLongitude(),$info->getLatitude(),$info->getDivision(),
-        $info->getCity(),$info->getDistrict(),$info->getColor());
+      $info->getLongitude(),$info->getLatitude(),$info->getDivision(),
+      $info->getCity(),$info->getDistrict(),$info->getColor());
+
+      if($count == 0 && $data->listCount() > 0)
+      {
+        $view->printMapDiv();
+        $view->initMap();
+        $count++;
+      }
+
       if($data->listCount() > 0)
       {
           $view->updateData($data);
