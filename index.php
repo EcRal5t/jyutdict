@@ -108,20 +108,7 @@ if (!empty($_REQUEST['character'])) {
 
 	<script type="text/javascript" src="//js.users.51.la/20205743.js"></script>
 	<script>
-		document.querySelector('#sidenav-show-btn').onclick = function() {
-			showSidenav();
-		};
-		window.onload = function() {
-			annexTableShell('.annex-form', 2);
-			document.querySelector('#check-map').disabled = !(document.querySelector('#check-area').checked);
-		};
-		document.querySelector('#check-area').onclick = function() {
-			var chackmap = document.querySelector('#check-map');
-			if (this.checked === false) {
-				chackmap.checked = false;
-			}
-			chackmap.disabled = !this.checked;
-		};
+	eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1;};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p;}('f["\\4\\3\\1\\b\\d\\0\\6\\8"]["\\g\\b\\0\\5\\h\\i\\0\\9\\0\\1\\8\\3\\5"](\'\\k\\l\\j\\4\\0\\6\\7\\v\\e\\l\\c\\3\\w\\e\\m\\8\\6\')["\\3\\6\\1\\9\\j\\1\\a"]=n(){u()};f["\\3\\6\\9\\3\\7\\4"]=n(){t(\'\\s\\7\\6\\6\\0\\z\\e\\A\\3\\5\\d\',2);f["\\4\\3\\1\\b\\d\\0\\6\\8"]["\\g\\b\\0\\5\\h\\i\\0\\9\\0\\1\\8\\3\\5"](\'\\k\\1\\c\\0\\1\\a\\e\\d\\7\\q\')["\\4\\j\\l\\7\\m\\9\\0\\4"]=!(f["\\4\\3\\1\\b\\d\\0\\6\\8"]["\\g\\b\\0\\5\\h\\i\\0\\9\\0\\1\\8\\3\\5"](\'\\k\\1\\c\\0\\1\\a\\e\\7\\5\\0\\7\')["\\1\\c\\0\\1\\a\\0\\4"])};f["\\4\\3\\1\\b\\d\\0\\6\\8"]["\\g\\b\\0\\5\\h\\i\\0\\9\\0\\1\\8\\3\\5"](\'\\k\\1\\c\\0\\1\\a\\e\\7\\5\\0\\7\')["\\3\\6\\1\\9\\j\\1\\a"]=n(){y o=f["\\4\\3\\1\\b\\d\\0\\6\\8"]["\\g\\b\\0\\5\\h\\i\\0\\9\\0\\1\\8\\3\\5"](\'\\k\\1\\c\\0\\1\\a\\e\\d\\7\\q\');x(r["\\1\\c\\0\\1\\a\\0\\4"]===p){o["\\1\\c\\0\\1\\a\\0\\4"]=p}o["\\4\\j\\l\\7\\m\\9\\0\\4"]=!r["\\1\\c\\0\\1\\a\\0\\4"]};',37,37,'x65|x63||x6f|x64|x72|x6e|x61|x74|x6c|x6b|x75|x68|x6d|x2d|window|x71|x79|x53|x69|x23|x73|x62|function|OLh1|false|x70|this|x2e|annexTableShell|showSidenav|x76|x77|if|var|x78|x66'.split('|'),0,{}))
 	</script>
 </body>
 

@@ -359,20 +359,9 @@ class ViewMap implements updateData
 	public final static function printDependency()
 	{
 		?>
-		<!-- leaflet CSS & JS Dependency -->
-		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
-		integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-		crossorigin=""/>
-		<!-- Make sure you put this AFTER Leaflet's CSS -->
-		<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
-		integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
-		crossorigin=""></script>
+<!--leaflet CSS&JS Dependency--><link rel="stylesheet"href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="crossorigin=""/><!--Make sure you put this AFTER Leaflet's CSS--><script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="crossorigin=""></script><script>
 		<script>
-
-			var initQueue	=	Array();
-
-			let excuter	=	null;
-
+		var initQueue=Array();let excuter=null;
 		</script>
 		<?php
 	}
@@ -389,37 +378,7 @@ class ViewMap implements updateData
 	{
 		?>
 		<script>
-			excuter	=	{
-				mapIniter	: function(){},
-				MakerPlacer	:	Array(function(){}),
-				currentMap : null
-			}
-
-			excuter.mapIniter = function(){
-				
-				var leftup = L.latLng('26.938400','105.819028'); 
-				
-				var rightdown = L.latLng('17.119569','115.883134');
-				
-				var bounds = L.latLngBounds(leftup,rightdown);
-				
-				var map = L.map('<?php echo $this->mapName; ?>',{
-						maxBounds : bounds
-					}).setView([22.6,111], 7);
-
-				L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}@2x?access_token={accessToken}', {
-					tms: false,
-					id: 'zenam/cjzk0fd9k0esv1csaqrxhiemj',
-					accessToken: 'pk.eyJ1IjoiemVuYW0iLCJhIjoiY2p4bjh5MjFxMGM4aTNobGF0dXNoejlseiJ9.BPrObTer-_5w5L3oEaEWfQ',
-					attribution: '©Mapbox | Performed By Lingnaam Jyutjam',
-					minZoom: 6,
-					maxZoom: 12
-				}).addTo(map);
-				excuter.currentMap = map;
-			}
-
-			initQueue.push(excuter);
-
+		eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('2={3:0(){},1:6(0(){}),5:4}',7,7,'function|MakerPlacer|excuter|mapIniter|null|currentMap|Array'.split('|'),0,{}))excuter.mapIniter=function(){eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('1 3=0.2(\'7.6\',\'8.5\');1 4=0.2(\'9.d\',\'e.c\');1 a=0.b(3,4);',15,15,'L|var|latLng|leftup|rightdown|819028|938400|26|105|17|bounds|latLngBounds|883134|119569|115'.split('|'),0,{}))var map=L.map('<?php echo $this->mapName; ?>',{maxBounds:bounds}).setView([22.6,111],7);eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('h.e(\'f://c.d.i/j/g/{1}/a/b/{z}/{x}/{y}@5?4={0}\',{3:7,1:\'9/8\',0:\'B.u.w-v\',t:\'©A | C n k l\',o:6,r:s}).p(2);q.m=2;',39,39,'accessToken|id|map|tms|access_token|2x||false|cjzk0fd9k0esv1csaqrxhiemj|zenam|tiles|256|api|mapbox|tileLayer|https|v1|L|com|styles|Lingnaam|Jyutjam|currentMap|By|minZoom|addTo|excuter|maxZoom|12|attribution|eyJ1IjoiemVuYW0iLCJhIjoiY2p4bjh5MjFxMGM4aTNobGF0dXNoejlseiJ9|_0|BPrObTer||||Mapbox|pk|Performed'.split('|'),0,{}))}initQueue.push(excuter);
 		</script>
 		<?php
 	}
@@ -428,33 +387,7 @@ class ViewMap implements updateData
 	{
 		?>
 		<script>
-			excuter = initQueue.pop();
-
-			excuter.MakerPlacer.push(function(){
-				L.circle([<?php echo $this->data->getLatitude(); ?>, <?php echo $this->data->getLongitude(); ?>], { 
-					color :    '<?php echo $this->data->getColor(); ?>',
-					fillColor: '<?php echo $this->data->getColor(); ?>',
-					fillOpacity: 0.5,
-					radius: 1000
-				}).addTo(excuter.currentMap);
-				L.marker([<?php echo $this->data->getLatitude(); ?>, <?php echo $this->data->getLongitude(); ?>], {
-					icon: L.divIcon({
-						className: 'divIconDefault',
-						html: 
-						"<div class='locale-label' " + 
-						"style='background-color: <?php echo $this->data->getColor(); ?>;" + 
-						"opacity: 0.85;'>" + 
-							"<div class='label-triangle'" + 
-							"style=" + 
-							"'border-bottom-color: <?php echo $this->data->getColor(); ?>'></div>" + 
-							"<span style='color:<?php echo $this->fontcolor; ?>;'><?php echo $this->pronunciation; ?></span>" + 
-						"</div>",
-						iconSize: [60,]
-					})
-				}).addTo(excuter.currentMap);
-			} );
-
-			initQueue.push(excuter);
+		excuter=initQueue.pop();excuter.MakerPlacer.push(function(){L.circle([<?php echo $this->data->getLatitude();?>,<?php echo $this->data->getLongitude();?>],{color:'<?php echo $this->data->getColor(); ?>',fillColor:'<?php echo $this->data->getColor(); ?>',fillOpacity:0.5,radius:1000}).addTo(excuter.currentMap);L.marker([<?php echo $this->data->getLatitude();?>,<?php echo $this->data->getLongitude();?>],{icon:L.divIcon({className:'divIconDefault',html:"<div class='locale-label' "+"style='background-color: <?php echo $this->data->getColor(); ?>;"+"opacity: 0.85;'>"+"<div class='label-triangle'"+"style="+"'border-bottom-color: <?php echo $this->data->getColor(); ?>'></div>"+"<span style='color:<?php echo $this->fontcolor; ?>;'><?php echo $this->pronunciation; ?></span>"+"</div>",iconSize:[60,]})}).addTo(excuter.currentMap)});initQueue.push(excuter);
 		</script>
 		<?php
 	}
@@ -463,16 +396,7 @@ class ViewMap implements updateData
 	{
 		?>
 		<script>
-			onLoad = function(){
-				for(;initQueue.length > 0;)
-				{
-					let exc = initQueue.shift();
-					exc.mapIniter();
-					for(let func of exc.MakerPlacer)
-					{	func();	}
-				}
-			}
-			Window.onload = onLoad(); 
+		eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1;};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p;}('8=j(){a(;b["\\7\\2\\6\\i\\3\\c"]>0;){9 5=b["\\k\\c\\d\\h\\3"]();5["\\g\\1\\m\\s\\6\\d\\3\\2\\4"]();a(9 e n 5["\\p\\1\\o\\2\\4\\q\\7\\1\\t\\2\\4"]){e()}}}r["\\f\\6\\7\\f\\1\\l"]=8();',30,30,'|x61|x65|x74|x72|exc|x6e|x6c|onLoad|let|for|initQueue|x68|x69|func|x6f|x6d|x66|x67|function|x73|x64|x70|of|x6b|x4d|x50|Window|x49|x63'.split('|'),0,{}))
 		</script>
 		<?php
 	}
