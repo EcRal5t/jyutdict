@@ -99,8 +99,8 @@ if (!empty($_REQUEST['character'])) {
 				} #end foreach($charaArray as $chara)
 				if ($options["area"] && $options["map"]) {
 					$area->showMap();
+					$area->printAreaFramework(END);
 				}
-				$area->printAreaFramework(END);
 			} //end if !empty get
 			?>
 		</div>
