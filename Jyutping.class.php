@@ -15,10 +15,12 @@ class Jyutping {
     
     protected $ipa     = "";
     
+    protected $valid   = false; // 設置的粵拼是否合法
+    
     const format = "/^[a-z%]{1,10}\d{0,2}$/";
     const initialFormat = '/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)(?=[aeoiuy%])/';
-    const codaFormat    = '/[aoreiwu%](n[ng]?|[mptkh|%)(\d{0,2}|%)$/';
-    const toneFormat    = '/\d{1,2}|%$/';
+    const codaFormat    = '/[aoreiwu%](n[ng]?|[mptkh|%])(\d{0,2}|%)$/';
+    const toneFormat    = '/\d{1,2}$/';
     const vowelFormat   = '/^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y|z|%$)/';
     
     const consonantIpa = [  //我要死了…
@@ -47,16 +49,20 @@ class Jyutping {
                 }
                 $pos += strlen($vowels[$count]);        //划分出几个字母，就向后几个字母继续划分
             }
+    
+            if ($tone=="") $tone = "%";
             
             $this->initial = $initial;
             $this->nuclei  = $nuclei;
             $this->coda    = $coda;
             $this->tone    = $tone;
             $this->vowels  = $vowels;
+            $this->valid   = true;
             return;                                   //划分成功
         }
         //如果运行到此，说明输入框为空，或输入粤拼结构有误（此时才改输入框背景色）
     }
+    
     
     public function set($in, $nu, $co, $to) {
         if (!preg_match('/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)?$/', $in) ||
@@ -64,6 +70,7 @@ class Jyutping {
             !preg_match('/^\d{0,2}|%?$/', $to) ||
             $nu == ""
         )   return 0;
+        
         if ((empty(preg_match('/%/',$in))+empty(preg_match('/%/',$nu))+empty(preg_match('/%/',$co))+empty(preg_match('/%/',$to)) < 2)) return 0;
         
         $tempResult = [];
@@ -88,6 +95,25 @@ class Jyutping {
         $this->ipa = $ipa;
     }
     
+    public function isValid() {
+        return $this->valid;
+    }
+    public function getInitial() {
+        return $this->initial;
+    }
+    public function getNuclei() {
+        return $this->nuclei;
+    }
+    public function getCoda() {
+        return $this->coda;
+    }
+    public function getTone() {
+        return $this->tone;
+    }
+    public function getVowels() {
+        return $this->vowels;
+    }
+    
     public function show() {
         return array(
             "initial" => $this->initial,
@@ -110,10 +136,30 @@ class Jyutping {
         echo $this->initial.$this->nuclei.$this->coda.$this->tone;
     }
     
-    public function toIPA() {  //這個是廢的
+    const DONT_TRANS_I_U_INTO_IW_UW = 1;
+    public function toIPA(int $options = 0) {  //這個是廢的
+        
         $nuclei = "";
         foreach ($this->vowels as $vowel) {
-            $nuclei .= self::vowelIpa[$vowel];
+            switch ($vowel) {
+                case "i":
+                    if (!($options&self::DONT_TRANS_I_U_INTO_IW_UW) && count($this->vowels)==1 && $this->coda=="ng") {
+                        $nuclei .= self::vowelIpa["iw"];
+                        break;
+                    }
+                    $nuclei .= self::vowelIpa[$vowel];
+                    break;
+                case "u":
+                    if (!($options&self::DONT_TRANS_I_U_INTO_IW_UW) && count($this->vowels)==1 && $this->coda=="ng") {
+                        $nuclei .= self::vowelIpa["uw"];
+                        break;
+                    }
+                    $nuclei .= self::vowelIpa[$vowel];
+                    break;
+                default:
+                    $nuclei .= self::vowelIpa[$vowel];
+                    break;
+            }
         }
         return array(
             "initial" => self::consonantIpa[$this->initial],

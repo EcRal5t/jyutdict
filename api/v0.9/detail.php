@@ -6,18 +6,33 @@
  * Time: 22:38
  */
 
-include_once("../connectDB.php");
-include("../Lookup.class.php");
-include_once("../Jyutping.class.php");
-require_once("../dict_data/DictInfo.class.php");
-require_once("../dict_data/DictData.class.php");
+include ("../../const.php");
+include_once("../../connectDB.php");
+include("../../Lookup.class.php");
+include_once("../../Jyutping.class.php");
+require_once("../../dict_data/DictInfo.class.php");
+require_once("../../dict_data/DictData.class.php");
 
-// 若不請求chara=*，則返回空
-if (empty($_REQUEST['chara']) && empty($_REQUEST['pron'])) {
+if (isset($_REQUEST['help'])) {
     print_r(json_encode([
-        "query_for_character"=>"https://jyutdict.org/api/detail?chara={query}{&ascii}",
-        "query_for_pronunciation"=>"https://jyutdict.org/api/detail?pron={query}{&ascii}",
-    ], JSON_UNESCAPED_SLASHES));
+        "details_of_characters"=>"https://jyutdict.org/api/v0.9/detail?chara={query}{&ascii}",
+        "details_of_pronunciations"=>"https://jyutdict.org/api/v0.9/detail?pron={query}{&ascii}",
+        "chara"=>"可輸入漢字字符串且將自動簡轉繁/異",
+        "pron"=>"使用粵拼作爲輸入",
+        "ascii"=>"將非ASCII字符轉爲UNICODE表示形式返回",
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    return;
+}
+
+// 若不請求chara=*或pron=*，則返回空
+if (!isset($_REQUEST['chara']) && !isset($_REQUEST['pron'])) {
+    Info::printApiJson();
+    return;
+}
+if (isset($_REQUEST['chara']) && isset($_REQUEST['pron'])) {
+    print_r(json_encode([
+        "error"=>"Querying chara= and pron= concurrently is not allowed.",
+    ]));
     return;
 }
 
@@ -36,9 +51,8 @@ $isReturnRaw = isset($_REQUEST['raw']);
 // 不請求ascii則返回中文鍵值對，請求ascii則鍵以英文寫、值以unicode轉寫
 $isReturnAscii = isset($_REQUEST['ascii']);
 if (!$isReturnAscii) { // 好惡心，有沒有其它更elegent的方法
-    $key = ["name" => "書名", "initial" => "聲母", "nuclei" => "韻核", "coda" => "韻尾", "tone" => "聲調", "initial_ch" => "聲字", "final_ch" => "韻字", "tone_ch" => "調類", "rime_class" => "韻攝", "rime" => "韻目", "rounding" => "呼", "transliteration" => "轉寫", "meaning" => "義", "siuwan" => "小韻", "yunbu" => "韻部", "page" => "頁", "order" => "序", "pronunciation" => "音", "radical" => "部首", "radical_stroke" => "部首筆畫", "extra_stroke" => "部外筆畫", "state" => "狀態", "division_adm" => "片區", "division_cha" => "等", "city" => "市", "district" => "管區", "color" => "色", "ipa" => "IPA", "note" => "備註", "chara" => "字", "ancient" => "韻書", "location" => "各地"];
-}
-else {
+    $key = ["name" => "書名", "initial" => "聲母", "nuclei" => "韻核", "coda" => "韻尾", "tone" => "聲調", "initial_ch" => "聲字", "final_ch" => "韻字", "tone_ch" => "調類", "rime_class" => "攝", "rime" => "韻", "rounding" => "呼", "transliteration" => "轉寫", "meaning" => "義", "siuwan" => "小韻", "yunbu" => "韻部", "page" => "頁", "order" => "序", "pronunciation" => "音", "radical" => "部首", "radical_stroke" => "部首筆畫", "extra_stroke" => "部外筆畫", "state" => "狀態", "division_adm" => "片區", "division_cha" => "等", "city" => "市", "district" => "管區", "color" => "色", "ipa" => "IPA", "note" => "註", "chara" => "字", "ancient" => "韻書", "location" => "各地"];
+} else {
     $key = ["name" => "name", "initial" => "initial", "nuclei" => "nuclei", "coda" => "coda", "tone" => "tone", "initial_ch" => "initial_ch", "final_ch" => "final_ch", "tone_ch" => "tone_ch", "rime_class" => "rime_class", "rime" => "rime", "rounding" => "rounding", "transliteration" => "transliteration", "meaning" => "meaning", "siuwan" => "siuwan", "yunbu" => "yunbu", "page" => "page", "order" => "order", "pronunciation" => "pronunciation", "radical" => "radical", "radical_stroke" => "radical_stroke", "extra_stroke" => "extra_stroke", "state" => "state", "division_adm" => "division", "division_cha" => "division", "city" => "city", "district" => "district", "color" => "color", "ipa" => "IPA", "note" => "note", "chara" => "chara", "ancient" => "ancient", "location" => "location"];
 }
 
@@ -60,7 +74,7 @@ if (isset($_REQUEST['chara'])) {
     }
     
     // $entriesConcat 是個深度爲4的數組
-    // $entriesConcat[k] 是對 $charaTransArray 的第k個字的搜索結果，有四個元素：
+    // $entriesConcat[k] 是對 $charaTransArray 的第k個字的搜索結果，有三個元素：
     //   "字"/"chara" 請求字, "古"/"ancient" 韻書音（包括廣韻與近期的韻書） , "地"/"location" 時音
     
     // $entriesConcat[k]["ancient"] 爲數組，每個元素爲各韻書音，
@@ -214,17 +228,14 @@ if (isset($_REQUEST['pron'])) {
     $jyutping = new Jyutping($submitPronString);
     if (!$jyutping->isValid()) {
         print_r(json_encode([
-            "__message"=>"Invalid Jyutping",
+            "error"=>"Invalid Jyutping",
             "__ref"=>"http://jyutdict.org/about"
         ], JSON_UNESCAPED_SLASHES));
     } else {
         $entriesConcat      = [];
-        $entry              = [];
-        $entries            = [];
         $entriesInAncient   = [];
         $entriesInLocations = [];
-    
-    
+        
         //獲取韻書列表
         $inWanshyuList_sql  = " SELECT `name`, `sheetname`
                                 FROM `IWanshyuList`";
