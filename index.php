@@ -69,6 +69,13 @@ if (!empty($_REQUEST['character'])) {
                         <label><input name="option[]" type="checkbox" value="map" <?PHP if ($options["map"]) echo "checked"; ?> id="check-map">地方音地圖</label>
                     </div>
                 </form>
+				<?PHP 
+				if (empty($_REQUEST['character'])) {
+					echo "<div style='text-align:center;margin:20px;padding:20px;' class='general-bg'>测试</div>"
+				} else {
+					
+				}
+				?>
             </div>
 
 			<?PHP
@@ -101,6 +108,9 @@ if (!empty($_REQUEST['character'])) {
 					$area->showMap();
 					$area->printAreaFramework(END);
 				}
+			} else {
+				echo "";
+
 			} //end if !empty get
 			?>
 		</div>

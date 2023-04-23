@@ -19,7 +19,7 @@
         </div>
         <hr>
         <div class="copyright">
-            <p>© 2019 嶺南粵音<a href="https://www.jyutdict.org">泛粵大典</a>開發組 版權所有</p>
+            <p>© 2019-2023 嶺南粵音<a href="https://www.jyutdict.org">泛粵大典</a>開發組 版權所有</p>
         </div>
     </div>
 </div>

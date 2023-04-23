@@ -4,3 +4,4 @@ Empty.php
 .project
 /.vscode
 .gitignore
+[0-9]*
