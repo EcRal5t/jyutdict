@@ -38,18 +38,18 @@ class ViewWanshyuResult{
 }
 class ViewKuangyon implements printHTML,updateData{
 
-	private $isGet	=	false;
+	private $isGet = false;
 	
-	private $data	=	null;
+	private $data = null;
 
 	public function __construct(bool $isGet)
 	{
-		$this->isGet	=	$isGet;
+		$this->isGet = $isGet;
 		
 	}
 	public final function updateData(CharaResultIterator $dataKuangyon)
 	{
-		$this->data	=	$dataKuangyon;
+		$this->data = $dataKuangyon;
 	}
 	public final function printFramework(bool $isBegin) : void
 	{
@@ -80,17 +80,17 @@ class ViewKuangyon implements printHTML,updateData{
 
 class ViewFanwan implements printHTML,updateData{
 
-	private $isGet	=	false;
+	private $isGet = false;
 
-	private $data	=	null;
+	private $data = null;
 
 	public function __construct(bool $isGet)
 	{
-		$this->isGet	=	$isGet;
+		$this->isGet = $isGet;
 	}
 	public final function updateData(CharaResultIterator $fanwan)
 	{
-		$this->data	=	$fanwan;
+		$this->data = $fanwan;
 	}
 	public function printFramework(bool $isBegin) :void  
 	{
@@ -145,20 +145,20 @@ class ViewFanwan implements printHTML,updateData{
 }
 class ViewJingwaa implements printHTML{
 
-	private $isGet	=	false;
+	private $isGet = false;
 
-	private $data	=	null;
+	private $data = null;
 
-	private $lastOrder	=	"0";
+	private $lastOrder = "0";
 
 	public function __construct(bool $isGet)
 	{
-		$this->isGet	=	$isGet;
+		$this->isGet = $isGet;
 	}
 	public final function updateData(CharaResultIterator $jingwaa,string $lastOrder)
 	{
-		$this->data	=	$jingwaa;
-		$this->lastOrder	=	$lastOrder;
+		$this->data = $jingwaa;
+		$this->lastOrder = $lastOrder;
 	}
 
 	public  final function printFramework(bool $isBegin): void
@@ -221,17 +221,17 @@ class ViewJingwaa implements printHTML{
 
 class ViewArea implements updateData{
 	
-	private $isGet 	=	false;
+	private $isGet = false;
 
-	private $data	=	null;
+	private $data = null;
 	
 	public function __construct(bool $isGet)
 	{
-		$this->isGet	=	$isGet;
+		$this->isGet = $isGet;
 	}
 	public final function updateData(CharaResultIterator $area)
 	{
-		$this->data	=	$area;
+		$this->data = $area;
 	}
 	public static final function printAreaFramework(bool $isBegin)
 	{
@@ -273,7 +273,7 @@ class ViewArea implements updateData{
 
 	public final function printContentList(): void
 	{
-		$jyutping	=	new Jyutping();
+		$jyutping = new Jyutping();
 		$jyutping->set(
 				$this->data->getInitial(),
 				$this->data->getNuclei(),
@@ -291,8 +291,7 @@ class ViewArea implements updateData{
 				{ 
 					echo "<span class='hl-font-grayish font-0p9em tipsMain' style='width: 50px;'>"
 					 		. $this->data->getDistrict() .
-					 		 "</span>"; 
-							}
+					 		"</span>"; }
 				?>
 			</td>
 			<td class="alphabet">
@@ -317,9 +316,9 @@ class ViewArea implements updateData{
 class ViewMap implements updateData
 {
 	
-	private $data	=	null;
+	private $data = null;
 	
-	private $mapName	=	"";
+	private $mapName = "";
 
 	private $pronunciation = "";
 
@@ -327,12 +326,12 @@ class ViewMap implements updateData
 
 	public function __construct(string $mapName)
 	{
-		$this->mapName	=	$mapName;
+		$this->mapName = $mapName;
 	}
 	
 	public final function updateData(\CharaResultIterator $area)
 	{
-		$this->data	=	$area;
+		$this->data = $area;
 		$this->setFontcolorArr($area->getColor());
 		$this->pronunciation = "";
 		$this->setPronunciation($area);
@@ -370,9 +369,9 @@ class ViewMap implements updateData
 		crossorigin=""></script>
 		<script>
 
-			var initQueue	=	Array();
+			var initQueue = Array();
 
-			let excuter	=	null;
+			let excuter = null;
 
 		</script>
 		<?php
@@ -390,7 +389,7 @@ class ViewMap implements updateData
 	{
 		?>
 		<script>
-			excuter	=	{
+			excuter = {
 				mapIniter	: function(){},
 				MakerPlacer	:	Array(function(){}),
 				currentMap : null
