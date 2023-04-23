@@ -284,20 +284,21 @@ class ViewArea implements updateData{
 		?>
 		<tr>
 			<td class="column4-20 min-width60 "><?PHP echo $this->data->getDivision(); ?></td>
-			<td class="column3-20 min-width45 <?PHP if($this->data->getDistrict() != "") { echo 'tips'; } ?> ">
+			<td class="column4-20 min-width45 <?PHP if(false && $this->data->getDistrict() != "") { echo 'tips'; } ?> ">
 				<?PHP
 				echo $this->data->getCity();
 				if ($this->data->getDistrict() != "") 
 				{ 
 					echo "<span class='hl-font-grayish font-0p9em tipsMain' style='width: 50px;'>"
 					 		. $this->data->getDistrict() .
-					 		 "</span>"; }
+					 		 "</span>"; 
+							}
 				?>
 			</td>
 			<td class="alphabet">
 				<?PHP $jyutping->printWithColor(); ?>
 			</td>
-			<td class="column4-20 min-width45">
+			<td class="column3-20 min-width45">
 				<?PHP $jyutping->printIpaWithColor(); ?>
 			</td>
 			<?PHP
