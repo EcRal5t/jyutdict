@@ -17,7 +17,7 @@ final class Info {
         $version = self::$version;
         echo <<< SIDENAV
     <style>.sidenav-info:after{content:
-    '主版本:{$version} \A 廣州190811 \A 北海190219 | 亭子190222 \A 貴港190127 | 欽州190819 \A 廉州190219 | 南寧190802 \A 梧州190117 | 蒼梧190118 \A 鬱林190803 \A 廣韻 140930';}
+    '主版本:{$version} \A 廣州190811 | 沙塘 210820 \A 北海190219 | 亭子190222 \A 貴港190127 | 欽州190819 \A 廉州190219 | 江門 201017 \A 梧州190117 | 蒼梧190118 \A 鬱林210915 | 茂名200709 \A 肇庆 201029 | 防城 190910 \A 尋旺 200126 | 容縣 2102 \A 廣韻 140930';}
     </style>
     
     <div class="sidenav-overlay" onclick="hideSidenav()"></div>
@@ -48,6 +48,16 @@ SIDENAV;
                 </a>
             </li>
          */
+    }
+    
+    public static function printApiJson() {
+        print_r(json_encode([
+            "app_version"=>[0,6,6],
+            "details_of_characters"=>"https://jyutdict.org/api/v0.9/detail?chara={query}{&ascii}",
+            "details_of_pronunciations"=>"https://jyutdict.org/api/v0.9/detail?pron={query}{&ascii}",
+            "details_in_characters_sheet"=>"https://jyutdict.org/api/v0.9/sheet?query={query}{&fuzzy, regex, trim, ascii, b, col={locations}}",
+            "help"=>"Apply parameter '&help' at corresponding API for detailed info."
+        ], JSON_UNESCAPED_SLASHES));
     }
 }
 

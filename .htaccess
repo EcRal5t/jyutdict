@@ -1,0 +1,24 @@
+<Ifmodule mod_rewrite.c>
+ 
+RewriteEngine on  //on为打开,off为关闭
+RewriteRule ^pron$ pron.php
+RewriteRule ^index$ index.php
+RewriteRule ^about$ about.php
+RewriteRule ^404$ 404.php
+#RewriteRule ^api/detail$ api/v0.9/detail.php
+RewriteRule ^api/v0.9/sheet$ api/v0.9/sheet.php
+RewriteRule ^api/v0.9/detail$ api/v0.9/detail.php
+
+#RewriteCond %{SERVER_PORT} !^443$
+#RewriteRule ^(.*)?$ https://%{SERVER_NAME}%{REQUEST_URI} [L,R]
+
+ErrorDocument 404 /404
+ErrorDocument 403 /404
+
+#Order Allow,Deny
+<FilesMatch "^((index|about|pron|404|)(.php)?)|(api/)$">
+Allow from all
+</FilesMatch>
+Deny from all
+
+</IfModule>
