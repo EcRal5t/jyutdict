@@ -133,6 +133,12 @@ require_once("ResultIterator.class.php");
     public final function getTone() : string
     { return $this->getCurrentList()['tone']; }
 
+    public final function getJpp() : string
+    { return $this->getCurrentList()['initial'] .
+      $this->getCurrentList()['nuclei'] .
+      $this->getCurrentList()['coda'] .
+      $this->getCurrentList()['tone']; }
+
     public final function getSiuwan() : string
     { return $this->getCurrentList()['siuwan']; }
 
@@ -209,6 +215,12 @@ require_once("ResultIterator.class.php");
 
     public final function getTone() : string
     { return $this->getCurrentList()['tone']; }
+
+    public final function getJpp() : string
+    { return $this->getCurrentList()['initial'] .
+      $this->getCurrentList()['nuclei'] .
+      $this->getCurrentList()['coda'] .
+      $this->getCurrentList()['tone']; }
 
     public final function getPronunciation() : string
     { return $this->getCurrentList()['pron']; }

@@ -114,7 +114,7 @@ class ViewFanwan implements printHTML,updateData{
 			case true:
 				$jyutping = new Jyutping();
 				?>
-					<?PHP $jyutping->set($this->data->getInitial(), $this->data->getNuclei(), $this->data->getCoda(), $this->data->getTone());?>
+					<?PHP $jyutping->setWithRaw($this->data->getJpp()); ?>
 					<tr>
 						<td class="column2-20 font-22">分韻</td>
 						<td class="column8-20">韻部 - 小韻</td>
@@ -190,7 +190,7 @@ class ViewJingwaa implements printHTML{
 		switch ($this->isGet) {
 			case true:
 					$jyutping = new Jyutping();
-					$jyutping->set($this->data->getInitial(),$this->data->getNuclei(),$this->data->getCoda(),$this->data->getTone());
+					$jyutping->setWithRaw($this->data->getJpp());
 					?>
 					<tr>
 						<td>英華</td>

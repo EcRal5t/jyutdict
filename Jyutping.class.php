@@ -17,7 +17,7 @@ class Jyutping {
     
     protected $valid   = false; // 設置的粵拼是否合法
     
-    const format = "/^[a-z%]{1,10}[0-9]?[0-9*][0-9\']?$/";
+    const format = "/^[a-z%]{1,10}([0-9]?[0-9*][0-9\']?)?$/";
     const initialFormat = '/^(mb?|n[jrd]?|ngg?|[bdg]{1,2}|g[hn]?|r[bdgzscrh]|[zcs][hrjl]?|[ptkvw]h?|[hqfjlrx0])([jwv]?)(?=[aeoiuymn])/';
     const codaFormat    = '/[aoreiwu%](n[ng]?|[mptkh|%])(\d{0,2}|%)$/';
     const toneFormat    = '/[0-9]?[0-9*][0-9\']?$/';
@@ -30,7 +30,7 @@ class Jyutping {
         "i"=>"i", "yu"=>"y", "y"=>"y", "ii"=>"ɨ", "uu"=>"ʉ", "ur"=>"ɯ", "u"=>"u", "iw"=>"ɪ", "yw"=>"ʏ", "uw"=>"ʊ", "ee"=>"e", "ew"=>"ø", "ir"=>"ɘ", "eo"=>"ɵ", "or"=>"ɤ", "oo"=>"o", "ea"=>"ə", "e"=>"ɛ", "oe"=>"œ", "aw"=>"ɜ", "ow"=>"ɞ", "er"=>"ʌ", "o"=>"ɔ", "ae"=>"æ", "a"=>"ɐ", "aa"=>"a", "ao"=>"ɶ", "ar"=>"ɑ", "oa"=>"ɒ", "m"=>"m", "n"=>"n", "ng"=>"ŋ", "z"=>"z"
     ];
     
-    public function __construct($jyutping = "") {
+    public function __construct() {
 
     }
     
@@ -58,6 +58,19 @@ class Jyutping {
         return false;
     }
     
+    public function setWithRaw($jyutping) {
+        $parse_result =  self::jyutping_parser($jyutping);
+        if ($parse_result) {
+            $this->initial = $parse_result[0];
+            $this->nuclei  = $parse_result[1];
+            $this->coda    = $parse_result[2];
+            $this->tone    = $parse_result[3];
+            $this->valid   = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
     
     public function set($in, $nu, $co, $to) {
         if (!preg_match('/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)?$/', $in) ||
