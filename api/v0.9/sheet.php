@@ -11,16 +11,19 @@ include_once("../../connectDB.php");
 include("../../Lookup.class.php");
 include_once("../../Jyutping.class.php");
 
+header('Content-type: application/json');
+
 if (isset($_REQUEST['help'])) {
     print_r(json_encode([
-        "format"=>"https://jyutdict.org/api/v0.9/sheet?query={query}{&fuzzy, regex, trim, ascii, b, col={locations}}",
-        "query"=>"可如'aa3', '啊'",
+        "format"=>"https://jyutdict.org/api/v0.9/sheet?query={query}{&fuzzy, regex, trim, ascii, b, col={location}, limit={count}}",
+        "query"=>"可如'aa3'、'啊'等，爲半角歎號'!'時表示隨機返回，若不指定 limit 參數則默認返回一項",
         "regex"=>"使用正則",
         "fuzzy"=>"模糊查詢，即前後可接其它字符串",
-        "trim"=>"<b>推薦使用</b>，可以蒐索音節整體，無視標記以檢索 !!foo1/{query}⑩？/bar2 這類格式",
-        "col"=>"選擇某一列查詢，參數可用 &col=0 獲取",
-        "ascii"=>"將非ASCII字符轉爲UNICODE表示形式返回",
-        "b"=>"查詢釋義，此時會開啟模糊查詢開關"
+        "trim"=>"推薦使用，可以無視標記而檢索音節整體，從而支持 !!foo1/{query}⑩？/bar2 一類格式",
+        "col"=>"選擇某一列查詢，參數可用 'query=' (無參數)獲取",
+        "ascii"=>"將非 ASCII 字符轉爲 UNICODE 表示形式返回",
+        "b"=>"查詢釋義，此時會開啟模糊查詢開關",
+        "limit"=>"僅適用於隨機返回模式，用於控制返回條數，不超過 30"
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     return;
 }
