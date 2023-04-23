@@ -200,12 +200,12 @@
     }
     
     &-head {
-        .setSize(160px);
+        .setSize(140px);
         .bgc(#047);
         background-color: #FFFFFF;
         color: #001020;
         text-align: center;
-        margin: 15px 0;
+        margin: 10px 0 15px 0;
         
         
     }
@@ -238,10 +238,15 @@
                 padding: 0 2pc;
                 color: black;
                 margin: 0.5pc 0;
+                .transition(@transitionCurveFast);
             }
         }
         
         .sidenav-info {
+            &:hover a {
+                display: block;
+                background: #aaa;
+            }
             &:after {
                 .transition(@transitionCurveFast);
                 display: block;
@@ -255,7 +260,7 @@
             }
             
             &:hover:after {
-                height: 9em;
+                height: 11em;
             }
         }
     }
@@ -264,17 +269,20 @@
 .sidenav-show-btn,
 .sidenav-hide-btn {
     display: block;
-    .setSize(50px, 50px);
+    .setSize(60px, 60px);
     position: fixed;
     z-index: 1;
     outline: none;
-    border-radius: 100%;
+    border-radius: 50%;
     .transition(@transitionCurveFast);
     background-color: rgba(0,0,0,0);
     color: #18d;
+    //box-sizing: border-box;
+    //border: 2px solid rgb(211,41,19);
     &:hover {
         background-color: #DBDBCC;
         .box-shadow(0 0 10px 10px #DBDBCC);
+        //border: none;
     }
 }
 
@@ -313,7 +321,6 @@
         opacity: 0.5;
     }
 }
-
 
 
 //通用基础页面

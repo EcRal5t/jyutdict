@@ -9,14 +9,14 @@ require_once("ResultIterator.class.php");
     
     private $name = "";
 
-    private $fullname = "";
+    private $fullName = "";
 
     public final function __construct(PDO $dbh,string $chara,string $tableName,
-    string $date,string $name,string $fullname)
+    string $date,string $name,string $fullName)
     {
       $this->setDate($date);
       $this->setName($name);
-      $this->setFullname($fullname);
+      $this->setFullName($fullName);
       parent::__construct($dbh,$chara,$tableName);
     }
 
@@ -36,8 +36,8 @@ require_once("ResultIterator.class.php");
     private final function setName(string $name)
     { $this->name = $name;  }
 
-    private final function setFullname(string $fullname)
-    { $this->fullname = $fullname;  }
+    private final function setFullName(string $fullName)
+    { $this->fullName = $fullName;  }
 
     public final function getID() : string
     { return $this->getCurrentList()['id']; }    
@@ -48,7 +48,7 @@ require_once("ResultIterator.class.php");
     public final function getInitial() : string
     { return $this->getCurrentList()['initial']; }    
 
-    public final function getRimeclass() : string
+    public final function getRimeClass() : string
     { return $this->getCurrentList()['rimeclass']; }    
 
     public final function getRime() : string
@@ -75,14 +75,14 @@ require_once("ResultIterator.class.php");
     
     private $name = "";
 
-    private $fullname = "";
+    private $fullName = "";
 
     public final function __construct(PDO $dbh,string $chara,string $tableName,
-    string $date,string $name,string $fullname)
+    string $date,string $name,string $fullName)
     {
       $this->setDate($date);
       $this->setName($name);
-      $this->setFullname($fullname);
+      $this->setFullName($fullName);
       parent::__construct($dbh,$chara,$tableName);
     }
 
@@ -102,14 +102,14 @@ require_once("ResultIterator.class.php");
     private final function setName(string $name)
     { $this->name = $name;  }
 
-    private final function setFullname(string $fullname)
-    { $this->fullname = $fullname;  }
+    private final function setFullName(string $fullName)
+    { $this->fullName = $fullName;  }
 
     public final function getName() : string
     { return $this->name; }
 
-    public final function getFullname() : string
-    { return $this->fullname; }
+    public final function getFullName() : string
+    { return $this->fullName; }
 
     public final function getDate() : string
     { return $this->date; }
@@ -153,7 +153,7 @@ require_once("ResultIterator.class.php");
 
   }
 
-  #JIngwaa同Fanwan我想应该可以归为一个类节省代码（GETER）一样 但是想想太麻烦了
+  #Jingwaa同Fanwan我想应该可以归为一个类节省代码（GETER）一样 但是想想太麻烦了
   class DataJingwaa extends CharaResultIterator
   {
 
@@ -164,11 +164,11 @@ require_once("ResultIterator.class.php");
     private $fullname = "";
 
     public final function __construct(PDO $dbh,string $chara,string $tableName,
-    string $date,string $name,string $fullname)
+    string $date,string $name,string $fullName)
     {
       $this->setDate($date);
       $this->setName($name);
-      $this->setFullname($fullname);
+      $this->setFullName($fullName);
       parent::__construct($dbh,$chara,$tableName);
     }
 
@@ -189,8 +189,8 @@ require_once("ResultIterator.class.php");
     private final function setName(string $name)
     { $this->name = $name;  }
 
-    private final function setFullname(string $fullname)
-    { $this->fullname = $fullname;  }
+    private final function setFullName(string $fullName)
+    { $this->fullname = $fullName;  }
 
     public final function getID() : string
     { return $this->getCurrentList()['id']; }

@@ -3,7 +3,7 @@ include("const.php");
 include_once("connectDB.php");
 include("Lookup.class.php");
 include_once("Jyutping.class.php");
-require_once("dict_data/Dictinfo.class.php");
+require_once("dict_data/DictInfo.class.php");
 require_once("dict_data/DictData.class.php");
 require_once("dict_view/view.class.php");
 require_once("dict_presenter/IndexPresenter.class.php");

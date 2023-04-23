@@ -64,7 +64,7 @@ class KuangyonPresenter extends DictPresenter{
     $view = new ViewKuangyon( ($data->listCount() > 0 ) );
     $view->updateData($data);
     $view->printFramework(BEGIN);
-    for($time = 0;$data->hasNext();$data->next() )
+    for(; $data->hasNext(); $data->next() )
     {
       $view->updateData($data);
       $view->printContentList();
@@ -90,7 +90,7 @@ class WanshyuPresenter extends DictPresenter{
         case '分韻':
           $data = new DataFanwan($this->dbh,$this->chara,
                 $info->getSheetname(),$info->getdate(),
-                $info->getName(),$info->getFullname());
+                $info->getName(),$info->getFullName());
           $isGet = ($data->listCount() > 0);
           $view = new ViewFanwan( $isGet );
           if($isGet)
@@ -110,7 +110,7 @@ class WanshyuPresenter extends DictPresenter{
         case '英華':
         $data = new DataJingwaa($this->dbh,$this->chara,
               $info->getSheetname(),$info->getdate(),
-              $info->getName(),$info->getFullname());
+              $info->getName(),$info->getFullName());
         $lastOrder = '0';
         $isGet = ($data->listCount() > 0);
         $view = new ViewJingwaa( $isGet );

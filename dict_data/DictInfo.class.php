@@ -9,7 +9,7 @@ class InfoArea extends ResultIterator
   protected final function setTableName(string $tableName = "IAreaList") : void
   { $this->tableName	=	$tableName; }
 
-  protected final function setWhereClause(string $sql	=	"1") : void
+  protected final function setWhereClause(string $sql = "1") : void
   { $this->whereClause  = $sql; }
 
   public final function getID() : string
@@ -47,7 +47,7 @@ class InfoWanshyu extends ResultIterator
   protected final function setTableName(string $tableName = "IWanshyuList") : void
   { $this->tableName	=	$tableName; }
 
-  protected final function setWhereClause(string $sql	=	"1") : void
+  protected final function setWhereClause(string $sql = "1") : void
   { $this->whereClause  = $sql; }
   
 	public final function getID()	:	string
@@ -56,7 +56,7 @@ class InfoWanshyu extends ResultIterator
 	public final function getName()	:	string
 	{	return $this->getCurrentList()['name'];	}
 	
-	public final function getFullname()	:	string
+	public final function getFullName()	:	string
 	{	return $this->getCurrentList()['fullname'];	}
 
 	public final function getDate()	:	string
