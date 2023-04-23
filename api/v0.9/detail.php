@@ -13,6 +13,8 @@ include_once("../../Jyutping.class.php");
 require_once("../../dict_data/DictInfo.class.php");
 require_once("../../dict_data/DictData.class.php");
 
+header('Content-type: application/json');
+
 if (isset($_REQUEST['help'])) {
     print_r(json_encode([
         "details_of_characters"=>"https://jyutdict.org/api/v0.9/detail?chara={query}{&ascii}",
