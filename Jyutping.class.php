@@ -17,11 +17,11 @@ class Jyutping {
     
     protected $valid   = false; // 設置的粵拼是否合法
     
-    const format = "/^[a-z%]{1,10}\d{0,2}$/";
-    const initialFormat = '/^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)(?=[aeoiuy%])/';
+    const format = "/^[a-z%]{1,10}[0-9]?[0-9*][0-9\']?$/";
+    const initialFormat = '/^(mb?|n[jrd]?|ngg?|[bdg]{1,2}|g[hn]?|r[bdgzscrh]|[zcs][hrjl]?|[ptkvw]h?|[hqfjlrx0])([jwv]?)(?=[aeoiuymn])/';
     const codaFormat    = '/[aoreiwu%](n[ng]?|[mptkh|%])(\d{0,2}|%)$/';
-    const toneFormat    = '/\d{1,2}$/';
-    const vowelFormat   = '/^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y|z|%$)/';
+    const toneFormat    = '/[0-9]?[0-9*][0-9\']?$/';
+    const vowelFormat   = '/(^ng?$|^m$|i[rwi]?|u[rwu]?|[aeo][aeowr]?|yu$|y)$/';
     
     const consonantIpa = [  //我要死了…
         "m"=>"m", "n"=>"n", "nj"=>"ȵ", "ng"=>"ŋ", "b"=>"p", "d"=>"t", "g"=>"k", "q"=>"ʔ", "p"=>"pʰ", "t"=>"tʰ", "k"=>"kʰ", "bb"=>"ɓ", "dd"=>"ɗ", "s"=>"s", "sh"=>"ʃ", "sr"=>"ʂ", "sj"=>"ɕ", "z"=>"ʦ", "zh"=>"ʧ", "zr"=>"ʈʂ", "zj"=>"ʨ", "c"=>"ʦʰ", "ch"=>"ʧʰ", "cr"=>"ʈʂʰ", "cj"=>"ʨʰ", "ph"=>"ɸ", "f"=>"f", "v"=>"v", "th"=>"θ", "h"=>"h", "w"=>"w", "j"=>"j", "sl"=>"ɬ", "zl"=>"tɬ", "cl"=>"tɬʰ", "l"=>"l", "gw"=>"kʷ", "kw"=>"kʷʰ", "gv"=>"kᵛ", "kv"=>"kᵛʰ", ""=>""
@@ -31,13 +31,17 @@ class Jyutping {
     ];
     
     public function __construct($jyutping = "") {
+
+    }
+    
+    public static function jyutping_parser($jyutping_str) {
         $tempResult = [];                               //划分粤拼音节
         
-        if (preg_match(self::format, $jyutping)) {
-            $tone    = preg_match(self::toneFormat   , $jyutping, $tempResult) ? $tempResult[0] : "";
-            $initial = preg_match(self::initialFormat, $jyutping, $tempResult) ? $tempResult[0] : "";
-            $coda    = preg_match(self::codaFormat   , $jyutping, $tempResult) ? $tempResult[1] : "";
-            $nuclei  = substr($jyutping, strlen($initial), strlen($jyutping)-strlen($initial)-strlen($coda)-strlen($tone));
+        if (preg_match(self::format, $jyutping_str)) {
+            $tone    = preg_match(self::toneFormat   , $jyutping_str, $tempResult) ? $tempResult[0] : "";
+            $initial = preg_match(self::initialFormat, $jyutping_str, $tempResult) ? $tempResult[0] : "";
+            $coda    = preg_match(self::codaFormat   , $jyutping_str, $tempResult) ? $tempResult[1] : "";
+            $nuclei  = substr($jyutping_str, strlen($initial), strlen($jyutping_str)-strlen($initial)-strlen($coda)-strlen($tone));
 
             $vowels = [];                               //用于存放划分得出的各个元音
 
@@ -45,22 +49,13 @@ class Jyutping {
                 if (preg_match(self::vowelFormat ,substr($nuclei, $pos), $tempResult)) {
                     $vowels[$count] = $tempResult[0];   //从前到后用正则检测元音
                 } else {
-                    return;                             //元音输入有误，直接退出
+                    return false;     //元音输入有误，直接退出
                 }
                 $pos += strlen($vowels[$count]);        //划分出几个字母，就向后几个字母继续划分
             }
-    
-            if ($tone=="") $tone = "%";
-            
-            $this->initial = $initial;
-            $this->nuclei  = $nuclei;
-            $this->coda    = $coda;
-            $this->tone    = $tone;
-            $this->vowels  = $vowels;
-            $this->valid   = true;
-            return;                                   //划分成功
+            return [$initial, $nuclei, $coda, $tone];      //划分成功
         }
-        //如果运行到此，说明输入框为空，或输入粤拼结构有误（此时才改输入框背景色）
+        return false;
     }
     
     

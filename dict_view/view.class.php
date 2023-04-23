@@ -273,14 +273,18 @@ class ViewArea implements updateData{
 
 	public final function printContentList(): void
 	{
-		$jyutping = new Jyutping();
-		$jyutping->set(
-				$this->data->getInitial(),
-				$this->data->getNuclei(),
-				$this->data->getCoda(),
-				$this->data->getTone()
-				);
-		$jyutping->setIpa($this->data->getIPA());  
+		$jyutpings_raw = mb_split("=", $this->data->getJpp());
+		$ipas_raw = mb_split("=", $this->data->getIpa());
+		$jyutpings = array();
+		for ($i = 0; $i < count($jyutpings_raw); $i++) {
+			$jpp_parsed = Jyutping::jyutping_parser($jyutpings_raw[$i]);
+			if ($jpp_parsed !== false) {
+				$jyutping = new Jyutping();
+				$jyutping->set($jpp_parsed[0], $jpp_parsed[1], $jpp_parsed[2], $jpp_parsed[3]);
+				$jyutping->setIPA($ipas_raw[$i]);
+				array_push($jyutpings, $jyutping);
+			}
+		}
 		?>
 		<tr>
 			<td class="column4-20 min-width60 "><?PHP echo $this->data->getDivision(); ?></td>
@@ -295,10 +299,20 @@ class ViewArea implements updateData{
 				?>
 			</td>
 			<td class="alphabet">
-				<?PHP $jyutping->printWithColor(); ?>
+				<?PHP foreach ($jyutpings as $jyutping) {
+					$jyutping->printWithColor();
+					if ($jyutping !== end($jyutpings)) {
+						echo "/";
+					}
+				} ?>
 			</td>
 			<td class="column3-20 min-width45">
-				<?PHP $jyutping->printIpaWithColor(); ?>
+				<?PHP foreach ($jyutpings as $jyutping) {
+					$jyutping->printIpaWithColor();
+					if ($jyutping !== end($jyutpings)) {
+						echo "/";
+					}
+				} ?>
 			</td>
 			<?PHP
 			if (mb_strlen($this->data->getNote(),'UTF8') > 5) {
