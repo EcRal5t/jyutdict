@@ -249,6 +249,35 @@ class ViewArea implements updateData{
 				break;
 		}
 	}
+	public static final function printRelativeLink(string $ch): void
+	{
+		echo <<< EOT
+		<div class="general-bg-deeper charaRelativeLink">
+			快速查詢: {$ch}
+			<table class="general-form" style="width:100%;">
+				<tr>
+					<td style="width:33%;">
+					<a href="http://www.zdic.net/hans/{$ch}" target="_blank">漢典網</a><br>
+					<a href="http://www.ccamc.co/cjkv.php?cjkv={$ch}" target="_blank">古今文字集成</a><br>
+					<a href="http://humanum.arts.cuhk.edu.hk/Lexis/lexi-mf/search.php?word={$ch}" target="_blank">漢語多功能字庫</a><br>
+					<a href="https://zi.tools/zi/{$ch}" target="_blank">字統网</a><br>
+					</td>
+					<td style="width:33%;">
+					<a href="https://jyut.net/query?q={$ch}" target="_blank">粵音資料集叢</a><br>
+					<a href="https://words.hk/zidin/wan/?q={$ch}" target="_blank">粵典</a><br>
+					<a href="https://kaifangcidian.com/han/yue/?{$ch}" target="_blank">開放粵語詞典</a><br>
+					</td>
+					<td style="width:34%;">
+					<a href="http://www.zdic.net/zd/yy/yy/{$ch}" target="_blank">漢典-粵</a> | <a href="http://www.zdic.net/zd/yy/ph/{$ch}" target="_blank">漢典-平</a><br>
+					<a href="https://ytenx.org/zim?dzih={$ch}&amp;dzyen=1&amp;jtkb=1&amp;jtkd=1&amp;jtdt=1&amp;jtgt=1" target="_blank">韻典網</a><br>
+					<a href="http://humanum.arts.cuhk.edu.hk/Lexis/lexi-mf/dialect.php?word={$ch}" target="_blank">漢語多功能字庫方音</a><br>
+					<a href="https://hamzau.com/?q={$ch}" target="_blank">欽州白話</a><br>
+					</td>
+				</tr>
+			</table>
+
+		</div> 
+EOT; }
 	public final function printTableFramework(bool $isBegin): void
 	{
 		switch ($isBegin) {

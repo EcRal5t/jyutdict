@@ -1,8 +1,5 @@
 <?PHP
 include ("const.php");
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -11,7 +8,7 @@ include ("const.php");
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-16">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -20,7 +17,6 @@ include ("const.php");
     <title>泛粵大典</title>
     <link rel="stylesheet" type="text/css" href="./css/about.css?<?PHP echo rand(); ?>">
     <link rel="icon" href="./img/favicon.ico">
-    
     <script src="./js/general.js"></script>
 </head>
 
@@ -42,8 +38,8 @@ include ("const.php");
             <br>
             <p>查音使用擴展粵拼，支持模糊檢索，使用"%"可代表聲母、韻腹或韻尾，調號可不標表示聲調不敏感。</p>
             <br>
-            <h1>二、泛粵字表</h1>
-            <p>泛粵字表收錄泛粵粵語中相比普通話比較突出的用字，並使用擴展粵拼記錄該字在各點中的讀音，至19年7月末合計收錄2500+條。</p>
+            <h1 id="fjb">二、泛粵字表</h1>
+            <p>泛粵字表收錄泛粵粵語中相比普通話比較突出的用字，並使用擴展粵拼記錄該字在各點中的讀音，至19年7月末合計收錄2500+條；23年中計4500+條。</p>
             <br>
             <p>雖然釋義可能無法在通用多地與精確之間同時兼顧，各地記錄也會因受限於參與人的瞭解而不一定十分準確，但起碼可以將這些特色字不分地位地數位化記錄保存，同時可大致確定某字某義的使用範圍，也可反過來，爲該字提供更精細的音韻地位資訊。</p>
             <br>
@@ -157,10 +153,7 @@ include ("const.php");
             <br>
             <p>個人 QQ：526438991</p>
         </div>
-        <hr style="margin: 50px 0;">
-        <div class="copyright">
-            <p>© 2019-2023 嶺南粵音<a href="https://www.jyutdict.org">泛粵大典</a>開發組 版權所有</p>
-        </div>
+        <?PHP Info::showFooter(); ?>
     </div>
 </div>
 </body>
