@@ -7,7 +7,7 @@
  */
 
 final class Info {
-    private static $version = "v0.8.34.2/170731";
+    private static $version = "v0.8.34.2b/170731/230810";
     
     public static function showVersion() {
         echo "<span style=\"float:right;color:#444444;font-size:0.6em\">".self::$version."</span>";
@@ -25,16 +25,18 @@ final class Info {
     <div id="sidenav">
     
         <div id="sidenav-head">
-            <embed src="img/LOGO.svg" width="160" type="image/svg+xml" pluginspage="https://www.jyutdict.org/" />
+            <embed src="https://jyutdict.org/img/LOGO.svg" width="160" type="image/svg+xml" pluginspage="https://www.jyutdict.org/" />
         </div>
         
         <ul id="sidenav-list">
-            <li class="sidenav-link"><a href="./">檢字</a></li>
-            <li class="sidenav-link"><a href="./pron">檢音</a></li>
+            <li class="sidenav-link"><a href="https://jyutdict.org/">檢字</a></li>
+            <li class="sidenav-link"><a href="https://jyutdict.org/pron">檢音</a></li>
             <li class="sidenav-link"><a href="https://docs.google.com/spreadsheets/d/1jwpB2pKBM0OfONJXHCRIvAhEl4cTEobRdbw6z1PajCQ/edit?usp=sharing" target="_blank">泛粵表<span style="font-size: 0.5em;">(v1907. 於谷歌)</span></a></li>
             <li class="divider"></li>
+            <li class="sidenav-link"><a href="https://jyutdict.org/articles/post" target="_blank">紀文</a></li>
+            <li class="divider"></li>
             <li class="sidenav-link"><a href="https://jyutjam.org/" target="_blank">關於</a></li>
-            <li class="sidenav-link sidenav-info"><a href="./about">說明</a></li>
+            <li class="sidenav-link sidenav-info"><a href="https://jyutdict.org/about">說明</a></li>
         </ul>
     </div>
 SIDENAV;
@@ -48,7 +50,15 @@ SIDENAV;
             </li>
          */
     }
-    
+    public static function showFooter() {
+        echo <<< FOOTER
+        <hr style="margin: 50px 0;">
+        <div class="copyright" style="text-align: center;margin-bottom: 2em;">
+            <p>© 2019-2023 <a href="https://jyutjam.org">嶺南粵音</a> <a href="https://jyutdict.org">泛粵大典</a> 開發組 版權所有</p>
+        </div>
+        FOOTER;
+    }
+
     public static function printApiJson() {
         print_r(json_encode([
             "app_version"=>[0,6,7],

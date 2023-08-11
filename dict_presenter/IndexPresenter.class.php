@@ -166,6 +166,9 @@ class AreaPresenter extends DictPresenter{
   public function printAreaFramework(bool $isBegin)
   { ViewArea::printAreaFramework($isBegin);}
 
+  public function printRelativeLink()
+  { ViewArea::printRelativeLink($this->chara);}
+
   public function printMapDependency()
   { ViewMap::printDependency(); }
 

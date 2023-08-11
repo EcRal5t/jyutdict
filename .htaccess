@@ -8,6 +8,7 @@ RewriteRule ^404$ 404.php
 #RewriteRule ^api/detail$ api/v0.9/detail.php
 RewriteRule ^api/v0.9/sheet$ api/v0.9/sheet.php
 RewriteRule ^api/v0.9/detail$ api/v0.9/detail.php
+RewriteRule ^articles/([^.]+?)$ articles/$1.php
 
 #RewriteCond %{SERVER_PORT} !^443$
 #RewriteRule ^(.*)?$ https://%{SERVER_NAME}%{REQUEST_URI} [L,R]
@@ -16,7 +17,7 @@ ErrorDocument 404 /404
 ErrorDocument 403 /404
 
 #Order Allow,Deny
-<FilesMatch "^((index|about|pron|404|)(.php)?)|(robots.txt)|(api/)$">
+<FilesMatch "^((index|about|pron|404|)(.php)?)|(robots.txt)|(api/)|(articles/)$">
 Allow from all
 </FilesMatch>
 Deny from all

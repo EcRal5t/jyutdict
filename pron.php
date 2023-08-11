@@ -265,6 +265,8 @@ if ($valid) {
             ?>
         </div>
         <?PHP //print_r(round((microtime(TRUE) - $countTime_begin)*1000, 3)); ?>
+
+        <?PHP Info::showFooter(); ?>
     </div>
 </div>
 
