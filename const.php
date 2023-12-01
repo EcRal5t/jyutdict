@@ -17,7 +17,7 @@ final class Info {
         $version = self::$version;
         echo <<< SIDENAV
     <style>.sidenav-info:after{content:
-    '主版本:{$version} \A 鶴山沙坪-220601 \A 江門水南-220623 \A 江門白沙-220623 \A 江門沙仔尾-220623 \A 台山斗山墟-221024 \A 新會會城-220623 \A 開平赤磡-221020 \A 開平沙塘-211011 \A 江門墟頂-220623 \A 江門白話-221017 \A 廣州-190811 \A 順德大良-211021 \A 肇慶-201029 \A 梧州-181228 \A 桂平-210515 \A 南寧-230803 \A 高州-230308 \A 高州石鼓-230308 \A 茂名-200709 \A 防城-190910 \A 欽州-190820 \A 北海-190219 \A 廉州-190114 \A 湛江坡头-221013 \A 吳川吳陽-221013 \A 化州上江-220404 \A 化州下江-220404 \A 貴港街裏-190720 \A 桂平尋旺-200126 \A 梧州扶典-230129 \A 蒼梧石橋-181228 \A 容縣容州2102? \A 北流大旺-220608 \A 鬱林大塘-忘了 \A 蒙山-220321 \A 廣韻 140930';}
+    '主版本:{$version} \A 鶴山沙坪-220601 \A 江門水南-230910 \A 江門紫萊-230910 \A 江門白沙-230910 \A 江門沙仔尾-230910 \A 台山斗山墟-221024 \A 新會會城-220623 \A 開平赤磡-221020 \A 開平沙塘-220529 \A 江門墟頂-230910 \A 江門白話-230910 \A 廣州-190811 \A 順德大良-211021 \A 中山石歧-230909 \A 肇慶-201029 \A 梧州-181228 \A 桂平-210515 \A 南寧-230803 \A 高州-230308 \A 高州石鼓-230308 \A 茂名-200709 \A 防城-190910 \A 欽州-190820 \A 北海-190219 \A 廉州-190114 \A 湛江坡头-221013 \A 吳川吳陽-221013 \A 化州上江-220404 \A 化州下江-220404 \A 貴港街裏-190720 \A 桂平尋旺-200126 \A 梧州扶典-230129 \A 蒼梧石橋-181228 \A 容縣容州2102? \A 北流大旺-220608 \A 鬱林大塘-忘了 \A 蒙山-220321 \A 廣韻 140930';}
     </style>
     
     <div class="sidenav-overlay" onclick="hideSidenav()"></div>
@@ -34,6 +34,8 @@ final class Info {
             <li class="sidenav-link"><a href="https://docs.google.com/spreadsheets/d/1jwpB2pKBM0OfONJXHCRIvAhEl4cTEobRdbw6z1PajCQ/edit?usp=sharing" target="_blank">泛粵表<span style="font-size: 0.5em;">(v1907. 於谷歌)</span></a></li>
             <li class="divider"></li>
             <li class="sidenav-link"><a href="https://jyutdict.org/articles/post" target="_blank">紀文</a></li>
+            <li class="divider"></li>
+            <li class="sidenav-link"><a href="https://got.jyutdict.org" target="_blank">GoT</a></li>
             <li class="divider"></li>
             <li class="sidenav-link"><a href="https://jyutjam.org/" target="_blank">關於</a></li>
             <li class="sidenav-link sidenav-info"><a href="https://jyutdict.org/about">說明</a></li>

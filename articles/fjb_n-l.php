@@ -10,7 +10,7 @@ include ("../const.php");
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="description" content="泛粵大典旨在收集現時各地讀音與歷史韻書讀音，並提供向大眾一些基礎的查詢功能，同時通過泛粵表展示泛粵各地的特色字及其讀音">
+    <meta name="description" content="本文用於記錄主流粵語聲母“n”和“l”對立時各所轄者，但不包括容易寫出漢字的，如「你」「能」等，此類字聲母大多可由普通話簡單推出。因此，本文主要關注一般不出現在書面語的詞彙。">
     <meta name="keywords" content="粵語 泛粵 嶺南 Cantonese 廣州 粵語查詢 泛粵大典 粤语 粤典 Yue">
     <title>泛粵典 — 聲母 “n” 與 “l”</title>
     <link rel="stylesheet" type="text/css" href="../css/about.css?<?PHP echo rand(); ?>">
@@ -45,7 +45,7 @@ include ("../const.php");
             <p>下表中，<b>記音</b>列可能有兩列，此時前一列是綜合音，可忽略；<br>
             有些詞可能二聲母皆可，本文不置可否。</p>
             <p><b>字頭</b>列高亮者<b>不</b>代表本字或正字，而只是基於音、義來選出的相對較爲合理的字；併隨後的小號漢字可分別理解爲「優先字形」及「候選字形」；<br>
-            <i>斜體者</i>代表該詞可能不出現在廣州話中，本文保留作爲參考；<br>
+            <i>斜體者</i>代表該詞可能不出現在現代廣州話中，本文保留作爲參考；<br>
                 以「Ｘ」表記的字頭表示本文未對該詞指定優先字形。</p>
 
 
@@ -59,8 +59,7 @@ include ("../const.php");
     <th>釋義</th></tr>
 
 
-
-    <tr><td rowspan="20">aa</td><td rowspan="4">1</td><td rowspan="3" class="A">n</td><td colspan='2'>naa1</td><td><span class='head'>拏</span><span class='sub'><small>𠸎</small></span></td><td class='mean'>①連詞，與：『我～渠食緊飯』；②替，幫：『我～你做』</td></tr>
+<tr><td rowspan="20">aa</td><td rowspan="4">1</td><td rowspan="3" class="A">n</td><td colspan='2'>naa1</td><td><span class='head'>拏</span><span class='sub'><small>𠸎</small></span></td><td class='mean'>①連詞，與：『我～渠食緊飯』；②替，幫：『我～你做』</td></tr>
 <tr><td colspan='2'>naa1</td><td><span class='head'>𪐀</span><span class='sub'><small>拏𠸎</small></span></td><td class='mean'>①粘貼：～墻紙；②相關連：～更｜～褦</td></tr>
 <tr><td colspan='2'>naa1</td><td><span class='head'>𤸻</span><span class='sub'></span></td><td class='mean'>①疤；②補丁</td></tr>
 <tr><td class="B">l</td><td>laa1</td><td><b>laa1<br>la1</b></td><td><span class='head'>啦</span><span class='sub'></span></td><td class='mean'>語氣詞</td></tr>
@@ -72,7 +71,7 @@ include ("../const.php");
 <tr><td colspan='2'>laa2</td><td><span class='head'>揦</span><span class='sub'></span></td><td class='mean'>皮膚、粘膜、傷口等受強烈刺激或侵蝕而感到疼痛或者體內的絞痛：『我心～住～住』</td></tr>
 <tr><td rowspan="3">3</td><td colspan='2'>laa3</td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>①〔～口〕喫到油炸辛辣食物喉嚨上火想嚥口水的感覺；②〔油～〕油渣；③變味</td></tr>
 <tr><td colspan='2'>laa3</td><td><span class='head'>喇</span><span class='sub'><small>嘑嚹</small></span></td><td class='mean'>句尾語氣詞</td></tr>
-<tr><td colspan='2'>laa3/le3</td><td><span class='head'>罅</span><span class='sub'></span></td><td class='mean'>縫隙，裂痕</td></tr>
+<tr><td colspan='2'>laa3</td><td><span class='head'>罅</span><span class='sub'></span></td><td class='mean'>縫隙，裂痕</td></tr>
 <tr><td rowspan="6">4</td><td rowspan="3" class="A">n</td><td colspan='2'>naa4</td><td><i><span class='head'>那</span><span class='sub'></span></i></td><td class='mean'>地名用字，水田⟨壯語：naz⟩：～坡</td></tr>
 <tr><td colspan='2'>naa4</td><td><span class='head'>嗱</span><span class='sub'></span></td><td class='mean'>①豎中指時的附帶嘆詞，表達鄙視；②（對某人）豎中指：『～佢』；③表拒絕否定對方時的語氣詞</td></tr>
 <tr><td colspan='2'>naa4</td><td><span class='head'>嗱</span><span class='sub'></span></td><td class='mean'>嘆詞，表指示，引起別人的注意：『～，幾多！』｜『～，睇了喂！』</td></tr>
@@ -106,9 +105,9 @@ include ("../const.php");
 <tr><td rowspan="8">aan</td><td rowspan="3">1</td><td rowspan="3" class="B">l</td><td colspan='2'>laan1</td><td><span class='head'>蘭</span><span class='sub'></span></td><td class='mean'>譯音字：荷～｜～豆(荷蘭豆)</td></tr>
 <tr><td colspan='2'>laan1</td><td><span class='head'>欄</span><span class='sub'></span></td><td class='mean'>（飼養禽畜的）圍欄</td></tr>
 <tr><td colspan='2'>laan1</td><td><span class='head'>躝</span><span class='sub'></span></td><td class='mean'>叫人滾蛋</td></tr>
-<tr><td rowspan="2">2</td><td class="A">n</td><td colspan='2'>naan3</td><td><span class='head'></span><span class='sub'><small>㫱赧𧕴</small></span></td><td class='mean'>皮膚因被蚊蟲叮咬或過敏所起的疙瘩：蚊～</td></tr>
-<tr><td class="B">l</td><td colspan='2'>laan2</td><td><span class='head'></span><span class='sub'><small>爛</small></span></td><td class='mean'>自認十分如何如何而令人厭惡：～叻｜『你就～大方，係我出錢㗎！』｜『佢～熱情噉，我先唔睬佢』｜『使乜～正經啊！』</td></tr>
-<tr><td>4</td><td class="A">n</td><td colspan='2'>naan4</td><td><i><span class='head'>難</span><span class='sub'></span></i></td><td class='mean'>境況不佳：『近排真係～噢』｜～頂｜～抵</td></tr>
+<tr><td>2</td><td class="B">l</td><td colspan='2'>laan2</td><td><span class='head'></span><span class='sub'><small>爛</small></span></td><td class='mean'>自認十分如何如何而令人厭惡：～叻｜『你就～大方，係我出錢㗎！』｜『佢～熱情噉，我先唔睬佢』｜『使乜～正經啊！』</td></tr>
+<tr><td>3</td><td rowspan="2" class="A">n</td><td colspan='2'>naan3</td><td><span class='head'></span><span class='sub'><small>㫱赧𧕴</small></span></td><td class='mean'>皮膚因被蚊蟲叮咬或過敏所起的疙瘩：蚊～</td></tr>
+<tr><td>4</td><td colspan='2'>naan4</td><td><i><span class='head'>難</span><span class='sub'></span></i></td><td class='mean'>境況不佳：『近排真係～噢』｜～頂｜～抵</td></tr>
 <tr><td rowspan="2">6</td><td rowspan="4" class="B">l</td><td colspan='2'>laan6</td><td><span class='head'>糷</span><span class='sub'><small>爛</small></span></td><td class='mean'>飯爛相粘著，一般寫爛</td></tr>
 <tr><td colspan='2'>laan6</td><td><span class='head'>爛</span><span class='sub'></span></td><td class='mean'>①破舊，雜亂：～嘢；②慣常、沉迷做某事（多貶義）：～耍</td></tr>
 <tr><td rowspan="2">aang</td><td>1</td><td colspan='2'>laang1</td><td><span class='head'>唥</span><span class='sub'></span></td><td class='mean'>羊毛，毛織品⟨葡語：lã，法語：laine⟩：～線｜～衫</td></tr>
@@ -154,7 +153,7 @@ include ("../const.php");
 <tr><td>2</td><td rowspan="2" class="A">n</td><td colspan='2'>nam2</td><td><span class='head'>諗</span><span class='sub'><small>惗</small></span></td><td class='mean'>思考，考慮：『我～緊條題』</td></tr>
 <tr><td rowspan="3">4</td><td colspan='2'>nam4</td><td><span class='head'>腍</span><span class='sub'></span></td><td class='mean'>①熟爛，鬆軟：～癟癟(鬆軟、綿軟)；②脾氣好，性格和善：～善；③（睡得）熟：『佢瞓得好～，叫都叫唔醒』</td></tr>
 <tr><td rowspan="2" class="B">l</td><td colspan='2'>lam4</td><td><span class='head'>淋</span><span class='sub'></span></td><td class='mean'>澆：～花｜～水｜～涼</td></tr>
-<tr><td>loam4</td><td><b>lam4</b></td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>〔～～聲〕動作迅速貌：『聽聞啊邊有金執，佢～趯過去』</td></tr>
+<tr><td>loam4>></td><td><b>lam4</b></td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>〔～～聲〕動作迅速貌：『聽聞啊邊有金執，佢～趯過去』</td></tr>
 <tr><td>5</td><td rowspan="2" class="A">n</td><td colspan='2'>nam5</td><td><span class='head'>䣸</span><span class='sub'><small>染</small></span></td><td class='mean'>蘸，同“醓”</td></tr>
 <tr><td rowspan="2">6</td><td colspan='2'>nam6</td><td><span class='head'>淰</span><span class='sub'></span></td><td class='mean'>①（衣、被等）含水多，溼透：『浸到～』</td></tr>
 <tr><td rowspan="5" class="B">l</td><td colspan='2'>lam6</td><td><span class='head'>罧</span><span class='sub'><small>㨆</small></span></td><td class='mean'>①堆疊、堆砌：～堆｜『將啲磚～起佢』；②量詞，疊成的垛、堆：一～磚｜一～水泥</td></tr>
@@ -249,11 +248,11 @@ include ("../const.php");
 <tr><td>4</td><td>leu4</td><td><b>liu4</b></td><td><span class='head'>撩</span><span class='sub'></span></td><td class='mean'>捉弄，調戲，挑逗：～女仔</td></tr>
 <tr><td rowspan="2">5</td><td colspan='2'>leu5</td><td><span class='head'>繚</span><span class='sub'></span></td><td class='mean'>〔～繑〕雜亂無章貌</td></tr>
 <tr><td colspan='2'>leu5</td><td><i><span class='head'>嫽</span><span class='sub'><small>料</small></span></i></td><td class='mean'>①玩：『出去～』；②玩，把玩：～遊戲｜『個game好好～』</td></tr>
-<tr><td rowspan="10">i</td><td rowspan="6">1</td><td rowspan="3" class="A">n</td><td colspan='2'>ni1</td><td><span class='head'>𪐌</span><span class='sub'></span></td><td class='mean'>①黏；②有黏性</td></tr>
+<tr><td rowspan="10">i</td><td rowspan="6">1</td><td rowspan="4" class="A">n</td><td colspan='2'>ni1</td><td><span class='head'>𪐌</span><span class='sub'></span></td><td class='mean'>①黏；②有黏性</td></tr>
+<tr><td>nji1</td><td><b>ni1<br>nei1<br>ji1</b></td><td><span class='head'>邇</span><span class='sub'><small>呢依</small></span></td><td class='mean'>指示詞，表近指：『～本書係我噶，嗰本書係你噶，啊本書係佢噶，哪本書係乜人噶？』</td></tr>
 <tr><td colspan='2'>ni1</td><td><i><span class='head'>坭</span><span class='sub'></span></i></td><td class='mean'>表示處所，“度”⟨越南語：nơi/坭⟩：『哪～？』｜『𪤆～？』</td></tr>
 <tr><td>ni1></td><td><b>nei1</b></td><td><span class='head'>匿</span><span class='sub'></span></td><td class='mean'>藏匿（特指人）：『衫櫃係咪～有個人？』</td></tr>
-<tr><td rowspan="3" class="B">l</td><td colspan='2'>li1</td><td><i><span class='head'>篱</span><span class='sub'><small>籬</small></span></i></td><td class='mean'>帶多孔網籃的器具：疏～</td></tr>
-<tr><td colspan='2'>li1</td><td><i><span class='head'>剺</span><span class='sub'></span></i></td><td class='mean'>撕，剝：～番薯菜</td></tr>
+<tr><td rowspan="2" class="B">l</td><td colspan='2'>li1</td><td><i><span class='head'>剺</span><span class='sub'></span></i></td><td class='mean'>撕，剝：～番薯菜</td></tr>
 <tr><td>li1></td><td><b>lei1</b></td><td><span class='head'>篱</span><span class='sub'><small>籬</small></span></td><td class='mean'>①網底或帶疏眼的碗狀容具，可用於漉去水分：疏～；②亦指網底或疏眼撈具：撈～；③網罩，常用於隔拒蚊蠅：菜～</td></tr>
 <tr><td>3</td><td class="A">n</td><td>ni3></td><td><b>nei3</b></td><td><span class='head'>膩</span><span class='sub'></span></td><td class='mean'>①食物的油脂或放糖過多：油～；②光滑，細緻：細～</td></tr>
 <tr><td>5</td><td rowspan="3" class="B">l</td><td>li5></td><td><b>lei5</b></td><td><span class='head'>𢃇</span><span class='sub'></span></td><td class='mean'>帆，避“帆”“煩”之諱：使～</td></tr>
