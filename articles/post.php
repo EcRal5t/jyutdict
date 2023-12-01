@@ -12,7 +12,7 @@ include ("../const.php");
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="description" content="泛粵大典旨在收集現時各地讀音與歷史韻書讀音，並提供向大眾一些基礎的查詢功能，同時通過泛粵表展示泛粵各地的特色字及其讀音">
     <meta name="keywords" content="粵語 泛粵 嶺南 Cantonese 廣州 粵語查詢 泛粵大典 粤语 粤典 Yue">
-    <title>泛粵典 — 聲母 “n” 與 “l”</title>
+    <title>泛粵典 — 紀文</title>
     <link rel="stylesheet" type="text/css" href="../css/about.css?<?PHP echo rand(); ?>">
     <link rel="icon" href="../img/favicon.ico">
     <script src="../js/general.js"></script>
@@ -43,6 +43,8 @@ include ("../const.php");
             <h3>2023·08</h3>
             <p><a href="fjb_n-l">主流粵語聲母 “n” 與 “l” 轄字表</a></p>
             <p><a href="fjb_ng-0">主流粵語聲母 “ng” 與 “0”（零聲母）轄字表</a></p>
+            <p><a href="fjb_s-sh">棺派粵語聲母 “s” 與 “sh” 轄字表</a></p>
+            <p><a href="fjb_j-nj">呃呃粵語聲母 “j” 與 “nj” 轄字表</a></p>
             <?PHP Info::showFooter(); ?>
         </div>
     </div>

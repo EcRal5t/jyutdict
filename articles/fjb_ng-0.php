@@ -10,7 +10,7 @@ include ("../const.php");
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="description" content="泛粵大典旨在收集現時各地讀音與歷史韻書讀音，並提供向大眾一些基礎的查詢功能，同時通過泛粵表展示泛粵各地的特色字及其讀音">
+    <meta name="description" content="本文用於記錄主流粵語聲母“ng”和零聲母（記作“0”）對立時各所轄者，但不包括容易寫出漢字的，如「我」「愛」等，此類字聲母大多可由調類簡單推出。因此，本文主要關注一般不出現在書面語的詞彙。">
     <meta name="keywords" content="粵語 泛粵 嶺南 Cantonese 廣州 粵語查詢 泛粵大典 粤语 粤典 Yue">
     <title>泛粵典 — 聲母 “ng” 與 “0”</title>
     <link rel="stylesheet" type="text/css" href="../css/about.css?<?PHP echo rand(); ?>">
@@ -45,8 +45,9 @@ include ("../const.php");
             <p>下表中，<b>記音</b>列可能有兩列，此時前一列是綜合音，可忽略；<br>
             有些詞可能二聲母皆可，本文不置可否。</p>
             <p><b>字頭</b>列高亮者<b>不</b>代表本字或正字，而只是基於音、義來選出的相對較爲合理的字；併隨後的小號漢字可分別理解爲「優先字形」及「候選字形」；<br>
-                <i>斜體者</i>代表該詞可能不出現在廣州話中，本文保留作爲參考；<br>
+                <i>斜體者</i>代表該詞可能不出現在現代廣州話中，本文保留作爲參考；<br>
                 以「Ｘ」表記的字頭表示本文未對該詞指定優先字形。</p>
+            <p>部分詞在不同方言點有讀“ng”也有讀“nj”的，本文兼記。見「<a href="fjb_j-nj">呃呃粵語聲母 “j” 與 “nj” 轄字表</a>」</p>
 
 
 <table border="1">
@@ -57,7 +58,6 @@ include ("../const.php");
     <th colspan="2">記音</th>
     <th style="width: 4em;">字頭</th>
     <th>釋義</th></tr>
-
 
     <tr><td>a</td><td rowspan="5">1</td><td class="B">0</td><td colspan='2'>a1</td><td><i><span class='head'>啊</span><span class='sub'></span></i></td><td class='mean'>語氣助詞</td></tr>
 <tr><td rowspan="16">aa</td><td class="A">ng</td><td colspan='2'>ngaa1?</td><td><span class='head'>閕</span><span class='sub'></span></td><td class='mean'>張，裂：～嘴</td></tr>
@@ -92,9 +92,10 @@ include ("../const.php");
 <tr><td rowspan="3">aap</td><td rowspan="4">3</td><td colspan='2'>ngaap3</td><td><i><span class='head'>𧬬</span><span class='sub'><small>噏</small></span></i></td><td class='mean'>說，多指胡言：『東～西～』｜～諰(胡言、亂說)</td></tr>
 <tr><td rowspan="2" class="B">0</td><td>aap3</td><td><b>aap3<br>aap3*2</b></td><td><span class='head'>鴨</span><span class='sub'></span></td><td class='mean'>男妓</td></tr>
 <tr><td colspan='2'>aap3</td><td><i><span class='head'>壓</span><span class='sub'><small>⿰口压</small></span></i></td><td class='mean'>強迫⟨壯語：aep⟩：『～佢做工』</td></tr>
-<tr><td rowspan="2">aat</td><td rowspan="2" class="A">ng</td><td colspan='2'>ngaat3</td><td><span class='head'>餲</span><span class='sub'><small>胺</small></span></td><td class='mean'>指變味而產生的臊臭氣：臭～</td></tr>
+<tr><td rowspan="2">aat</td><td rowspan="3" class="A">ng</td><td colspan='2'>ngaat3</td><td><span class='head'>餲</span><span class='sub'><small>胺</small></span></td><td class='mean'>指變味而產生的臊臭氣：臭～</td></tr>
 <tr><td>4</td><td colspan='2'>ngaet4</td><td><i><span class='head'>齧</span><span class='sub'></span></i></td><td class='mean'>①啃咬；②侵蝕，蛀蝕：『啲蟲～壞木』</td></tr>
-<tr><td rowspan="4">aau</td><td>2</td><td rowspan="3" class="B">0</td><td>aeu2</td><td><b>aau2</b></td><td><span class='head'>拗</span><span class='sub'></span></td><td class='mean'>以手彎折：～斷橛</td></tr>
+<tr><td rowspan="5">aau</td><td>1</td><td>(njaau1)</td><td><b>ngaau1</b></td><td><span class='head'>撓</span><span class='sub'></span></td><td class='mean'><白>輕抓，搔：～痒
+<tr><td>2</td><td rowspan="3" class="B">0</td><td>aeu2</td><td><b>aau2</b></td><td><span class='head'>拗</span><span class='sub'></span></td><td class='mean'>以手彎折：～斷橛</td></tr>
 <tr><td rowspan="2">3</td><td colspan='2'>aau3</td><td><span class='head'>詏</span><span class='sub'></span></td><td class='mean'>語言上頂撞</td></tr>
 <tr><td>aeu3</td><td><b>aau3</b></td><td><span class='head'>拗</span><span class='sub'></span></td><td class='mean'>扳，使彎曲：～手骨</td></tr>
 <tr><td>4</td><td rowspan="3" class="A">ng</td><td colspan='2'>ngaau4?</td><td><span class='head'></span><span class='sub'><small>殽</small></span></td><td class='mean'>彎曲的，不平的：～框｜『呢塊床板～嘅，點睏啊？』｜『呢度門～晒框嘅，閂唔到啊』</td></tr>
@@ -110,28 +111,33 @@ include ("../const.php");
 <tr><td colspan='2'>ngam4</td><td><span class='head'>吟</span><span class='sub'><small>啽</small></span></td><td class='mean'>〔～沉〕〔～～沉沉〕喃喃自語，念念有詞，亦簡作「吟」：『阿公成日自己在啲～』</td></tr>
 <tr><td rowspan="2">6</td><td colspan='2'>ngam6</td><td><i><span class='head'>吟</span><span class='sub'><small>啽</small></span></i></td><td class='mean'>①囉唆：『佢直個～，～到我煩澌』；②經常談起：『佢～咗好多勻話要去睇你㗎喇』</td></tr>
 <tr><td class="B">0</td><td colspan='2'>am6</td><td><i><span class='head'>𢶹</span><span class='sub'><small>暗</small></span></i></td><td class='mean'>撳：～掣</td></tr>
-<tr><td rowspan="4">an</td><td>1</td><td rowspan="2" class="A">ng</td><td colspan='2'>ngan1</td><td><span class='head'>奀</span><span class='sub'></span></td><td class='mean'>瘦小：～～｜～妹</td></tr>
-<tr><td rowspan="2">3</td><td colspan='2'>ngan3</td><td><i><span class='head'>Ｘ</span><span class='sub'><small>刓</small></span></i></td><td class='mean'>①精確地刻或者鋸斷（竹、木）；②用刀沿著物體劃一圈斷開：『用刀照到番薯中間～一圈』</td></tr>
+<tr><td rowspan="8">an</td><td rowspan="2">1</td><td rowspan="4" class="A">ng</td><td colspan='2'>ngan1</td><td><span class='head'>奀</span><span class='sub'></span></td><td class='mean'>瘦小：～～｜～妹</td></tr>
+<tr><td>(njan1)</td><td><b>ngan1</b></td><td><span class='head'>韌</span><span class='sub'></span></td><td class='mean'>（小孩子）頑皮
+<tr><td rowspan="3">3</td><td colspan='2'>ngan3</td><td><i><span class='head'>Ｘ</span><span class='sub'><small>刓</small></span></i></td><td class='mean'>①精確地刻或者鋸斷（竹、木）；②用刀沿著物體劃一圈斷開：『用刀照到番薯中間～一圈』</td></tr>
+<tr><td colspan='2'>ngan3</td><td><span class='head'>䟴</span><span class='sub'></span></td><td class='mean'>①顫動身體：～腳；②輕輕地躍動：～來～去
 <tr><td class="B">0</td><td colspan='2'>an3</td><td><i><span class='head'>𠡧</span><span class='sub'></span></i></td><td class='mean'>估量長度、時間等⟨壯語：aenq/𠡧⟩：『～～幡被幾長』｜『你自己～住時間冇遲到』</td></tr>
-<tr><td>6</td><td class="A">ng</td><td colspan='2'>ngan6</td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>凍、冷（多用于手腳）：手～腳～</td></tr>
+<tr><td>4</td><td rowspan="3" class="A">ng</td><td>(njan4)</td><td><b>ngan4</b></td><td><span class='head'>仁</span><span class='sub'></span></td><td class='mean'>植物的種子</td></tr>
+<tr><td rowspan="2">6</td><td colspan='2'>ngan6</td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>凍、冷（多用于手腳）：手～腳～</td></tr>
+<tr><td>(njan6)</td><td><b>ngan6</b></td><td><span class='head'>韌</span><span class='sub'></span></td><td class='mean'>易變形而不易斷：『QQ糖好～』</td></tr>
 <tr><td rowspan="6">ang</td><td rowspan="2">2</td><td rowspan="2" class="B">0</td><td colspan='2'>ang2</td><td><i><span class='head'>哽</span><span class='sub'></span></i></td><td class='mean'>①咽聲；②喫下，嚥下：『今晚我～了四碗飯』</td></tr>
 <tr><td colspan='2'>ang2</td><td><span class='head'></span><span class='sub'><small>哽</small></span></td><td class='mean'>突起的東西使人不舒服或損傷：鞋～脚｜『一睏低，着手機～着背脊』</td></tr>
 <tr><td rowspan="2">3</td><td rowspan="2" class="A">ng</td><td colspan='2'>ngang3</td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>用棍棒敲打（動物）</td></tr>
 <tr><td colspan='2'>ngang3</td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>屏氣用力⟨壯語：aengq⟩：～屎</td></tr>
 <tr><td>4</td><td class="B">0</td><td colspan='2'>ang4</td><td><span class='head'>䪯</span><span class='sub'></span></td><td class='mean'>①擬聲詞，低沉的轟鳴聲；②心有不滿而唸唸有詞：『佢成日～～聲，梗係畀人扣咗獎金嘞』</td></tr>
 <tr><td>6</td><td rowspan="3" class="A">ng</td><td colspan='2'>ngang6</td><td><i><span class='head'></span><span class='sub'><small>瀴</small></span></i></td><td class='mean'>①冷；②冰涼：『趁熱食，粥好快就～個』；③冷凝</td></tr>
-<tr><td rowspan="7">ap</td><td rowspan="5">1</td><td colspan='2'>ngap1</td><td><span class='head'>級</span><span class='sub'></span></td><td class='mean'>樓梯的級</td></tr>
+<tr><td rowspan="8">ap</td><td rowspan="6">1</td><td colspan='2'>ngap1</td><td><span class='head'>級</span><span class='sub'></span></td><td class='mean'>樓梯的級</td></tr>
 <tr><td colspan='2'>ngap1</td><td><span class='head'>𠲺</span><span class='sub'><small>噏</small></span></td><td class='mean'>講，帶貶義：亂～廿四｜～得就～</td></tr>
-<tr><td rowspan="3" class="B">0</td><td colspan='2'>ap1</td><td><span class='head'>㳌</span><span class='sub'></span></td><td class='mean'>①陰暗潮濕不通風：～味｜～臭；②〔～㴙〕地方淺窄、簡陋；③濕物覆蓋在表面：『解件濕衫去，～在身上容易感冒』</td></tr>
+<tr><td rowspan="4" class="B">0</td><td colspan='2'>ap1</td><td><span class='head'>㳌</span><span class='sub'></span></td><td class='mean'>①陰暗潮濕不通風：～味｜～臭；②〔～㴙〕地方淺窄、簡陋；③濕物覆蓋在表面：『解件濕衫去，～在身上容易感冒』</td></tr>
 <tr><td colspan='2'>ap1</td><td><span class='head'>up</span><span class='sub'><small>噏</small></span></td><td class='mean'>①上傳⟨英語：upload⟩，也作「～撈«lou1»」；②〔～主〕（Bilibili視頻平台的）視頻創作者</td></tr>
 <tr><td colspan='2'>ap1</td><td><span class='head'>罯</span><span class='sub'></span></td><td class='mean'>①敷：～藥｜～手｜～腳；②培土：～花｜～泥</td></tr>
+<tr><td>(jap1)</td><td><b>ap1</b></td><td><span class='sub'><small>悒</small></span></td><td class='mean'>〔心～〕心煩
 <tr><td rowspan="2">6</td><td rowspan="4" class="A">ng</td><td colspan='2'>ngap6</td><td><span class='head'></span><span class='sub'><small>𩕟岌岋</small></span></td><td class='mean'>搖晃，晃動：摇摇～｜『～得咁犀利，唔扂噃！』</td></tr>
 <tr><td colspan='2'>ngap6</td><td><span class='head'>顉</span><span class='sub'><small>砐</small></span></td><td class='mean'>點頭，低頭：～頭</td></tr>
 <tr><td rowspan="4">at</td><td rowspan="9">1</td><td colspan='2'>ngat1</td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>〔發尿～〕尿想屙屙不出</td></tr>
 <tr><td colspan='2'>ngat1</td><td><i><span class='head'>Ｘ</span><span class='sub'></span></i></td><td class='mean'>〔～sjat1〕或〔～sjet1〕吝嗇，小氣</td></tr>
 <tr><td rowspan="2" class="B">0</td><td colspan='2'>at1</td><td><span class='head'></span><span class='sub'><small>閼</small></span></td><td class='mean'>①強行給予，硬塞⟨壯語：oet⟩；②塞擠：～實</td></tr>
 <tr><td colspan='2'>at1</td><td><span class='head'>遏</span><span class='sub'></span></td><td class='mean'>（用指尖等）用力搓压：『～下隻掣』</td></tr>
-<tr><td rowspan="10">au</td><td rowspan="4" class="A">ng</td><td colspan='2'>ngau1?</td><td><span class='head'></span><span class='sub'><small>勾</small></span></td><td class='mean'>（用於表達年長或諷刺）量詞，歲，秋：『成卅幾～嘹，仲冇定得落心？』</td></tr>
+<tr><td rowspan="10">au</td><td rowspan="4" class="A">ng</td><td colspan='2'>ngau1</td><td><span class='head'></span><span class='sub'><small>勾</small></span></td><td class='mean'>（用於表達年長或諷刺）量詞，歲，秋：『成卅幾～嘹，仲冇定得落心？』</td></tr>
 <tr><td colspan='2'>ngau1</td><td><i><span class='head'>勾</span><span class='sub'></span></i></td><td class='mean'>彎曲：腰～</td></tr>
 <tr><td colspan='2'>ngau1</td><td><i><span class='head'>𧺤</span><span class='sub'><small>勾</small></span></i></td><td class='mean'>蹲，本或作“勾”：『佢～落來縛鞋帶』</td></tr>
 <tr><td colspan='2'>ngau1</td><td><span class='head'>㿰</span><span class='sub'></span></td><td class='mean'>〔生～～〕未熟，活生生</td></tr>
@@ -192,6 +198,7 @@ include ("../const.php");
 <tr><td>2</td><td colspan='2'>ung2</td><td><span class='head'>擁</span><span class='sub'><small>㧬搑</small></span></td><td class='mean'>推：『～佢落山』</td></tr>
 <tr><td rowspan="2">3</td><td colspan='2'>ung3</td><td><span class='head'>甕</span><span class='sub'></span></td><td class='mean'>陶缸，多用於儲物：米～｜～缸</td></tr>
 <tr><td colspan='2'>ung3</td><td><span class='head'>蕹</span><span class='sub'><small>蓊</small></span></td><td class='mean'>〔～菜〕亦叫空心菜，旋花科植物，常作蔬菜食用</td></tr>
+
 
 </table>
 

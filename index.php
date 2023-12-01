@@ -26,10 +26,11 @@ require_once("dict_presenter/IndexPresenter.class.php");
     <link rel="icon" href="./img/favicon.ico">
     <script src="./js/index.js"></script>
     <script src="./js/general.js"></script>
+	<script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+	<script>LA.init({id:"KBntZT3wki1TtUTu",ck:"KBntZT3wki1TtUTu"})</script>
 </head>
 
 <?PHP
-
 //$submitChara 为 提交的字符
 //$options     为 勾选框选项
 //        writeLog("Locate: 1, open: ".var_export($_REQUEST, true), ".");
@@ -46,7 +47,6 @@ if (!empty($_REQUEST['character'])) {
 } else {
 	$submitChara = "粵";
 }
-
 ?>
 
 <body>
@@ -121,7 +121,7 @@ if (!empty($_REQUEST['character'])) {
 		</div>
 	<?PHP Info::showFooter(); ?>
 	</div>
-	<script type="text/javascript" src="//js.users.51.la/20205743.js"></script>
+	<!-- <script type="text/javascript" src="//js.users.51.la/20205743.js"></script> -->
 	<script>
 		document.querySelector('#sidenav-show-btn').onclick = function() {
 			showSidenav();
