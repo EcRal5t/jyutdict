@@ -31,7 +31,7 @@ final class Info {
         <ul id="sidenav-list">
             <li class="sidenav-link"><a href="https://jyutdict.org/">檢字</a></li>
             <li class="sidenav-link"><a href="https://jyutdict.org/pron">檢音</a></li>
-            <li class="sidenav-link"><a href="https://docs.google.com/spreadsheets/d/1jwpB2pKBM0OfONJXHCRIvAhEl4cTEobRdbw6z1PajCQ/edit?usp=sharing" target="_blank">泛粵表<span style="font-size: 0.5em;">(v1907. 於谷歌)</span></a></li>
+            <li class="sidenav-link"><a href="https://docs.google.com/spreadsheets/d/1M6_0DWB1CgFBSEPivOoJjc8XOFFZB-jkxLknXDpPPQ8" target="_blank">泛粵表<span style="font-size: 0.5em;">(v2403. 於谷歌)</span></a></li>
             <li class="divider"></li>
             <li class="sidenav-link"><a href="https://jyutdict.org/articles/post" target="_blank">紀文</a></li>
             <li class="divider"></li>
@@ -56,7 +56,7 @@ SIDENAV;
         echo <<< FOOTER
         <hr style="margin: 50px 0;">
         <div class="copyright" style="text-align: center;margin-bottom: 2em;">
-            <p>© 2019-2023 <a href="https://jyutjam.org">嶺南粵音</a> <a href="https://jyutdict.org">泛粵大典</a> 開發組 版權所有</p>
+            <p>© 2019-2024 <a href="https://jyutjam.org">嶺南粵音</a> <a href="https://jyutdict.org">泛粵大典</a> 開發組 版權所有</p>
         </div>
         FOOTER;
     }
