@@ -121,7 +121,7 @@ include ("const.php");
             <p>高州: @一优法师</p>
             <p>高州石鼓: @一优法师</p>
             <p>茂名: 潘少、@Aleko Lau、常ならむ</p>
-            <p>防城: @晴海喵鱼子Nox</p>
+            <p>防城: [匿名]</p>
             <p>欽州: @Jzit</p>
             <p>北海: @Sin Yeung</p>
             <p>廉州《廣西通志·漢語方言志》+ 互聯網 + @Sin Yeung 審查並校對</p>
