@@ -590,7 +590,7 @@ include("const.php");
                 const noteId = `note-${rowData.id}-${key}`;
                 const noteText = `${cellNotes[key]}`.replace(/\n/g, '<br>');
                 entryHTML = `<span class="clickable-note" onclick="toggleNote('${noteId}')" style="
-    text-decoration-color: ${color};>${entryHTML}</span>`;
+    text-decoration-color: ${color};">${entryHTML}</span>`;
                 noteDiv = `<div id="${noteId}" class="note-content">${noteText}</div>`;
             }
             return `<div class="location-entry-wrapper">${entryHTML}${noteDiv}</div>`;
