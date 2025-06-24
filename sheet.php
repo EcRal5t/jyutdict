@@ -18,8 +18,7 @@ include("const.php");
     
     <script src="./js/general.js"></script>
     <style>
-        /* 样式表与之前版本相同，此处为简洁省略。实际使用时请保留您满意的样式。 */
-        /* General Body & Layout (Higher Density) */
+        /* General Body & Layout */
         body {
             background-color: #f8f9fa;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -28,7 +27,7 @@ include("const.php");
         #container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 1em 1.5em; /* Adjusted padding */
+            padding: 1em 1.5em;
         }
 
         h1 {
@@ -38,7 +37,7 @@ include("const.php");
         /* Search Form Beautification */
         #sheet-search-form {
             background-color: #fff;
-            padding: 1.5em 2em; /* Adjusted padding */
+            padding: 1.5em 2em;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             margin: 2em 0;
@@ -91,7 +90,7 @@ include("const.php");
             background-color: #0056b3;
         }
 
-        /* Result Card Beautification (Higher Density) */
+        /* Result Card Beautification (Higher Density & Responsive) */
         #sheet-results {
             margin-top: 2em;
         }
@@ -100,43 +99,53 @@ include("const.php");
             background: #fff;
             border: 1px solid #e9ecef;
             border-radius: 8px;
-            padding: 1.2em; /* Adjusted padding */
-            margin-bottom: 1.2em; /* Adjusted margin */
+            padding: 1.5em;
+            margin-bottom: 1.2em;
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap; /* Prevent wrapping by default */
+            gap: 1.5em;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: box-shadow 0.3s;
         }
         
         .result-card:hover {
-            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
         }
 
         .result-left {
-            flex: 1;
-            min-width: 140px;
-            padding-right: 1.2em;
-            margin-right: 1.2em;
-            border-right: 1px solid #e9ecef;
+            flex: 3;
+            min-width: 220px;
+            display: flex;
+            align-items: center;
+            gap: 1.2em;
+        }
+        
+        .result-left-main-char {
             text-align: center;
         }
 
+        .result-left-details {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
         .result-right {
-            flex: 4;
+            flex: 5;
             min-width: 300px;
         }
 
         .char-display {
-            font-size: 4.5em; /* Adjusted font size */
+            font-size: 4em;
             font-weight: bold;
             color: #212529;
             line-height: 1.1;
         }
 
         .pron-display {
-            font-size: 1.6em; /* Adjusted font size */
+            font-size: 1.4em;
             color: #495057;
-            line-height: 1.3;
+            line-height: 1.2;
             white-space: pre-wrap;
         }
 
@@ -145,11 +154,11 @@ include("const.php");
             margin-top: 0.5em;
             white-space: pre-wrap;
             font-family: monospace;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
         
         .meanings-section {
-            margin-bottom: 1em; /* Adjusted margin */
+            margin-bottom: 1em;
             line-height: 1.6;
             font-size: 1.05em;
         }
@@ -216,6 +225,45 @@ include("const.php");
             font-size: 0.85em;
             color: #adb5bd;
             white-space: pre-wrap;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 800px) {
+            .result-card {
+                flex-direction: column; /* Stack left and right parts */
+                gap: 1em;
+            }
+            .result-left {
+                border-bottom: 1px solid #e9ecef;
+                padding-bottom: 1em;
+                min-width: auto; /* Remove min-width for stacking */
+            }
+        }
+
+        @media (max-width: 500px) {
+            #container {
+                padding: 1em 0.5em;
+            }
+            #sheet-search-form {
+                padding: 1em;
+                margin: 1em 0;
+            }
+            .result-card {
+                padding: 0.8em;
+            }
+            .result-left {
+                gap: 0.8em;
+            }
+            .char-display {
+                font-size: 3.2em;
+            }
+            .pron-display {
+                font-size: 1.2em;
+            }
+            .location-entry-wrapper {
+                display: block; /* Stack location entries */
+                margin-right: 0;
+            }
         }
 
     </style>
@@ -359,11 +407,9 @@ include("const.php");
 
         const rows = data.slice(1);
         
-        // NEW: Sort rows based on data density before rendering
         rows.sort((a, b) => {
             const scoreA = calculateDensityScore(a, sheetHeaderInfo.cities);
             const scoreB = calculateDensityScore(b, sheetHeaderInfo.cities);
-            // Sort in descending order (higher score first)
             return scoreB - scoreA;
         });
 
@@ -372,11 +418,16 @@ include("const.php");
             card.className = 'result-card';
             rowData.id = rowData.id || `row-${Math.random()}`;
 
+            // MODIFIED HTML STRUCTURE
             card.innerHTML = `
                 <div class="result-left">
-                    ${formatCharacter(rowData)}
-                    ${formatUnicode(rowData)}
-                    ${formatPronunciation(rowData)}
+                    <div class="result-left-main-char">
+                        ${formatCharacter(rowData)}
+                    </div>
+                    <div class="result-left-details">
+                        ${formatUnicode(rowData)}
+                        ${formatPronunciation(rowData)}
+                    </div>
                 </div>
                 <div class="result-right">
                     ${formatMeanings(rowData)}
