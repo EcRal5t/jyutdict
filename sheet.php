@@ -54,6 +54,7 @@ include("const.php");
             align-items: center;
             gap: 0.8em;
             width: 100%;
+            max-width: 600px;
         }
 
         #query-input {
@@ -67,6 +68,7 @@ include("const.php");
         }
         
         #location-select, #search-button {
+            flex: 1;
             flex-shrink: 0;
         }
 
@@ -134,6 +136,9 @@ include("const.php");
             display: flex;
             align-items: center;
             gap: 1.2em;
+            text-align: center;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .result-left-main-char {
@@ -181,7 +186,7 @@ include("const.php");
         .locations-section {
             line-height: 1.2;
         }
-
+        
         .location-entry-wrapper {
             display: inline-block;
             vertical-align: top;
@@ -189,7 +194,7 @@ include("const.php");
             margin-bottom: 0.6em;
             font-size: 0.95em;
         }
-
+        
         .clickable-note {
             text-decoration: underline;
             text-decoration-style: dotted;
@@ -230,12 +235,12 @@ include("const.php");
             padding-top: 0.8em;
             border-top: 1px solid #f1f3f5;
         }
-
+        
         .foreign-languages {
             font-size: 0.9em;
             color: #333;
         }
-
+        
         .classification-section {
             font-size: 0.85em;
             color: #adb5bd;
@@ -252,6 +257,7 @@ include("const.php");
                 border-bottom: 1px solid #e9ecef;
                 padding-bottom: 1em;
                 min-width: auto;
+                flex-direction: row;
             }
         }
 
@@ -260,7 +266,6 @@ include("const.php");
                 padding: 1em;
             }
             .search-controls-wrapper {
-                flex-direction: column;
                 align-items: stretch;
                 gap: 0.5em;
             }
@@ -305,8 +310,8 @@ include("const.php");
 
         <div id="sheet-search-form">
             <div class="search-controls-wrapper">
-                <input type="text" id="query-input" placeholder="輸入字、詞或讀音...">
-                <select id="location-select">
+                <input type="text" id="query-input" placeholder="輸入字或音...">
+                <select title="Select Location" id="location-select">
                     <option value="">綜合音/字</option>
                     <option value="檢" selected>檢索音/字</option>
                 </select>
