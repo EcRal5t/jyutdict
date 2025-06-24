@@ -18,92 +18,232 @@ include("const.php");
     
     <script src="./js/general.js"></script>
     <style>
+        /* General Body & Layout */
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        #container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1em;
+        }
+
+        h1 {
+            color: #343a40;
+        }
+
+        /* Search Form Beautification */
         #sheet-search-form {
-            margin: 20px 0;
+            background-color: #fff;
+            padding: 2em;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin: 2em 0;
             text-align: center;
         }
-        #sheet-search-form input[type="text"] {
-            width: 300px;
-            padding: 5px;
-            font-size: 18px;
+
+        #query-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 0.8em;
+            font-size: 1.1em;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-bottom: 1em;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
         }
-        #sheet-search-form select {
-            padding: 5px;
-            font-size: 16px;
+
+        #location-select {
+            padding: 0.8em;
+            font-size: 1em;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
         }
-        #sheet-search-form button {
-            padding: 5px 15px;
-            font-size: 16px;
+
+        #sheet-search-form .options-group {
+            margin: 1.5em 0;
+            display: flex;
+            gap: 1.5em;
+            justify-content: center;
+            flex-wrap: wrap;
         }
+
         #sheet-search-form label {
-            margin: 0 10px;
+            font-size: 0.95em;
+            color: #495057;
         }
+
+        #search-button {
+            background-color: #007bff;
+            color: white;
+            padding: 0.8em 2em;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #search-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Result Card Beautification */
         #sheet-results {
-            margin-top: 20px;
+            margin-top: 2em;
         }
+
         .result-card {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5em;
+            margin-bottom: 1.5em;
             display: flex;
             flex-wrap: wrap;
-            text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s;
         }
+        
+        .result-card:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
         .result-left {
             flex: 1;
-            min-width: 120px;
-            padding-right: 15px;
-            margin-right: 15px;
-            border-right: 1px solid #eee;
+            min-width: 150px;
+            padding-right: 1.5em;
+            margin-right: 1.5em;
+            border-right: 1px solid #e9ecef;
             text-align: center;
         }
+
         .result-right {
             flex: 4;
             min-width: 300px;
         }
+
         .char-display {
-            font-size: 4em;
+            font-size: 5em;
             font-weight: bold;
-            margin-bottom: 10px;
-            line-height: 1.2;
+            color: #212529;
+            line-height: 1.1;
         }
+
         .pron-display {
-            font-size: 1.5em;
+            font-size: 1.8em;
+            color: #495057;
             line-height: 1.4;
-        }
-        .unicode-display {
-            color: #666;
-            margin-bottom: 15px;
-        }
-        .meanings-section {
-            margin-bottom: 15px;
-            line-height: 1.7;
-        }
-        .locations-section {
             white-space: pre-wrap;
+        }
+
+        .unicode-display {
+            color: #6c757d;
+            margin-top: 0.5em;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .meanings-section {
+            margin-bottom: 1.5em;
+            line-height: 1.7;
+            font-size: 1.1em;
+        }
+
+        .locations-section {
             line-height: 1.8;
         }
+        
         .location-entry {
             display: inline-block;
             margin-right: 1.5em;
+            margin-bottom: 0.5em;
+            font-size: 0.95em;
         }
+        
+        .foreign-languages, .classification-section {
+            margin-top: 1.5em;
+            padding-top: 1em;
+            border-top: 1px solid #f1f3f5;
+        }
+        
         .foreign-languages {
-            margin-top: 1em;
             font-size: 0.9em;
             color: #333;
         }
+        
         .classification-section {
-            margin-top: 1em;
-            font-size: 0.8em;
-            color: #aaa;
+            font-size: 0.85em;
+            color: #adb5bd;
             white-space: pre-wrap;
         }
+
         .clickable-note {
             text-decoration: underline;
             text-decoration-style: dotted;
             cursor: pointer;
+            transition: color 0.2s;
         }
+        .clickable-note:hover {
+            color: #0056b3;
+        }
+
+        /* MODAL (for notes) STYLES */
+        .modal-container {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .modal-close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+        }
+        
+        #note-modal-text {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: #343a40;
+        }
+
     </style>
 </head>
 
@@ -114,7 +254,7 @@ include("const.php");
     <div id="container" class="container" style="">
         <button class="sidenav-show-btn" onclick="showSidenav()"></button>
         
-        <h1 style="text-align:center; margin: 2em;">泛粵字表查詢</h1>
+        <h1 style="text-align:center; margin-top: 1em;">泛粵字表查詢</h1>
 
         <div id="sheet-search-form">
             <input type="text" id="query-input" placeholder="輸入字、詞或讀音...">
@@ -122,14 +262,12 @@ include("const.php");
                 <option value="">所有列</option>
                 <option value="檢">檢索音</option>
             </select>
-            <br>
-            <div style="margin-top:10px;">
+            <div class="options-group">
                 <label><input type="checkbox" id="fuzzy-checkbox" checked> 模糊查詢 (查字)</label>
                 <label><input type="checkbox" id="trim-checkbox" checked> 音節整體 (查音)</label>
                 <label><input type="checkbox" id="regex-checkbox"> 正則表達式</label>
                 <label><input type="checkbox" id="def-checkbox"> 反查釋義</label>
             </div>
-            <br>
             <button id="search-button">查詢</button>
         </div>
 
@@ -140,12 +278,21 @@ include("const.php");
     <?PHP Info::showFooter(); ?>
 </div>
 
+<div id="note-modal" class="modal-container">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeNote()">&times;</span>
+    <p id="note-modal-text"></p>
+  </div>
+</div>
+
+
 <script>
     let sheetHeaderInfo = {}; // To store header info globally
 
     document.addEventListener('DOMContentLoaded', function() {
         const queryInput = document.getElementById('query-input');
         
+        // Fetch header info for populating the location dropdown
         fetch('api/v0.9/sheet.php?query=&header=1')
             .then(response => response.json())
             .then(data => {
@@ -160,7 +307,7 @@ include("const.php");
                     sheetHeaderInfo.cities.forEach(header => {
                         const option = document.createElement('option');
                         option.value = header.col;
-                        option.textContent = header.city + (header.sub ? `${header.sub}` : '');
+                        option.textContent = header.city + (header.sub ? ` (${header.sub})` : '');
                         locationSelect.appendChild(option);
                     });
                 }
@@ -203,20 +350,55 @@ include("const.php");
                 });
         }
 
+        // Event Listeners for search
         document.getElementById('search-button').addEventListener('click', performSearch);
         queryInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 performSearch();
             }
         });
+
+        // Event listener to close modal with Escape key
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeNote();
+            }
+        });
     });
+
+    /**
+     * NEW MODAL FUNCTIONS
+     */
+    function showNote(noteText) {
+        const modal = document.getElementById('note-modal');
+        const modalText = document.getElementById('note-modal-text');
+        
+        // Use innerText to safely insert the text content
+        modalText.innerText = noteText;
+        
+        modal.style.display = 'flex';
+    }
+
+    function closeNote() {
+        const modal = document.getElementById('note-modal');
+        modal.style.display = 'none';
+    }
+    // Close modal if user clicks on the overlay
+    document.getElementById('note-modal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeNote();
+        }
+    });
+
+
+    // --- Functions to render results (mostly unchanged logic, just formatting) ---
 
     function renderResults(data) {
         const resultsDiv = document.getElementById('sheet-results');
         resultsDiv.innerHTML = '';
 
         if (!data || data.length < 2 || (data.hasOwnProperty('error'))) {
-            resultsDiv.innerHTML = `<p style="text-align:center;">${data.error ? data.error : '未找到結果。'}</p>`;
+            resultsDiv.innerHTML = `<p style="text-align:center; padding: 2em; background: #fff; border-radius: 8px;">${data.error ? data.error : '未找到結果。'}</p>`;
             return;
         }
 
@@ -270,7 +452,7 @@ include("const.php");
             if (ssb) ssb += '\n';
             ssb += `[${ids}]`;
         }
-        return `<div class="unicode-display" style="white-space: pre-wrap;">${ssb}</div>`;
+        return `<div class="unicode-display">${ssb}</div>`;
     }
 
     function formatPronunciation(rowData) {
@@ -290,12 +472,11 @@ include("const.php");
             style = 'font-style: italic;';
         }
 
-        let ssb = `<div class="pron-display" style="${style} white-space: pre-wrap;">${pronDisplay}`;
+        let ssb = `<div class="pron-display" style="${style}">${pronDisplay}`;
 
         let adaptedChara = rowData['俗/常'] || '';
         if (adaptedChara) {
-            if (pron) ssb += '\n';
-            ssb += `(${adaptedChara})`;
+            ssb += `\n<span style="font-size: 0.6em; color: #6c757d;">(${adaptedChara})</span>`;
         }
         ssb += `</div>`;
         return ssb;
@@ -371,12 +552,8 @@ include("const.php");
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
 
-    function showNote(noteText) {
-        alert(noteText);
-    }
-
     function formatLocations(rowData) {
-        let ssb = '';
+        let ssb = '<div class="locations-section">';
         let cellNotes = {};
         try {
             const notesString = rowData['附'] || '{}';
@@ -394,7 +571,7 @@ include("const.php");
             let value = rowData[key] ? String(rowData[key]).trim() : '';
             if (!value) return;
 
-            const fullName = cityInfo.city + (cityInfo.sub ? `${cityInfo.sub}` : '');
+            const fullName = cityInfo.city + (cityInfo.sub ? ` (${cityInfo.sub})` : '');
             let displayValue = '';
             if (value.includes('^')) {
                 const parts = value.split('^');
@@ -404,7 +581,7 @@ include("const.php");
             }
             
             let valueStyle = '';
-            let locationNameStyle = `color: ${darkenColor(cityInfo.color, 0.92)};`;
+            let locationNameStyle = `color: ${darkenColor(cityInfo.color, 0.9)}; font-weight: 500;`;
             if (value.includes('?')) valueStyle += 'font-style: italic;';
             if (value === '_') valueStyle += 'color: #BBBBBB;';
             
@@ -412,7 +589,8 @@ include("const.php");
 
             if (cellNotes[key]) {
                 const chara = rowData['繁'] || '□', pron = rowData['綜'] || '';
-                let noteText = `>「${chara}」(${pron}) [${key}] ${value}\n${cellNotes[key]}`;
+                let noteText = `>「${chara}」(${pron}) [${key}] ${value}\n\n${cellNotes[key]}`;
+                // Important: Escape backticks in the noteText before creating the template literal for onclick
                 locationEntry = `<span class="clickable-note" onclick="showNote(\`${noteText.replace(/`/g, "\\`")}\`)">${locationEntry}</span>`;
             }
             ssb += `<span class="location-entry">${locationEntry}</span>`;
@@ -424,14 +602,14 @@ include("const.php");
             let value = rowData[key] ? String(rowData[key]).trim() : '';
             if (!value) return;
 
-            let valueStyle = foreignInfo.color ? `color: ${darkenColor(foreignInfo.color, 0.92)};` : '';
+            let valueStyle = foreignInfo.color ? `color: ${darkenColor(foreignInfo.color, 0.9)};` : '';
             if (value.includes('?')) valueStyle += 'font-style: italic;';
 
-            let foreignEntry = `<span style="${valueStyle}">${foreignInfo.fullname}: ${value.replace(/\n/g, ', ')}</span>`;
+            let foreignEntry = `<span style="${valueStyle}"><strong>${foreignInfo.fullname}:</strong> ${value.replace(/\n/g, ', ')}</span>`;
             
             if (cellNotes[key]) {
                  const chara = rowData['繁'] || '□', pron = rowData['綜'] || '';
-                 let noteText = `>「${chara}」(${pron}) [${key}] ${value}\n${cellNotes[key]}`;
+                 let noteText = `>「${chara}」(${pron}) [${key}] ${value}\n\n${cellNotes[key]}`;
                  foreignEntry = `<span class="clickable-note" onclick="showNote(\`${noteText.replace(/`/g, "\\`")}\`)">${foreignEntry}</span>`;
             }
             foreignSsb += `<span class="location-entry">${foreignEntry}</span>`;
@@ -443,11 +621,12 @@ include("const.php");
             let classificationText = classified;
             const class_secondary = rowData['中類'] || '';
             const class_minor = rowData['小類'] || '';
-            if (class_secondary) classificationText += `\n${class_secondary}`;
-            if (class_minor) classificationText += `\n${class_minor}`;
+            if (class_secondary) classificationText += ` > ${class_secondary}`;
+            if (class_minor) classificationText += ` > ${class_minor}`;
             ssb += `<div class="classification-section">${classificationText}</div>`;
         }
-        return `<div class="locations-section">${ssb}</div>`;
+        ssb += `</div>`; // Close locations-section
+        return ssb;
     }
 </script>
 
