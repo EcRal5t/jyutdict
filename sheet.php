@@ -135,7 +135,6 @@ include("const.php");
             min-width: 120px;
             display: flex;
             align-items: center;
-            gap: 1.2em;
             text-align: center;
             flex-direction: column;
             justify-content: center;
@@ -178,7 +177,7 @@ include("const.php");
         }
         
         .meanings-section {
-            margin-bottom: 1em;
+            margin-bottom: 0.5em;
             line-height: 1.6;
             font-size: 1.05em;
         }
@@ -231,7 +230,7 @@ include("const.php");
         }
 
         .foreign-languages, .classification-section {
-            margin-top: 1em;
+            margin-top: 0.5em;
             padding-top: 0.8em;
             border-top: 1px solid #f1f3f5;
         }
@@ -574,14 +573,15 @@ include("const.php");
             if (!value) return '';
 
             let entryHTML;
+            const color = info.color ? darkenColor(info.color, 0.88) : ''
             if (type === 'city') {
                 const fullName = info.city + (info.sub ? info.sub : '');
                 const displayValue = value.includes('^') ? value.split('^').slice(1).reduce((acc, p) => acc + `<del>${p}</del>`, value.split('^')[0]) : value;
                 const valueStyle = (value.includes('?') ? 'font-style: italic;' : '') + (value === '_' ? 'color: #BBBBBB;' : '');
-                const nameStyle = `color: ${darkenColor(info.color, 0.88)}; font-weight: 500;`;
+                const nameStyle = `color: ${color}; font-weight: 500;`;
                 entryHTML = `<span style="${nameStyle}">${fullName}: </span><span style="${valueStyle}">${displayValue}</span>`;
             } else { // foreign
-                const valueStyle = (info.color ? `color: ${darkenColor(info.color, 0.88)};` : '') + (value.includes('?') ? 'font-style: italic;' : '');
+                const valueStyle = (info.color ? `color: ${color};` : '') + (value.includes('?') ? 'font-style: italic;' : '');
                 entryHTML = `<span style="${valueStyle}"><strong>${info.fullname}:</strong> ${value.replace(/\n/g, ', ')}</span>`;
             }
 
@@ -589,7 +589,8 @@ include("const.php");
             if (cellNotes[key]) {
                 const noteId = `note-${rowData.id}-${key}`;
                 const noteText = `${cellNotes[key]}`.replace(/\n/g, '<br>');
-                entryHTML = `<span class="clickable-note" onclick="toggleNote('${noteId}')">${entryHTML}</span>`;
+                entryHTML = `<span class="clickable-note" onclick="toggleNote('${noteId}')" style="
+    text-decoration-color: ${color};>${entryHTML}</span>`;
                 noteDiv = `<div id="${noteId}" class="note-content">${noteText}</div>`;
             }
             return `<div class="location-entry-wrapper">${entryHTML}${noteDiv}</div>`;
