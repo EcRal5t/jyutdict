@@ -21,7 +21,7 @@ include("const.php");
         /* General Body & Layout */
         body {
             background-color: #f8f9fa;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: "Garamond","Adobe Ming Std","Adobe Song Std","澹雅明体A","Sarasa UI CL","更纱黑体","更纱黑体","Han Sans TC","Hiragino Sans GB","Microsoft JhengHei UI","Microsoft YaHei UI",sans-serif;
         }
 
         #container {
@@ -114,7 +114,7 @@ include("const.php");
 
         .result-left {
             flex: 1;
-            min-width: 220px;
+            min-width: 120px;
             display: flex;
             align-items: center;
             gap: 1.2em;
@@ -133,7 +133,7 @@ include("const.php");
         }
 
         .result-right {
-            flex: 5;
+            flex: 6;
             min-width: 300px;
         }
 
@@ -147,7 +147,6 @@ include("const.php");
         .pron-display {
             font-size: 1.4em;
             color: #495057;
-            line-height: 1.2;
             white-space: pre-wrap;
         }
 
@@ -157,6 +156,7 @@ include("const.php");
             white-space: pre-wrap;
             font-family: monospace;
             font-size: 0.85em;
+            text-align: center;
         }
         
         .meanings-section {
@@ -166,7 +166,7 @@ include("const.php");
         }
         
         .locations-section {
-            line-height: 1.45;
+            line-height: 1.2;
         }
         
         .location-entry-wrapper {
@@ -175,6 +175,7 @@ include("const.php");
             margin-right: 1.2em;
             margin-bottom: 0.6em;
             font-size: 0.95em;
+            text-align: center;
         }
         
         .clickable-note {
