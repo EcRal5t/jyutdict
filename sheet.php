@@ -294,12 +294,12 @@ include("const.php");
                 url += `query=${encodeURIComponent(inputString)}`;
                 if (/[a-zA-Z0-9]/.test(inputString) && !isDef) {
                     if(isTrim) url += '&trim';
+                    if (location) url += `&col=${location}`;
                 } else {
                     if(isFuzzy) url += '&fuzzy';
                 }
 
                 if (isDef) url += '&b';
-                if (location) url += `&col=${location}`;
                 if (isRegex) url += '&regex';
             }
 
