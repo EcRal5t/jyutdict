@@ -153,14 +153,14 @@ include("const.php");
                 if (headers) {
                     sheetHeaderInfo = {
                         all: headers,
-                        cities: headers.filter(h => h.kind == 1),
-                        foreign: headers.filter(h => h.kind == 2)
+                        cities: headers.filter(h => h.is_city == 1),
+                        foreign: headers.filter(h => h.is_city == 2)
                     };
                     const locationSelect = document.getElementById('location-select');
                     sheetHeaderInfo.cities.forEach(header => {
                         const option = document.createElement('option');
                         option.value = header.col;
-                        option.textContent = header.fullname + (header.fullname_note ? ` (${header.fullname_note})` : '');
+                        option.textContent = header.fullname + (header.sub ? ` (${header.sub})` : '');
                         locationSelect.appendChild(option);
                     });
                 }
@@ -379,15 +379,23 @@ include("const.php");
         let ssb = '';
         let cellNotes = {};
         try {
-            cellNotes = JSON.parse((rowData['附'] || '{}').replace(/'/g, `"`));
-        } catch(e) { console.warn('Could not parse cell notes:', rowData['附'], e); }
+            // FIX: Sanitize control characters like \n and \t before parsing
+            const notesString = rowData['附'] || '{}';
+            const sanitizedString = notesString
+                .replace(/\n/g, '\\n')
+                .replace(/\t/g, '\\t')
+                .replace(/'/g, '"');
+            cellNotes = JSON.parse(sanitizedString);
+        } catch(e) { 
+            console.warn('Could not parse cell notes:', rowData['附'], e);
+        }
 
         (sheetHeaderInfo.cities || []).forEach(cityInfo => {
             const key = cityInfo.col;
             let value = rowData[key] ? String(rowData[key]).trim() : '';
             if (!value) return;
 
-            const fullName = cityInfo.fullname + (cityInfo.fullname_note ? ` (${cityInfo.fullname_note})` : '');
+            const fullName = cityInfo.fullname + (cityInfo.sub ? ` (${cityInfo.sub})` : '');
             let displayValue = '';
             if (value.includes('^')) {
                 const parts = value.split('^');
