@@ -338,7 +338,7 @@ include("const.php");
         
         let grammarMarkerOrder = 0;
         for (const meaning of meanings) {
-            if (!meaning.trim()) continue;
+            if (!meaning || !meaning.trim()) continue;
             
             let processedMeaning = meaning;
             if (grammarMarkers.length > 0 && grammarMarkers[grammarMarkerOrder]) {
