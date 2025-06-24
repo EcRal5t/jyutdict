@@ -18,6 +18,7 @@ include("const.php");
     
     <script src="./js/general.js"></script>
     <style>
+        /* 样式表与之前版本相同，此处为简洁省略。实际使用时请保留您满意的样式。 */
         /* General Body & Layout (Higher Density) */
         body {
             background-color: #f8f9fa;
@@ -157,7 +158,6 @@ include("const.php");
             line-height: 1.7;
         }
         
-        /* NEW: Wrapper for each location entry + its potential note */
         .location-entry-wrapper {
             display: inline-block;
             vertical-align: top;
@@ -176,11 +176,10 @@ include("const.php");
             color: #0056b3;
         }
         
-        /* NEW: Collapsible Note Styles */
         .note-content {
             background-color: #f0f4f8;
             border-left: 3px solid #007bff;
-            padding: 0 1em; /* Padding is animated */
+            padding: 0 1em;
             margin-top: 0;
             border-radius: 4px;
             white-space: pre-wrap;
@@ -188,12 +187,15 @@ include("const.php");
             color: #34495e;
             overflow: hidden;
             max-height: 0;
+            max-width: 0;
             opacity: 0;
-            transition: max-height 0.35s ease-in-out, opacity 0.35s ease-in-out, margin-top 0.35s ease-in-out, padding 0.35s ease-in-out;
+            transition: max-height 0.3s ease-in-out, max-width 0.35s ease-in-out, opacity 0.25s ease-in-out, margin-top 0.3s ease-in-out, padding 0.3s ease-in-out;
             box-sizing: border-box;
+            overflow: hidden;
         }
         .note-content.show {
-            max-height: 500px; /* Arbitrary large value */
+            max-height: 10em;
+            max-width: 500px;
             opacity: 1;
             margin-top: 0.5em;
             padding: 0.8em 1em;
@@ -231,8 +233,8 @@ include("const.php");
         <div id="sheet-search-form">
             <input type="text" id="query-input" placeholder="輸入字、詞或讀音...">
             <select id="location-select">
-                <option value="">所有列</option>
-                <option value="檢">檢索音</option>
+                <option value="">綜合音/字</option>
+                <option value="檢" selected>檢索音/字</option>
             </select>
             <div class="options-group">
                 <label><input type="checkbox" id="fuzzy-checkbox" checked> 模糊查詢 (查字)</label>
@@ -321,19 +323,30 @@ include("const.php");
         });
     });
 
-    /**
-     * NEW: Toggles the visibility of a note element.
-     */
     function toggleNote(noteId) {
         const noteElement = document.getElementById(noteId);
         if (noteElement) {
-            // Toggle a class that triggers the CSS transition
             noteElement.classList.toggle('show');
         }
     }
+    
+    
+    function calculateDensityScore(rowData, cityHeaders) {
+        let score = 0;
+        if (!rowData || !cityHeaders) {
+            return 0;
+        }
+        cityHeaders.forEach(cityInfo => {
+            const key = cityInfo.col;
+            const value = rowData[key] ? String(rowData[key]).trim() : '';
+            // Count as 'filled' if it has content and is not just a placeholder
+            if (value && value !== '_' && value !== '?') {
+                score++;
+            }
+        });
+        return score;
+    }
 
-
-    // --- Functions to render results (logic mostly unchanged, formatting updated) ---
 
     function renderResults(data) {
         const resultsDiv = document.getElementById('sheet-results');
@@ -345,10 +358,18 @@ include("const.php");
         }
 
         const rows = data.slice(1);
+        
+        // NEW: Sort rows based on data density before rendering
+        rows.sort((a, b) => {
+            const scoreA = calculateDensityScore(a, sheetHeaderInfo.cities);
+            const scoreB = calculateDensityScore(b, sheetHeaderInfo.cities);
+            // Sort in descending order (higher score first)
+            return scoreB - scoreA;
+        });
+
         rows.forEach(rowData => {
             const card = document.createElement('div');
             card.className = 'result-card';
-            // Ensure each row has a unique ID for note targeting, fallback to index if needed
             rowData.id = rowData.id || `row-${Math.random()}`;
 
             card.innerHTML = `
@@ -366,6 +387,7 @@ include("const.php");
         });
     }
 
+    // --- Other formatting functions remain the same ---
     function formatCharacter(rowData) {
         let chara = rowData['繁'] || '';
         let displayChara = chara.replaceAll(/[?/!！？見歸 ]/g, '');
@@ -479,9 +501,9 @@ include("const.php");
             let noteDiv = '';
             if (cellNotes[key]) {
                 const noteId = `note-${rowData.id}-${key}`;
-                const noteText = `>「${rowData['繁'] || '□'}」(${rowData['綜'] || ''}) [${key}] ${value}\n\n${cellNotes[key]}`;
+                const noteText = `${cellNotes[key]}`.replace(/\n/g, '<br>');
                 entryHTML = `<span class="clickable-note" onclick="toggleNote('${noteId}')">${entryHTML}</span>`;
-                noteDiv = `<div id="${noteId}" class="note-content">${noteText.replace(/\n/g, '<br>')}</div>`;
+                noteDiv = `<div id="${noteId}" class="note-content">${noteText}</div>`;
             }
             return `<div class="location-entry-wrapper">${entryHTML}${noteDiv}</div>`;
         };
