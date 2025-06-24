@@ -31,7 +31,7 @@ final class Info {
         <ul id="sidenav-list">
             <li class="sidenav-link"><a href="https://jyutdict.org/">檢字</a></li>
             <li class="sidenav-link"><a href="https://jyutdict.org/pron">檢音</a></li>
-            <li class="sidenav-link"><a href="https://docs.google.com/spreadsheets/d/1M6_0DWB1CgFBSEPivOoJjc8XOFFZB-jkxLknXDpPPQ8" target="_blank">泛粵表<span style="font-size: 0.5em;">(v2403. 於谷歌)</span></a></li>
+            <li class="sidenav-link"><a href="https://jyutdict.org/sheet">泛粵字表</a></li>
             <li class="divider"></li>
             <li class="sidenav-link"><a href="https://jyutdict.org/articles/post" target="_blank">紀文</a></li>
             <li class="divider"></li>
@@ -42,15 +42,6 @@ final class Info {
         </ul>
     </div>
 SIDENAV;
-        /*
-            <li class="sidenav-link">
-                <a href="./about.php">說明
-                    <span style="float:right;color:#444444;font-size:0.6em">
-                        {$version}
-                    </span>
-                </a>
-            </li>
-         */
     }
     public static function showFooter() {
         echo <<< FOOTER
@@ -71,7 +62,4 @@ SIDENAV;
         ], JSON_UNESCAPED_SLASHES));
     }
 }
-
-
-
 ?>
