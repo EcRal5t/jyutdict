@@ -536,7 +536,7 @@ include("const.php");
         oriString = oriString.replace(/</g, "&lt;").replace(/(?<=([^}"“]))&lt;/g, '；&lt;');
         if (oriString.startsWith('[粵]') && oriString.includes('{1}')) oriString = oriString.replace('[粵]', '[粵]；');
         oriString = oriString.replace(/}/g, '} ');
-        const meanings = oriString.split(/[；。？！] *?(?!=(&lt;|\{))/);
+        const meanings = oriString.split(/[；。？！] *?(?=&lt;)|(?=\{)/);
         const grammarMarkers = (rowData['語法'] || '').split(/[;；] ?/).filter(m => m);
         let grammarMarkerOrder = 0;
         for (const meaning of meanings) {
