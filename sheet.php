@@ -18,7 +18,7 @@ include("const.php");
     
     <script src="./js/general.js"></script>
     <style>
-        /* General Body & Layout */
+        /* General Body & Layout (Higher Density) */
         body {
             background-color: #f8f9fa;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -27,7 +27,7 @@ include("const.php");
         #container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 1em;
+            padding: 1em 1.5em; /* Adjusted padding */
         }
 
         h1 {
@@ -37,7 +37,7 @@ include("const.php");
         /* Search Form Beautification */
         #sheet-search-form {
             background-color: #fff;
-            padding: 2em;
+            padding: 1.5em 2em; /* Adjusted padding */
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             margin: 2em 0;
@@ -47,23 +47,23 @@ include("const.php");
         #query-input {
             width: 100%;
             max-width: 500px;
-            padding: 0.8em;
-            font-size: 1.1em;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            margin-bottom: 1em;
-            box-sizing: border-box; /* Ensures padding doesn't affect width */
-        }
-
-        #location-select {
-            padding: 0.8em;
+            padding: 0.7em;
             font-size: 1em;
             border: 1px solid #ced4da;
             border-radius: 4px;
+            margin-bottom: 1em;
+            box-sizing: border-box;
         }
-
+        
+        #location-select {
+            padding: 0.7em;
+            font-size: 0.9em;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        
         #sheet-search-form .options-group {
-            margin: 1.5em 0;
+            margin: 1.2em 0;
             display: flex;
             gap: 1.5em;
             justify-content: center;
@@ -71,15 +71,15 @@ include("const.php");
         }
 
         #sheet-search-form label {
-            font-size: 0.95em;
+            font-size: 0.9em;
             color: #495057;
         }
 
         #search-button {
             background-color: #007bff;
             color: white;
-            padding: 0.8em 2em;
-            font-size: 1.1em;
+            padding: 0.7em 1.8em;
+            font-size: 1em;
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -90,7 +90,7 @@ include("const.php");
             background-color: #0056b3;
         }
 
-        /* Result Card Beautification */
+        /* Result Card Beautification (Higher Density) */
         #sheet-results {
             margin-top: 2em;
         }
@@ -99,8 +99,8 @@ include("const.php");
             background: #fff;
             border: 1px solid #e9ecef;
             border-radius: 8px;
-            padding: 1.5em;
-            margin-bottom: 1.5em;
+            padding: 1.2em; /* Adjusted padding */
+            margin-bottom: 1.2em; /* Adjusted margin */
             display: flex;
             flex-wrap: wrap;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -113,9 +113,9 @@ include("const.php");
 
         .result-left {
             flex: 1;
-            min-width: 150px;
-            padding-right: 1.5em;
-            margin-right: 1.5em;
+            min-width: 140px;
+            padding-right: 1.2em;
+            margin-right: 1.2em;
             border-right: 1px solid #e9ecef;
             text-align: center;
         }
@@ -126,16 +126,16 @@ include("const.php");
         }
 
         .char-display {
-            font-size: 5em;
+            font-size: 4.5em; /* Adjusted font size */
             font-weight: bold;
             color: #212529;
             line-height: 1.1;
         }
 
         .pron-display {
-            font-size: 1.8em;
+            font-size: 1.6em; /* Adjusted font size */
             color: #495057;
-            line-height: 1.4;
+            line-height: 1.3;
             white-space: pre-wrap;
         }
 
@@ -144,28 +144,64 @@ include("const.php");
             margin-top: 0.5em;
             white-space: pre-wrap;
             font-family: monospace;
-        }
-
-        .meanings-section {
-            margin-bottom: 1.5em;
-            line-height: 1.7;
-            font-size: 1.1em;
-        }
-
-        .locations-section {
-            line-height: 1.8;
+            font-size: 0.9em;
         }
         
-        .location-entry {
+        .meanings-section {
+            margin-bottom: 1em; /* Adjusted margin */
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+        
+        .locations-section {
+            line-height: 1.7;
+        }
+        
+        /* NEW: Wrapper for each location entry + its potential note */
+        .location-entry-wrapper {
             display: inline-block;
-            margin-right: 1.5em;
-            margin-bottom: 0.5em;
+            vertical-align: top;
+            margin-right: 1.2em;
+            margin-bottom: 0.6em;
             font-size: 0.95em;
         }
         
+        .clickable-note {
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .clickable-note:hover {
+            color: #0056b3;
+        }
+        
+        /* NEW: Collapsible Note Styles */
+        .note-content {
+            background-color: #f0f4f8;
+            border-left: 3px solid #007bff;
+            padding: 0 1em; /* Padding is animated */
+            margin-top: 0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            color: #34495e;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.35s ease-in-out, opacity 0.35s ease-in-out, margin-top 0.35s ease-in-out, padding 0.35s ease-in-out;
+            box-sizing: border-box;
+        }
+        .note-content.show {
+            max-height: 500px; /* Arbitrary large value */
+            opacity: 1;
+            margin-top: 0.5em;
+            padding: 0.8em 1em;
+        }
+
         .foreign-languages, .classification-section {
-            margin-top: 1.5em;
-            padding-top: 1em;
+            margin-top: 1em;
+            padding-top: 0.8em;
             border-top: 1px solid #f1f3f5;
         }
         
@@ -180,70 +216,6 @@ include("const.php");
             white-space: pre-wrap;
         }
 
-        .clickable-note {
-            text-decoration: underline;
-            text-decoration-style: dotted;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .clickable-note:hover {
-            color: #0056b3;
-        }
-
-        /* MODAL (for notes) STYLES */
-        .modal-container {
-            display: none; /* Hidden by default */
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            position: relative;
-            background-color: #fefefe;
-            margin: auto;
-            padding: 30px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from {opacity: 0; transform: translateY(-20px);}
-            to {opacity: 1; transform: translateY(0);}
-        }
-
-        .modal-close {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .modal-close:hover,
-        .modal-close:focus {
-            color: black;
-        }
-        
-        #note-modal-text {
-            white-space: pre-wrap;
-            line-height: 1.6;
-            color: #343a40;
-        }
-
     </style>
 </head>
 
@@ -251,7 +223,7 @@ include("const.php");
 
 <div id="wrapper" class="wrapper">
     <?PHP Info::showSidenav(); ?>
-    <div id="container" class="container" style="">
+    <div id="container" class="container">
         <button class="sidenav-show-btn" onclick="showSidenav()"></button>
         
         <h1 style="text-align:center; margin-top: 1em;">泛粵字表查詢</h1>
@@ -278,21 +250,12 @@ include("const.php");
     <?PHP Info::showFooter(); ?>
 </div>
 
-<div id="note-modal" class="modal-container">
-  <div class="modal-content">
-    <span class="modal-close" onclick="closeNote()">&times;</span>
-    <p id="note-modal-text"></p>
-  </div>
-</div>
-
-
 <script>
     let sheetHeaderInfo = {}; // To store header info globally
 
     document.addEventListener('DOMContentLoaded', function() {
         const queryInput = document.getElementById('query-input');
         
-        // Fetch header info for populating the location dropdown
         fetch('api/v0.9/sheet.php?query=&header=1')
             .then(response => response.json())
             .then(data => {
@@ -320,7 +283,7 @@ include("const.php");
             const isTrim = document.getElementById('trim-checkbox').checked;
             const isRegex = document.getElementById('regex-checkbox').checked;
             const isDef = document.getElementById('def-checkbox').checked;
-
+            
             let url = 'api/v0.9/sheet.php?';
             
             if (inputString === '' && !isDef) {
@@ -350,48 +313,27 @@ include("const.php");
                 });
         }
 
-        // Event Listeners for search
         document.getElementById('search-button').addEventListener('click', performSearch);
         queryInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 performSearch();
             }
         });
-
-        // Event listener to close modal with Escape key
-        window.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeNote();
-            }
-        });
     });
 
     /**
-     * NEW MODAL FUNCTIONS
+     * NEW: Toggles the visibility of a note element.
      */
-    function showNote(noteText) {
-        const modal = document.getElementById('note-modal');
-        const modalText = document.getElementById('note-modal-text');
-        
-        // Use innerText to safely insert the text content
-        modalText.innerText = noteText;
-        
-        modal.style.display = 'flex';
-    }
-
-    function closeNote() {
-        const modal = document.getElementById('note-modal');
-        modal.style.display = 'none';
-    }
-    // Close modal if user clicks on the overlay
-    document.getElementById('note-modal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closeNote();
+    function toggleNote(noteId) {
+        const noteElement = document.getElementById(noteId);
+        if (noteElement) {
+            // Toggle a class that triggers the CSS transition
+            noteElement.classList.toggle('show');
         }
-    });
+    }
 
 
-    // --- Functions to render results (mostly unchanged logic, just formatting) ---
+    // --- Functions to render results (logic mostly unchanged, formatting updated) ---
 
     function renderResults(data) {
         const resultsDiv = document.getElementById('sheet-results');
@@ -406,6 +348,8 @@ include("const.php");
         rows.forEach(rowData => {
             const card = document.createElement('div');
             card.className = 'result-card';
+            // Ensure each row has a unique ID for note targeting, fallback to index if needed
+            rowData.id = rowData.id || `row-${Math.random()}`;
 
             card.innerHTML = `
                 <div class="result-left">
@@ -425,17 +369,10 @@ include("const.php");
     function formatCharacter(rowData) {
         let chara = rowData['繁'] || '';
         let displayChara = chara.replaceAll(/[?/!！？見歸 ]/g, '');
-        if (!displayChara) {
-            displayChara = '□';
-        }
-
+        if (!displayChara) displayChara = '□';
         let style = '';
-        if (chara.includes('？') || chara.includes('?')) {
-            style = 'color: #B9BAA3;';
-        } else if (chara.includes('見') || chara.includes('歸')) {
-            style = 'color: #3D3B4F;';
-        }
-
+        if (chara.includes('？') || chara.includes('?')) style = 'color: #B9BAA3;';
+        else if (chara.includes('見') || chara.includes('歸')) style = 'color: #3D3B4F;';
         return `<div class="char-display" style="${style}">${displayChara}</div>`;
     }
 
@@ -443,37 +380,23 @@ include("const.php");
         let chara = (rowData['繁'] || '').replaceAll(/[?/!！？見歸 ]/g, '');
         let ssb = '';
         if (chara.length === 1) {
-            let unicode = 'U+' + chara.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0');
-            ssb += unicode;
+            ssb += 'U+' + chara.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0');
         }
-        
         let ids = rowData['IDS'] || '';
-        if (ids) {
-            if (ssb) ssb += '\n';
-            ssb += `[${ids}]`;
-        }
+        if (ids) ssb += `\n[${ids}]`;
         return `<div class="unicode-display">${ssb}</div>`;
     }
 
     function formatPronunciation(rowData) {
         let pron = (rowData['綜'] || '').replaceAll(/[!！]/g, '');
-        
         let pronParts = pron.split('/');
         let pronDisplay = '';
         for (let i = 0; i < pronParts.length; i++) {
-            if (i > 0) {
-                pronDisplay += (i % 2 === 0) ? '/\n' : '/';
-            }
+            if (i > 0) pronDisplay += (i % 2 === 0) ? '/\n' : '/';
             pronDisplay += pronParts[i];
         }
-        
-        let style = '';
-        if (pron.includes('?')) {
-            style = 'font-style: italic;';
-        }
-
+        let style = pron.includes('?') ? 'font-style: italic;' : '';
         let ssb = `<div class="pron-display" style="${style}">${pronDisplay}`;
-
         let adaptedChara = rowData['俗/常'] || '';
         if (adaptedChara) {
             ssb += `\n<span style="font-size: 0.6em; color: #6c757d;">(${adaptedChara})</span>`;
@@ -484,18 +407,14 @@ include("const.php");
 
     function formatMeanings(rowData) {
         let sb = '';
-        const booksChara = rowData['錔'] || '';
-        const booksPron = rowData['音'] || '';
-        const booksMeaning = rowData['義'] || '';
+        const booksChara = rowData['錔'] || '', booksPron = rowData['音'] || '', booksMeaning = rowData['義'] || '';
         if (booksChara || booksPron || booksMeaning) {
             sb += '—— <i>';
             if (booksChara) {
                 sb += `${booksChara}`;
-                if (booksPron || booksMeaning) {
-                    sb += `: ${booksPron}`;
-                    if (booksPron && booksMeaning) sb += ' | ';
-                    if (booksMeaning) sb += `「${booksMeaning}」`;
-                }
+                if (booksPron || booksMeaning) sb += `: ${booksPron}`;
+                if (booksPron && booksMeaning) sb += ' | ';
+                if (booksMeaning) sb += `「${booksMeaning}」`;
             } else {
                 sb += booksPron;
                 if (booksPron && booksMeaning) sb += ' | ';
@@ -506,49 +425,29 @@ include("const.php");
 
         let oriString = rowData['釋義'] || '';
         if (!oriString) return `<div class="meanings-section">${sb}</div>`;
-        
-        oriString = oriString.replace(/</g, "&lt;");
-        oriString = oriString.replace(/(?<=([^}"“]))&lt;/g, '；&lt;');
-        if (oriString.startsWith('[粵]') && oriString.includes('{1}')) {
-            oriString = oriString.replace('[粵]', '[粵]；');
-        }
+        oriString = oriString.replace(/</g, "&lt;").replace(/(?<=([^}"“]))&lt;/g, '；&lt;');
+        if (oriString.startsWith('[粵]') && oriString.includes('{1}')) oriString = oriString.replace('[粵]', '[粵]；');
         oriString = oriString.replace(/}/g, '} ');
-
         const meanings = oriString.split(/[；。？！] *?(?!=(&lt;|\{))/);
         const grammarMarkers = (rowData['語法'] || '').split(/[;；] ?/).filter(m => m);
-        
         let grammarMarkerOrder = 0;
         for (const meaning of meanings) {
             if (!meaning || !meaning.trim()) continue;
-            
             let processedMeaning = meaning;
             if (grammarMarkers.length > 0 && grammarMarkers[grammarMarkerOrder]) {
-                const marker = `‹${grammarMarkers[grammarMarkerOrder].replace('？', '?')}›`;
-                processedMeaning = processedMeaning.replace(/(?<=[}])/ ,marker);
-                grammarMarkerOrder++;
+                processedMeaning = processedMeaning.replace(/(?<=[}])/ , `‹${grammarMarkers[grammarMarkerOrder++].replace('？', '?')}›`);
             }
-            
-            if (processedMeaning.includes('[粵]') && meanings.length > 1) {
-                sb += `<b>${processedMeaning}</b>`;
-            } else {
-                sb += processedMeaning;
-            }
+            sb += (processedMeaning.includes('[粵]') && meanings.length > 1) ? `<b>${processedMeaning}</b>` : processedMeaning;
             sb += '<br>';
         }
-
         if (sb.endsWith('<br>')) sb = sb.slice(0, -4);
-        
         return `<div class="meanings-section">${sb}</div>`;
     }
 
     function darkenColor(hex, ratio) {
         if (!hex || hex.length < 4) return '#000000';
-        let r = parseInt(hex.slice(1, 3), 16),
-            g = parseInt(hex.slice(3, 5), 16),
-            b = parseInt(hex.slice(5, 7), 16);
-        r = Math.floor(r * ratio);
-        g = Math.floor(g * ratio);
-        b = Math.floor(b * ratio);
+        let r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+        r = Math.floor(r * ratio); g = Math.floor(g * ratio); b = Math.floor(b * ratio);
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
 
@@ -557,63 +456,40 @@ include("const.php");
         let cellNotes = {};
         try {
             const notesString = rowData['附'] || '{}';
-            const sanitizedString = notesString
-                .replace(/\n/g, '\\n')
-                .replace(/\t/g, '\\t')
-                .replace(/'/g, '"');
-            cellNotes = JSON.parse(sanitizedString);
-        } catch(e) { 
-            console.warn('Could not parse cell notes:', rowData['附'], e);
-        }
-
-        (sheetHeaderInfo.cities || []).forEach(cityInfo => {
-            const key = cityInfo.col;
+            cellNotes = JSON.parse(notesString.replace(/\n/g, '\\n').replace(/\t/g, '\\t').replace(/'/g, '"'));
+        } catch(e) { console.warn('Could not parse cell notes:', rowData['附'], e); }
+        
+        const buildEntry = (info, type) => {
+            const key = info.col;
             let value = rowData[key] ? String(rowData[key]).trim() : '';
-            if (!value) return;
+            if (!value) return '';
 
-            const fullName = cityInfo.city + (cityInfo.sub ? ` (${cityInfo.sub})` : '');
-            let displayValue = '';
-            if (value.includes('^')) {
-                const parts = value.split('^');
-                displayValue = parts[0] + parts.slice(1).map(p => `<del>${p}</del>`).join('');
-            } else {
-                displayValue = value;
+            let entryHTML;
+            if (type === 'city') {
+                const fullName = info.city + (info.sub ? ` (${info.sub})` : '');
+                const displayValue = value.includes('^') ? value.split('^').slice(1).reduce((acc, p) => acc + `<del>${p}</del>`, value.split('^')[0]) : value;
+                const valueStyle = (value.includes('?') ? 'font-style: italic;' : '') + (value === '_' ? 'color: #BBBBBB;' : '');
+                const nameStyle = `color: ${darkenColor(info.color, 0.92)}; font-weight: 500;`;
+                entryHTML = `<span style="${nameStyle}">${fullName}: </span><span style="${valueStyle}">${displayValue}</span>`;
+            } else { // foreign
+                const valueStyle = (info.color ? `color: ${darkenColor(info.color, 0.92)};` : '') + (value.includes('?') ? 'font-style: italic;' : '');
+                entryHTML = `<span style="${valueStyle}"><strong>${info.fullname}:</strong> ${value.replace(/\n/g, ', ')}</span>`;
             }
-            
-            let valueStyle = '';
-            let locationNameStyle = `color: ${darkenColor(cityInfo.color, 0.9)}; font-weight: 500;`;
-            if (value.includes('?')) valueStyle += 'font-style: italic;';
-            if (value === '_') valueStyle += 'color: #BBBBBB;';
-            
-            let locationEntry = `<span style="${locationNameStyle}">${fullName}: </span><span style="${valueStyle}">${displayValue}</span>`;
 
+            let noteDiv = '';
             if (cellNotes[key]) {
-                const chara = rowData['繁'] || '□', pron = rowData['綜'] || '';
-                let noteText = `>「${chara}」(${pron}) [${key}] ${value}\n\n${cellNotes[key]}`;
-                // Important: Escape backticks in the noteText before creating the template literal for onclick
-                locationEntry = `<span class="clickable-note" onclick="showNote(\`${noteText.replace(/`/g, "\\`")}\`)">${locationEntry}</span>`;
+                const noteId = `note-${rowData.id}-${key}`;
+                const noteText = `>「${rowData['繁'] || '□'}」(${rowData['綜'] || ''}) [${key}] ${value}\n\n${cellNotes[key]}`;
+                entryHTML = `<span class="clickable-note" onclick="toggleNote('${noteId}')">${entryHTML}</span>`;
+                noteDiv = `<div id="${noteId}" class="note-content">${noteText.replace(/\n/g, '<br>')}</div>`;
             }
-            ssb += `<span class="location-entry">${locationEntry}</span>`;
-        });
+            return `<div class="location-entry-wrapper">${entryHTML}${noteDiv}</div>`;
+        };
+
+        (sheetHeaderInfo.cities || []).forEach(cityInfo => ssb += buildEntry(cityInfo, 'city'));
 
         let foreignSsb = '';
-        (sheetHeaderInfo.foreign || []).forEach(foreignInfo => {
-            const key = foreignInfo.col;
-            let value = rowData[key] ? String(rowData[key]).trim() : '';
-            if (!value) return;
-
-            let valueStyle = foreignInfo.color ? `color: ${darkenColor(foreignInfo.color, 0.9)};` : '';
-            if (value.includes('?')) valueStyle += 'font-style: italic;';
-
-            let foreignEntry = `<span style="${valueStyle}"><strong>${foreignInfo.fullname}:</strong> ${value.replace(/\n/g, ', ')}</span>`;
-            
-            if (cellNotes[key]) {
-                 const chara = rowData['繁'] || '□', pron = rowData['綜'] || '';
-                 let noteText = `>「${chara}」(${pron}) [${key}] ${value}\n\n${cellNotes[key]}`;
-                 foreignEntry = `<span class="clickable-note" onclick="showNote(\`${noteText.replace(/`/g, "\\`")}\`)">${foreignEntry}</span>`;
-            }
-            foreignSsb += `<span class="location-entry">${foreignEntry}</span>`;
-        });
+        (sheetHeaderInfo.foreign || []).forEach(foreignInfo => foreignSsb += buildEntry(foreignInfo, 'foreign'));
         if (foreignSsb) ssb += `<div class="foreign-languages">${foreignSsb}</div>`;
 
         let classified = rowData['大類'] || '';
@@ -625,7 +501,7 @@ include("const.php");
             if (class_minor) classificationText += ` > ${class_minor}`;
             ssb += `<div class="classification-section">${classificationText}</div>`;
         }
-        ssb += `</div>`; // Close locations-section
+        ssb += `</div>`;
         return ssb;
     }
 </script>
