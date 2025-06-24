@@ -47,7 +47,7 @@ SIDENAV;
         echo <<< FOOTER
         <hr style="margin: 50px 0;">
         <div class="copyright" style="text-align: center;margin-bottom: 2em;">
-            <p>© 2019-2024 <a href="https://jyutjam.org">嶺南粵音</a> <a href="https://jyutdict.org">泛粵大典</a> 開發組 版權所有</p>
+            <p>© 2019-2025 <a href="https://jyutjam.org">嶺南粵音</a> <a href="https://jyutdict.org">泛粵大典</a> 開發組 版權所有</p>
         </div>
         FOOTER;
     }
