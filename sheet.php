@@ -272,7 +272,7 @@ include("const.php");
                     sheetHeaderInfo.cities.forEach(header => {
                         const option = document.createElement('option');
                         option.value = header.col;
-                        option.textContent = header.city + (header.sub ? ` (${header.sub})` : '');
+                        option.textContent = header.city + (header.sub ? header.sub : '');
                         locationSelect.appendChild(option);
                     });
                 }
@@ -411,6 +411,7 @@ include("const.php");
 
     function formatPronunciation(rowData) {
         let pron = (rowData['綜'] || '').replaceAll(/[!！]/g, '');
+        let pronSimplified = (rowData['檢'] || '').replaceAll(/[!！]/g, '');
         let pronParts = pron.split('/');
         let pronDisplay = '';
         for (let i = 0; i < pronParts.length; i++) {
@@ -419,6 +420,9 @@ include("const.php");
         }
         let style = pron.includes('?') ? 'font-style: italic;' : '';
         let ssb = `<div class="pron-display" style="${style}">${pronDisplay}`;
+        if (pron != processedMeaning) {
+            ssb += `<span style="font-size: 0.5em; color: #6c757d;">(${pronSimplified})</span>`;
+        }
         let adaptedChara = rowData['俗/常'] || '';
         if (adaptedChara) {
             ssb += `\n<span style="font-size: 0.6em; color: #6c757d;">(${adaptedChara})</span>`;
@@ -488,13 +492,13 @@ include("const.php");
 
             let entryHTML;
             if (type === 'city') {
-                const fullName = info.city + (info.sub ? ` (${info.sub})` : '');
+                const fullName = info.city + (info.sub ? info.sub : '');
                 const displayValue = value.includes('^') ? value.split('^').slice(1).reduce((acc, p) => acc + `<del>${p}</del>`, value.split('^')[0]) : value;
                 const valueStyle = (value.includes('?') ? 'font-style: italic;' : '') + (value === '_' ? 'color: #BBBBBB;' : '');
-                const nameStyle = `color: ${darkenColor(info.color, 0.92)}; font-weight: 500;`;
+                const nameStyle = `color: ${darkenColor(info.color, 0.88)}; font-weight: 500;`;
                 entryHTML = `<span style="${nameStyle}">${fullName}: </span><span style="${valueStyle}">${displayValue}</span>`;
             } else { // foreign
-                const valueStyle = (info.color ? `color: ${darkenColor(info.color, 0.92)};` : '') + (value.includes('?') ? 'font-style: italic;' : '');
+                const valueStyle = (info.color ? `color: ${darkenColor(info.color, 0.88)};` : '') + (value.includes('?') ? 'font-style: italic;' : '');
                 entryHTML = `<span style="${valueStyle}"><strong>${info.fullname}:</strong> ${value.replace(/\n/g, ', ')}</span>`;
             }
 
