@@ -421,7 +421,7 @@ include("const.php");
         let style = pron.includes('?') ? 'font-style: italic;' : '';
         let ssb = `<div class="pron-display" style="${style}">${pronDisplay}`;
         if (pron != pronSimplified) {
-            ssb += `<span style="font-size: 0.5em; color: #6c757d;">(${pronSimplified})</span>`;
+            ssb += `<span style="font-size: 0.5em; color: #6c757d;"> ${pronSimplified}</span>`;
         }
         let adaptedChara = rowData['俗/常'] || '';
         if (adaptedChara) {
