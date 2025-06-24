@@ -52,14 +52,14 @@ include("const.php");
         }
         .result-left {
             flex: 1;
-            min-width: 150px;
+            min-width: 120px;
             padding-right: 15px;
             margin-right: 15px;
             border-right: 1px solid #eee;
             text-align: center;
         }
         .result-right {
-            flex: 3;
+            flex: 4;
             min-width: 300px;
         }
         .char-display {
@@ -114,7 +114,7 @@ include("const.php");
     <div id="container" class="container" style="">
         <button class="sidenav-show-btn" onclick="showSidenav()"></button>
         
-        <h1 style="text-align:center;">泛粵字表查詢</h1>
+        <h1 style="text-align:center; margin: 2em;">泛粵字表查詢</h1>
 
         <div id="sheet-search-form">
             <input type="text" id="query-input" placeholder="輸入字、詞或讀音...">
@@ -160,7 +160,7 @@ include("const.php");
                     sheetHeaderInfo.cities.forEach(header => {
                         const option = document.createElement('option');
                         option.value = header.col;
-                        option.textContent = header.fullname + (header.sub ? ` (${header.sub})` : '');
+                        option.textContent = header.city + (header.sub ? `${header.sub}` : '');
                         locationSelect.appendChild(option);
                     });
                 }
@@ -333,7 +333,7 @@ include("const.php");
         }
         oriString = oriString.replace(/}/g, '} ');
 
-        const meanings = oriString.split(/[；。？！] *?(?=(&lt;|[{]))/);
+        const meanings = oriString.split(/[；。？！] *?(?!=(&lt;|\{))/);
         const grammarMarkers = (rowData['語法'] || '').split(/[;；] ?/).filter(m => m);
         
         let grammarMarkerOrder = 0;
@@ -379,7 +379,6 @@ include("const.php");
         let ssb = '';
         let cellNotes = {};
         try {
-            // FIX: Sanitize control characters like \n and \t before parsing
             const notesString = rowData['附'] || '{}';
             const sanitizedString = notesString
                 .replace(/\n/g, '\\n')
@@ -395,7 +394,7 @@ include("const.php");
             let value = rowData[key] ? String(rowData[key]).trim() : '';
             if (!value) return;
 
-            const fullName = cityInfo.fullname + (cityInfo.sub ? ` (${cityInfo.sub})` : '');
+            const fullName = cityInfo.city + (cityInfo.sub ? `${cityInfo.sub}` : '');
             let displayValue = '';
             if (value.includes('^')) {
                 const parts = value.split('^');
@@ -405,7 +404,7 @@ include("const.php");
             }
             
             let valueStyle = '';
-            let locationNameStyle = `color: ${darkenColor(cityInfo.color, 0.7)};`;
+            let locationNameStyle = `color: ${darkenColor(cityInfo.color, 0.92)};`;
             if (value.includes('?')) valueStyle += 'font-style: italic;';
             if (value === '_') valueStyle += 'color: #BBBBBB;';
             
@@ -425,7 +424,7 @@ include("const.php");
             let value = rowData[key] ? String(rowData[key]).trim() : '';
             if (!value) return;
 
-            let valueStyle = foreignInfo.color ? `color: ${darkenColor(foreignInfo.color, 0.7)};` : '';
+            let valueStyle = foreignInfo.color ? `color: ${darkenColor(foreignInfo.color, 0.92)};` : '';
             if (value.includes('?')) valueStyle += 'font-style: italic;';
 
             let foreignEntry = `<span style="${valueStyle}">${foreignInfo.fullname}: ${value.replace(/\n/g, ', ')}</span>`;
