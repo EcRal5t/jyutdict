@@ -34,27 +34,42 @@ include("const.php");
             color: #343a40;
         }
 
-        /* Search Form Beautification */
+        /* Responsive Search Form */
         #sheet-search-form {
             background-color: #fff;
-            padding: 1.5em 2em;
+            padding: 1.5em;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             margin: 2em 0;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1em;
+        }
+
+        .search-controls-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8em;
+            width: 100%;
         }
 
         #query-input {
-            width: 100%;
-            max-width: 500px;
+            flex: 1 1 300px;
+            max-width: 450px;
             padding: 0.7em;
             font-size: 1em;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            margin-bottom: 1em;
             box-sizing: border-box;
         }
         
+        #location-select, #search-button {
+            flex-shrink: 0;
+        }
+
         #location-select {
             padding: 0.7em;
             font-size: 0.9em;
@@ -63,9 +78,9 @@ include("const.php");
         }
         
         #sheet-search-form .options-group {
-            margin: 1.2em 0;
+            margin: 0.5em 0;
             display: flex;
-            gap: 1.5em;
+            gap: 1.2em;
             justify-content: center;
             flex-wrap: wrap;
         }
@@ -73,6 +88,7 @@ include("const.php");
         #sheet-search-form label {
             font-size: 0.9em;
             color: #495057;
+            white-space: nowrap;
         }
 
         #search-button {
@@ -90,7 +106,7 @@ include("const.php");
             background-color: #0056b3;
         }
 
-        /* Result Card Beautification (Higher Density & Responsive) */
+        /* Result Card (from previous step) */
         #sheet-results {
             margin-top: 2em;
         }
@@ -102,7 +118,7 @@ include("const.php");
             padding: 1.5em;
             margin-bottom: 1.2em;
             display: flex;
-            flex-wrap: nowrap; /* Prevent wrapping by default */
+            flex-wrap: nowrap;
             gap: 1.5em;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: box-shadow 0.3s;
@@ -118,9 +134,6 @@ include("const.php");
             display: flex;
             align-items: center;
             gap: 1.2em;
-            text-align: center;
-            flex-direction: column;
-            justify-content: center;
         }
         
         .result-left-main-char {
@@ -157,7 +170,6 @@ include("const.php");
             white-space: pre-wrap;
             font-family: monospace;
             font-size: 0.85em;
-            text-align: center;
         }
         
         .meanings-section {
@@ -169,16 +181,15 @@ include("const.php");
         .locations-section {
             line-height: 1.2;
         }
-        
+
         .location-entry-wrapper {
             display: inline-block;
             vertical-align: top;
             margin-right: 1.2em;
             margin-bottom: 0.6em;
             font-size: 0.95em;
-            text-align: center;
         }
-        
+
         .clickable-note {
             text-decoration: underline;
             text-decoration-style: dotted;
@@ -219,12 +230,12 @@ include("const.php");
             padding-top: 0.8em;
             border-top: 1px solid #f1f3f5;
         }
-        
+
         .foreign-languages {
             font-size: 0.9em;
             color: #333;
         }
-        
+
         .classification-section {
             font-size: 0.85em;
             color: #adb5bd;
@@ -234,24 +245,37 @@ include("const.php");
         /* Responsive Adjustments */
         @media (max-width: 800px) {
             .result-card {
-                flex-direction: column; /* Stack left and right parts */
+                flex-direction: column;
                 gap: 1em;
             }
             .result-left {
                 border-bottom: 1px solid #e9ecef;
                 padding-bottom: 1em;
                 min-width: auto;
-                flex-direction: row;
+            }
+        }
+
+        @media (max-width: 600px) {
+            #sheet-search-form {
+                padding: 1em;
+            }
+            .search-controls-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5em;
+            }
+            #query-input {
+                max-width: none;
+            }
+            #sheet-search-form .options-group {
+                justify-content: flex-start;
+                gap: 0.8em 1.2em;
             }
         }
 
         @media (max-width: 500px) {
             #container {
                 padding: 1em 0.5em;
-            }
-            #sheet-search-form {
-                padding: 1em;
-                margin: 1em 0;
             }
             .result-card {
                 padding: 0.8em;
@@ -280,18 +304,20 @@ include("const.php");
         <h1 style="text-align:center; margin-top: 1em;">泛粵字表查詢</h1>
 
         <div id="sheet-search-form">
-            <input type="text" id="query-input" placeholder="輸入字、詞或讀音...">
-            <select id="location-select">
-                <option value="">綜合音/字</option>
-                <option value="檢" selected>檢索音/字</option>
-            </select>
+            <div class="search-controls-wrapper">
+                <input type="text" id="query-input" placeholder="輸入字、詞或讀音...">
+                <select id="location-select">
+                    <option value="">綜合音/字</option>
+                    <option value="檢" selected>檢索音/字</option>
+                </select>
+                <button id="search-button">查詢</button>
+            </div>
             <div class="options-group">
                 <label><input type="checkbox" id="fuzzy-checkbox" checked> 模糊查詢 (查字)</label>
                 <label><input type="checkbox" id="trim-checkbox" checked> 音節整體 (查音)</label>
                 <label><input type="checkbox" id="regex-checkbox"> 正則表達式</label>
                 <label><input type="checkbox" id="def-checkbox"> 反查釋義</label>
             </div>
-            <button id="search-button">查詢</button>
         </div>
 
         <div id="sheet-results">
@@ -458,7 +484,7 @@ include("const.php");
         }
         let ids = rowData['IDS'] || '';
         if (ids) ssb += `\n[${ids}]`;
-        return `<div class="unicode-display">${ssb}</div>`;
+        return `<div class="unicode-display">${ssb.trim()}</div>`;
     }
 
     function formatPronunciation(rowData) {
