@@ -113,11 +113,13 @@ include("const.php");
         }
 
         .result-left {
-            flex: 3;
+            flex: 1;
             min-width: 220px;
             display: flex;
             align-items: center;
             gap: 1.2em;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .result-left-main-char {
@@ -236,7 +238,8 @@ include("const.php");
             .result-left {
                 border-bottom: 1px solid #e9ecef;
                 padding-bottom: 1em;
-                min-width: auto; /* Remove min-width for stacking */
+                min-width: auto;
+                flex-direction: row;
             }
         }
 
@@ -259,10 +262,6 @@ include("const.php");
             }
             .pron-display {
                 font-size: 1.2em;
-            }
-            .location-entry-wrapper {
-                display: block; /* Stack location entries */
-                margin-right: 0;
             }
         }
 
