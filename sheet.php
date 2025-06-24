@@ -118,6 +118,7 @@ include("const.php");
             display: flex;
             align-items: center;
             gap: 1.2em;
+            text-align: center;
             flex-direction: column;
             justify-content: center;
         }
