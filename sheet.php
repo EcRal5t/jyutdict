@@ -155,7 +155,7 @@ include("const.php");
         }
         
         .locations-section {
-            line-height: 1.7;
+            line-height: 1.45;
         }
         
         .location-entry-wrapper {
