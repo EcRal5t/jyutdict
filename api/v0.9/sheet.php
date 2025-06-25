@@ -132,12 +132,14 @@ if (!$isRandomReturn) { // 常規檢索
     }
 } else { // 隨機返回
     $inCharaSheet_sql = "
-    SELECT *
-    FROM `JFaamjyut` AS t1 JOIN (
-        SELECT ROUND( RAND () * ((SELECT MAX(id) FROM `JFaamjyut`)-(SELECT MIN(id) FROM `JFaamjyut`))+(SELECT MIN(id) FROM `JFaamjyut`)) AS id
-    ) AS t2
-    WHERE t1.id >= t2.id
-    ORDER BY t1.id LIMIT $randomReturnCount;
+    SELECT t1.*
+    FROM `JFaamjyut` AS t1
+    JOIN (
+        SELECT id
+        FROM `JFaamjyut`
+        ORDER BY RAND()
+        LIMIT $randomReturnCount
+    ) AS t2 ON t1.id = t2.id;
     ";
 }
 //print_r($inCharaSheet_sql);
