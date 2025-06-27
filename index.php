@@ -54,9 +54,7 @@ if ($isSearchPerformed) {
 
         if ($options["area"]) {
             // 只实例化一次 AreaPresenter
-            if ($areaPresenter === null) {
-                 $areaPresenter = $presenterFactory->getDictPresenter('area');
-            }
+            $areaPresenter = $presenterFactory->getDictPresenter('area');
             ViewArea::printAreaFramework(BEGIN);
             $areaPresenter->show();
             
@@ -71,7 +69,7 @@ if ($isSearchPerformed) {
             if ($options["map"]) {
                  $areaPresenter->prepareMap("map" . $printTimes);
             }
-             $areaPresenter->printRelativeLink();
+            $areaPresenter->printRelativeLink();
         }
     }
 
