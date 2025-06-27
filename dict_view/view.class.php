@@ -286,7 +286,7 @@ EOT; }
 				<div class="general-bg-deeper" id="regionalResultForm">
 					<table id="regionalResultTable" class="general-form annex-form">
 						<tr>
-							<td class="font-22" style='height: 36px;' colspan='5'><?PHP echo $this->data->getChara(); ?></td>
+							<td class="font-22" style='height: 36px;' colspan='5'><?PHP echo $this->data->getChara(); ?> <button name="toggleButton"> IPA </button></td>
 						</tr>
 				<?php
 				break;
@@ -316,9 +316,19 @@ EOT; }
 		}
 		?>
 		<tr>
-			<td class="column4-20 min-width60 "><?PHP echo $this->data->getDivision(); ?></td>
-			<td class="column4-20 min-width45 <?PHP if(false && $this->data->getDistrict() != "") { echo 'tips'; } ?> ">
+			<?PHP
+				if ($this->data->getColor() != "#000000") {
+					echo "<td class='tbl-head'>";
+					echo "<span style='color: {$this->data->getColor()};'>█ </span>";
+				} else {
+					echo "<td>";
+				}
+				echo "</td>";
+			?>
+			<!-- <td class="column4-20 min-width60 "><?PHP echo $this->data->getDivision(); ?></td> -->
+			<td class="column6-20 min-width90 tbl-sub<?PHP if(false && $this->data->getDistrict() != "") { echo 'tips'; } ?>">
 				<?PHP
+				
 				echo $this->data->getCity();
 				if ($this->data->getDistrict() != "") 
 				{ 
@@ -327,29 +337,27 @@ EOT; }
 					 		"</span>"; }
 				?>
 			</td>
-			<td class="alphabet">
-				<?PHP foreach ($jyutpings as $jyutping) {
-					$jyutping->printWithColor();
-					if ($jyutping !== end($jyutpings)) {
-						echo "/";
-					}
-				} ?>
-			</td>
-			<td class="column3-20 min-width45">
-				<?PHP foreach ($jyutpings as $jyutping) {
-					$jyutping->printIpaWithColor();
-					if ($jyutping !== end($jyutpings)) {
-						echo "/";
-					}
-				} ?>
-			</td>
 			<?PHP
-			if (mb_strlen($this->data->getNote(),'UTF8') > 5) {
-				echo "<td class='tips font-0p9em'>" . mb_substr($this->data->getNote(), 0, 4, 'utf8')."…";
-				echo "<span class='tipsMain'>" . $this->data->getNote() . "</span></td>";
+			$note = $this->data->getNote();
+			if ($note === "") {
+				echo '<td class="alphabet" colspan="2">';
 			} else {
-				echo "<td class='font-0p9em'>" . $this->data->getNote() . "</td>";
-			}#end if (mb_strlen($note,'UTF8') > 5)
+				echo '<td class="alphabet">';
+			}
+			foreach ($jyutpings as $jyutping) {
+				$jyutping->printWithColor();
+				$jyutping->printIpaWithColor();
+				if ($jyutping !== end($jyutpings)) {
+					echo "<br>";
+				}
+			}
+			echo "</td>";
+			if (mb_strlen($note,'UTF8') > 6) {
+				echo "<td class='tips font-0p9em'>" . mb_substr($note, 0, 5, 'utf8')."…";
+				echo "<span class='tipsMain'>" . $note . "</span></td>";
+			} elseif ($note !== "") {
+				echo "<td class='font-0p9em'>" . $note . "</td>";
+			}
 			?>
 		</tr>
 	<?PHP
@@ -380,7 +388,7 @@ class ViewMap implements updateData
 		$this->setPronunciation($area);
 	}
 	
-	private final function setPronunciation(DataArea $area)
+	private function setPronunciation(DataArea $area)
 	{
 			for(;$area->hasNext();$area->next())
 			{
@@ -389,7 +397,7 @@ class ViewMap implements updateData
 			}
 	}
 
-	private final function setFontcolorArr(string $color)
+	private function setFontcolorArr(string $color)
 	{
 		$fontcolorArr = str_split(hex2bin(substr($color,1)));
 		if ((ord($fontcolorArr[0])+ord($fontcolorArr[1])+ord($fontcolorArr[2])) < 384) {

@@ -309,7 +309,7 @@ include("const.php");
 
         <div id="sheet-search-form">
             <div class="search-controls-wrapper">
-                <input type="text" id="query-input" placeholder="輸入字或音...">
+                <input type="text" id="query-input" placeholder="輸入字或音...（不支持簡體）">
                 <select title="Select Location" id="location-select">
                     <option value="">綜合音/字</option>
                     <option value="檢" selected>檢索音/字</option>
@@ -337,7 +337,7 @@ include("const.php");
     document.addEventListener('DOMContentLoaded', function() {
         const queryInput = document.getElementById('query-input');
         
-        fetch('api/v0.9/sheet.php?query=&header=1')
+        fetch('api/v0.9/sheet?query=&header=1')
             .then(response => response.json())
             .then(data => {
                 const headers = data.__valid_options;
@@ -365,7 +365,7 @@ include("const.php");
             const isRegex = document.getElementById('regex-checkbox').checked;
             const isDef = document.getElementById('def-checkbox').checked;
             
-            let url = 'api/v0.9/sheet.php?';
+            let url = 'api/v0.9/sheet?';
             
             if (inputString === '' && !isDef) {
                 url += 'query=!&limit=10';

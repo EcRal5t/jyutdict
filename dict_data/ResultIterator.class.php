@@ -54,7 +54,8 @@ abstract class ResultIterator{
 			$this->listIterator = new ArrayIterator($getList_result);
 			return true;
 		}catch(Exception $e){
-			throw($e);
+			// throw($e);
+			die("<h1> ErrorOccured: $tableName </h1>");
 		}
 		return false;
 	}

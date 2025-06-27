@@ -29,7 +29,7 @@ require_once("dict_presenter/IndexPresenter.class.php");
 	<script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
 	<script>LA.init({id:"KBntZT3wki1TtUTu",ck:"KBntZT3wki1TtUTu"})</script>
 </head>
-
+<style> .hidden { display: none; } .ipa-hidden-btn { text-decoration: line-through 2px; } .general-form .tbl-head { border-right: none; }.general-form .tbl-sub { border-left: none; } </style>
 <?PHP
 //$submitChara 为 提交的字符
 //$options     为 勾选框选项
@@ -100,11 +100,11 @@ if (!empty($_REQUEST['character'])) {
 						$area = $presenter->getDictPresenter('area');
 						ViewArea::printAreaFramework(BEGIN);
 						$area->show();
-						if ($options["map"]) {
-							if ($printTimes++ == 0) $area->printMapDependency();
-							$area->prepareMap("map" . $printTimes);
-						}
-						$area->printRelativeLink();
+						// if ($options["map"]) {
+						// 	if ($printTimes++ == 0) $area->printMapDependency();
+						// 	$area->prepareMap("map" . $printTimes);
+						// }
+						// $area->printRelativeLink();
 					}
 					// if ($charaCount > 2) break;
 				} #end foreach($charaArray as $chara)
@@ -123,13 +123,13 @@ if (!empty($_REQUEST['character'])) {
 	</div>
 	<!-- <script type="text/javascript" src="//js.users.51.la/20205743.js"></script> -->
 	<script>
-		document.querySelector('#sidenav-show-btn').onclick = function() {
-			showSidenav();
-		};
+		document.querySelector('#sidenav-show-btn').onclick = showSidenav;
+
 		window.onload = function() {
 			annexTableShell('.annex-form', 2);
 			document.querySelector('#check-map').disabled = !(document.querySelector('#check-area').checked);
 		};
+
 		document.querySelector('#check-area').onclick = function() {
 			var chackmap = document.querySelector('#check-map');
 			if (this.checked === false) {
@@ -137,6 +137,17 @@ if (!empty($_REQUEST['character'])) {
 			}
 			chackmap.disabled = !this.checked;
 		};
+
+		const toggleButtons = document.getElementsByName('toggleButton');
+		const markedSpans = document.querySelectorAll('span.ipa');
+		toggleButtons.forEach(element => {
+			element.addEventListener('click', function() {
+				markedSpans.forEach(span => {
+					span.classList.toggle('hidden');
+				});
+				element.classList.toggle('ipa-hidden-btn');
+			})
+		});
 	</script>
 </body>
 
