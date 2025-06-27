@@ -97,8 +97,8 @@ II. 點真少 / 怎麼都是ｘｘ的點
 - 開平護龍: 鄧鈞
 - 台山大江: @彼岸
 - 台山斗山墟: @chands
-- 江門荷塘上: @Kwingiem
-- 江門荷塘下: @Kwingiem
+- 江門荷塘上邊: @Kwingiem
+- 江門荷塘下邊: @Kwingiem
 - 江門水南: @Kwingiem
 - 江門白沙: @Kwingiem
 - 江門紫萊: @Kwingiem
@@ -144,7 +144,7 @@ II. 點真少 / 怎麼都是ｘｘ的點
 - 防城: [匿名]
 - 北海: @'Sin Yeung'
 - 遂溪草潭: 州
-- 遂溪: SìhngYíh
+- 遂溪遂城: SìhngYíh
 - 湛江赤坎: SìhngYíh
 - 高州: @一优法师
 - 高州石鼓: @一优法师
