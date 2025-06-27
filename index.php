@@ -100,11 +100,11 @@ if (!empty($_REQUEST['character'])) {
 						$area = $presenter->getDictPresenter('area');
 						ViewArea::printAreaFramework(BEGIN);
 						$area->show();
-						// if ($options["map"]) {
-						// 	if ($printTimes++ == 0) $area->printMapDependency();
-						// 	$area->prepareMap("map" . $printTimes);
-						// }
-						// $area->printRelativeLink();
+						if ($options["map"]) {
+							if ($printTimes++ == 0) $area->printMapDependency();
+							$area->prepareMap("map" . $printTimes);
+						}
+						$area->printRelativeLink();
 					}
 					// if ($charaCount > 2) break;
 				} #end foreach($charaArray as $chara)
