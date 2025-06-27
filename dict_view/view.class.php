@@ -317,27 +317,23 @@ EOT; }
 		?>
 		<tr>
 			<?PHP
-				if ($this->data->getColor() != "#000000") {
-					echo "<td class='tbl-head'>";
-					echo "<span style='color: {$this->data->getColor()};'>█ </span>";
-				} else {
-					echo "<td>";
-				}
+			$color = $this->data->getColor();
+			if ($color !== "#000000") {
+				echo "<td class='tbl-head'>";
+				echo "<span style='color: {$color};'>█ </span>";
 				echo "</td>";
-			?>
-			<!-- <td class="column4-20 min-width60 "><?PHP echo $this->data->getDivision(); ?></td> -->
-			<td class="column6-20 min-width90 tbl-sub<?PHP if(false && $this->data->getDistrict() != "") { echo 'tips'; } ?>">
-				<?PHP
-				
-				echo $this->data->getCity();
-				if ($this->data->getDistrict() != "") 
-				{ 
-					echo "<span class='hl-font-grayish font-0p9em tipsMain' style='width: 50px;'>"
-					 		. $this->data->getDistrict() .
-					 		"</span>"; }
-				?>
-			</td>
-			<?PHP
+				echo '<td class="column6-20 min-width90 tbl-sub">';
+			} else {
+				echo '<td class="column6-20 min-width90" colspan="2">';
+			}
+			echo $this->data->getCity();
+			if ($this->data->getDistrict() != "") 
+			{ 
+				echo "<span class='hl-font-grayish font-0p9em tipsMain' style='width: 50px;'>"
+						. $this->data->getDistrict() .
+						"</span>"; }
+			echo '</td>';
+			
 			$note = $this->data->getNote();
 			if ($note === "") {
 				echo '<td class="alphabet" colspan="2">';
