@@ -1,4 +1,7 @@
-<?PHP
+<?php
+// index.php
+
+// 1. 环境初始化与依赖加载
 include("const.php");
 include_once("connectDB.php");
 include("Lookup.class.php");
@@ -7,148 +10,84 @@ require_once("dict_data/DictInfo.class.php");
 require_once("dict_data/DictData.class.php");
 require_once("dict_view/view.class.php");
 require_once("dict_presenter/IndexPresenter.class.php");
-?>
 
-<!DOCTYPE html>
-<html lang="zh-cn">
-
-<head>
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-16">
-    <meta http-equiv="Cache-control" content="no-cache">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="description" content="泛粵大典旨在收集現時各地讀音與歷史韻書讀音，並提供向大眾一些基礎的查詢功能，同時通過泛粵表展示泛粵各地的特色字及其讀音">
-    <meta name="keywords" content="粵語 泛粵 嶺南 Cantonese 廣州 粵語查詢 泛粵大典">
-    <title>泛粵大典</title>
-    <link rel="stylesheet" type="text/css" href="./css/index.css?1">
-    <link rel="icon" href="./img/favicon.ico">
-    <script src="./js/index.js"></script>
-    <script src="./js/general.js"></script>
-	<script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
-	<script>LA.init({id:"KBntZT3wki1TtUTu",ck:"KBntZT3wki1TtUTu"})</script>
-</head>
-<style> .hidden { display: none; } .ipa-hidden-btn { text-decoration: line-through 2px; } .general-form .tbl-head { border-right: none; }.general-form .tbl-sub { border-left: none; } </style>
-<?PHP
-//$submitChara 为 提交的字符
-//$options     为 勾选框选项
-//        writeLog("Locate: 1, open: ".var_export($_REQUEST, true), ".");
+// 2. 输入处理与变量准备
 $editMode = isset($_REQUEST['editmode']);
-$options = ["wanshyu" => 0, "area" => 0, "map" => 0];
-if (isset($_REQUEST['op'])) {
-	foreach ($_REQUEST['op'] as $value) {
-		$options[$value] = 1;
-	}
-} else $options = ["wanshyu" => 1, "area" => 1, "map" => 1];
-if (!empty($_REQUEST['character'])) {
-	$submitChara = $_REQUEST['character'];
-	$submitChara = mb_substr($submitChara, 0, 1, 'utf8');
-} else {
-	$submitChara = "粵";
+$submitChara = !empty($_REQUEST['character']) ? mb_substr($_REQUEST['character'], 0, 1, 'utf8') : "粵";
+$isSearchPerformed = !empty($_REQUEST['character']);
+
+// 处理查询选项，默认全选
+$options = [
+    "wanshyu" => isset($_REQUEST['op']) ? in_array('wanshyu', $_REQUEST['op']) : true,
+    "area" => isset($_REQUEST['op']) ? in_array('area', $_REQUEST['op']) : true,
+    "map" => isset($_REQUEST['op']) ? in_array('map', $_REQUEST['op']) : true,
+];
+
+// 3. 核心业务逻辑
+$resultsHtml = '';
+$mapDependencyHtml = '';
+$mapScriptHtml = '';
+$charaArray = [];
+
+if ($isSearchPerformed) {
+    // 使用输出缓冲来捕获所有由 Presenter 生成的HTML
+    ob_start();
+
+    $sim2trad = Sim2TradLookup::getInstance();
+    $charaArray = $sim2trad->query($submitChara, $dbh);
+    $charaCount = count($charaArray);
+
+    if ($charaCount > 2) {
+        $sim2trad->show($charaArray);
+    }
+
+    $areaPresenter = null;
+    $printTimes = 0;
+
+    foreach ($charaArray as $chara) {
+        $presenterFactory = new ShowViewFactory($dbh, $chara);
+
+        if ($options["wanshyu"]) {
+            $wanshyuPresenter = $presenterFactory->getDictPresenter('wanshyu');
+            $wanshyuPresenter->show();
+        }
+
+        if ($options["area"]) {
+            // 只实例化一次 AreaPresenter
+            if ($areaPresenter === null) {
+                 $areaPresenter = $presenterFactory->getDictPresenter('area');
+            }
+            ViewArea::printAreaFramework(BEGIN);
+            $areaPresenter->show();
+            
+            // 地图依赖只需要输出一次
+            if ($options["map"] && $printTimes++ === 0) {
+                 ob_start();
+                 $areaPresenter->printMapDependency();
+                 $mapDependencyHtml = ob_get_clean();
+            }
+            
+            // 为每个字准备地图数据
+            if ($options["map"]) {
+                 $areaPresenter->prepareMap("map" . $printTimes);
+            }
+             $areaPresenter->printRelativeLink();
+        }
+    }
+
+    // 处理地图显示
+    if ($options["area"] && $options["map"] && $areaPresenter) {
+        ob_start();
+        $areaPresenter->showMap();
+        $mapScriptHtml = ob_get_clean();
+        ViewArea::printAreaFramework(END);
+    } else {
+        ViewArea::printAreaFramework(END);
+    }
+
+    // 获取所有缓冲的输出
+    $resultsHtml = ob_get_clean();
 }
-?>
 
-<body>
-
-<div id="wrapper" class="wrapper">
-        <?PHP Info::showSidenav(); ?>
-
-        <div id="container" class="container">
-
-            <button id="sidenav-show-btn" class="sidenav-show-btn"></button>
-
-            <div id="searching" style="<?PHP if (empty($_REQUEST['character'])) echo "margin-top: 220px;" ?>">
-                <form id="inputForm" class="clearfix" method="get">
-                    <label><input type="text" id="inputText" class="general-bg-deeper" name="character" <?PHP echo "value=\"$submitChara\""; ?>></label>
-                    <input type="submit" id="inputButton" class="general-bg" value="耖">
-                    <?PHP if ($editMode) echo '<input type="text" name="editmode">'; ?>
-                    <div id="inputCheck">
-                        <label><input name="op[]" type="checkbox" value="wanshyu" <?PHP if ($options["wanshyu"]) echo "checked"; ?>>韻書音</label>
-                        <label><input name="op[]" type="checkbox" value="area" <?PHP if ($options["area"]) echo "checked"; ?> id="check-area">地方音</label>
-                        <label><input name="op[]" type="checkbox" value="map" <?PHP if ($options["map"]) echo "checked"; ?> id="check-map">地方音地圖</label>
-                    </div>
-                </form>
-				<?PHP # 展示 app 下载链接的 banner
-				if (empty($_REQUEST['character'])) {
-					
-				} else {
-					$jyutOnlyCharas = "漚齙鎅抨儮涫嗍喐企跙俾涿竉呃𤠑冚㪗墊劘𠲺捋鉸諗𧟘笡撴㩄扽竭痕歪炕掬𠺘凼搇喫𢴒扤燶焫眲𦢊𢬿𢱕嬲䆟姣𡴀鐺仲嘢妗擤唥瀨竇誃㧬偈斟徛靚耖湴癐應襟䐁佊腯扻樽𨣇窿熝咩冇攰砧孭㵒泵㨃脌㫱甂漝緡柒𢲲䊆鍘譇𥐹匱蕹欮𠱓𨂾𠼮撩欱噏焗囈攴篤摱軚啽擸𧨾搥哋戇姩𢆡扂佮唞攞卅屌躉渠箍蚊笠撳獳罯蓊赧窞嚿係撈刏攀煠潷樖爇轆剢嘥擰閂晾睏熰漦摣跛騮畀趤沊屐𨂽嘈黐𧽤謦冞啱㩧羹㞓呔𧿒鵮胐撓抌腩𣼽搲盪䑜骾錔屙懵劏㗇揾梘𠝹𡚦敨罌𤸻䅺煲䠩𧬈叻瘟𪒬喎埞髀欶𧰵挽乸𢳂咁滐啖搑𨈇壅睇搏冧𢩦擳掣擁踭䟗廿寐懟燜搦褸𠽒溦𪘞逳蝨𨳒傾㥋㩒𤗈熛抵𨳍嘸𢫏淥㢥扱脷㧺攨搽沌鑊甩摷𡰪踸墟掂嘔漉𧿔杘𥌮拎揸丼慳𧦠檻𢴩腍韞欬㔶拗氼閪菢佢晏蛤呷猋仔擝鏜乜掹惗澀囝𤊒凹椏滮㨆䂿攬挃疴肶哴坎氹嗲嘅炆瞓𧶄癲㧻㧾㫰㞘褪窟潺穮沕傑孖搵𧕴揞揀";
-					if (strpos($jyutOnlyCharas, $_REQUEST['character']) !== false) {
-						echo "<div style='text-align:center;margin:20px;padding:10px;' class='general-bg'>是否在檢索“粵用漢字”？請移步<a href='https://jyutdict.org/sheet'>這裏</a>~！或者試試<a href='https://jyutjam.org/jyutdict-android/' target='_blank'>泛粵典安卓版</a>(´・∀・｀ ) </div>";
-					}
-				}
-				?>
-            </div>
-
-			<?PHP
-			if (!empty($_REQUEST['character'])) 
-			{
-				$sim2trad = Sim2TradLookup::getInstance();      #获取简繁转换对象
-				$charaArray = $sim2trad->query($submitChara, $dbh);
-				$charaCount = count($charaArray);
-				if ($charaCount > 2) {
-					$sim2trad->show($charaArray);
-				}
-				$printTimes = 0;
-				foreach ($charaArray as $chara) {
-					$presenter = new ShowViewFactory($dbh, $chara);
-					if ($options["wanshyu"]) {
-						$presenter->getDictPresenter('wanshyu')->show();
-					}
-					if ($options["area"]) {
-						$area = $presenter->getDictPresenter('area');
-						ViewArea::printAreaFramework(BEGIN);
-						$area->show();
-						if ($options["map"]) {
-							if ($printTimes++ == 0) $area->printMapDependency();
-							$area->prepareMap("map" . $printTimes);
-						}
-						$area->printRelativeLink();
-					}
-					// if ($charaCount > 2) break;
-				} #end foreach($charaArray as $chara)
-				if ($options["area"] && $options["map"]) {
-					$area->showMap();
-					ViewArea::printAreaFramework(END);
-				} else {
-					ViewArea::printAreaFramework(END);
-				}
-			} //end if !empty get
-
-			?>
-
-		</div>
-	<?PHP Info::showFooter(); ?>
-	</div>
-	<!-- <script type="text/javascript" src="//js.users.51.la/20205743.js"></script> -->
-	<script>
-		document.querySelector('#sidenav-show-btn').onclick = showSidenav;
-
-		window.onload = function() {
-			annexTableShell('.annex-form', 2);
-			document.querySelector('#check-map').disabled = !(document.querySelector('#check-area').checked);
-		};
-
-		document.querySelector('#check-area').onclick = function() {
-			var chackmap = document.querySelector('#check-map');
-			if (this.checked === false) {
-				chackmap.checked = false;
-			}
-			chackmap.disabled = !this.checked;
-		};
-
-		const toggleButtons = document.getElementsByName('toggleButton');
-		const markedSpans = document.querySelectorAll('span.ipa');
-		toggleButtons.forEach(element => {
-			element.addEventListener('click', function() {
-				markedSpans.forEach(span => {
-					span.classList.toggle('hidden');
-				});
-				element.classList.toggle('ipa-hidden-btn');
-			})
-		});
-	</script>
-</body>
-
-</html>
+// 4. 渲染视图
+include("index.template.php");
