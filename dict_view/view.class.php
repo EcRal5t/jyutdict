@@ -353,7 +353,7 @@ EOT; }
 			}
 			echo "</td>";
 			if (mb_strlen($note,'UTF8') > 6) {
-				echo "<td class='tips font-0p9em'>" . mb_substr($note, 0, 5, 'utf8')."…";
+				echo "<td class='tips font-0p9em'>" . mb_substr($note, 0, 4, 'utf8')."…";
 				echo "<span class='tipsMain'>" . $note . "</span></td>";
 			} elseif ($note !== "") {
 				echo "<td class='font-0p9em'>" . $note . "</td>";
