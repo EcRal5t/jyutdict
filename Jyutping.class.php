@@ -138,7 +138,13 @@ class Jyutping {
         echo "<span class=\"hl-font-$toColor\">$this->tone</span>";
     }
     public function printIpaWithColor($ipaColor="grayish") {
-        echo "<span class=\"hl-font-$ipaColor alphabet font-0p9em\">$this->ipa</span>";
+        if ($this->ipa) {
+            if (strstr($this->ipa, "(")) {
+                echo "<span class=\"hl-font-$ipaColor alphabet font-0p9em ipa\"> $this->ipa</span>";
+            } else {
+                echo "<span class=\"hl-font-$ipaColor alphabet font-0p9em ipa\"> [$this->ipa]</span>";
+            }
+        }
     }
     public function printWithoutColor() {
         echo $this->initial.$this->nuclei.$this->coda.$this->tone;
