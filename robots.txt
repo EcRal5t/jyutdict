@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /about
 Allow: /index
+Allow: /sheet
 Disallow: /

@@ -18,7 +18,7 @@ ErrorDocument 404 /404
 ErrorDocument 403 /404
 
 #Order Allow,Deny
-<FilesMatch "^((index|about|pron|sheet|404|)(.php)?)|(robots.txt)|(api/)|(articles/)$">
+<FilesMatch "^((index|about|pron|sheet|404|)(.php)?)|(about.md)|(robots.txt)|(api/)|(articles/)$">
 Allow from all
 </FilesMatch>
 Deny from all
