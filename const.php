@@ -29,11 +29,12 @@ final class Info {
         </div>
         
         <ul id="sidenav-list">
-            <li class="sidenav-link"><a href="https://jyutdict.org/">檢字</a></li>
-            <li class="sidenav-link"><a href="https://jyutdict.org/pron">檢音</a></li>
-            <li class="sidenav-link"><a href="https://jyutdict.org/sheet">泛粵字表</a></li>
+            <li class="sidenav-link"><a href="/">檢字</a></li>
+            <li class="sidenav-link"><a href="/pron">檢音</a></li>
+            <li class="sidenav-link"><a href="/sheet">泛粵字表</a></li>
             <li class="divider"></li>
-            <li class="sidenav-link"><a href="https://jyutdict.org/articles/post" target="_blank">紀文</a></li>
+            <li class="sidenav-link"><a href="/articles/post" target="_blank">紀文</a></li>
+            <li class="sidenav-link"><a href="/probe">相似音系測試</a></li>
             <li class="divider"></li>
             <li class="sidenav-link"><a href="https://got.jyutdict.org" target="_blank">GoT</a></li>
             <li class="divider"></li>
@@ -47,7 +48,7 @@ SIDENAV;
         echo <<< FOOTER
         <hr style="margin: 50px 0;">
         <div class="copyright" style="text-align: center;margin-bottom: 2em;">
-            <p>© 2019-2025 <a href="https://jyutjam.org">嶺南粵音</a> <a href="https://jyutdict.org">泛粵大典</a> 開發組 版權所有</p>
+            <p>© 2019-2026 <a href="https://jyutjam.org">嶺南粵音</a> <a href="https://jyutdict.org">泛粵大典</a> 開發組 版權所有</p>
         </div>
         FOOTER;
     }
