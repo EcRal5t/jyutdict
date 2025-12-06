@@ -30,13 +30,13 @@ require_once("ResultIterator.class.php");
     protected final function setTableName(string $tableName = "YKuangyon"): void
     { $this->tableName  = $tableName; }
     
-    private final function setDate(string $date)
+    private function setDate(string $date)
     { $this->date = $date;  }
 
-    private final function setName(string $name)
+    private function setName(string $name)
     { $this->name = $name;  }
 
-    private final function setFullName(string $fullName)
+    private function setFullName(string $fullName)
     { $this->fullName = $fullName;  }
 
     public final function getID() : string
@@ -96,13 +96,13 @@ require_once("ResultIterator.class.php");
     protected final function setTableName(string $tableName = "YFanwan"): void
     { $this->tableName  = $tableName; }
 
-    private final function setDate(string $date)
+    private function setDate(string $date)
     { $this->date = $date;  }
 
-    private final function setName(string $name)
+    private function setName(string $name)
     { $this->name = $name;  }
 
-    private final function setFullName(string $fullName)
+    private function setFullName(string $fullName)
     { $this->fullName = $fullName;  }
 
     public final function getName() : string
@@ -189,13 +189,13 @@ require_once("ResultIterator.class.php");
     { $this->tableName  = $tableName; }
 
 
-    private final function setDate(string $date)
+    private function setDate(string $date)
     { $this->date = $date;  }
 
-    private final function setName(string $name)
+    private function setName(string $name)
     { $this->name = $name;  }
 
-    private final function setFullName(string $fullName)
+    private function setFullName(string $fullName)
     { $this->fullname = $fullName;  }
 
     public final function getID() : string
@@ -277,22 +277,22 @@ require_once("ResultIterator.class.php");
     "): void
     { $this->select_sql = $sql;}
 
-    private final function setLongitude(string $longitude)
+    private function setLongitude(string $longitude)
     { $this->longitude  = $longitude; }
 
-    private final function setLatitude(string $latitude)
+    private function setLatitude(string $latitude)
     { $this->latitude = $latitude;  }
 
-    private final function setDivision(string $division)
+    private function setDivision(string $division)
     { $this->division  = $division; }
 
-    private final function setCity(string $city)
+    private function setCity(string $city)
     { $this->city = $city;  }
 
-    private final function setDistrict(string $district)
+    private function setDistrict(string $district)
     { $this->district = $district;  }
 
-    private final function setColor(string $color)
+    private function setColor(string $color)
     { $this->color  = $color; }
 
     public final function getDivision() : string
