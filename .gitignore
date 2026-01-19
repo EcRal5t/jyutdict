@@ -5,3 +5,5 @@ Empty.php
 /.vscode
 .gitignore
 [0-9]*
+
+node_modules

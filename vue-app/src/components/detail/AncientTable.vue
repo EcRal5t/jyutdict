@@ -51,73 +51,80 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
         </div>
     </div>
 
-    <!-- Fanwan Table -->
-    <table v-if="isFanwan" class="w-full text-sm text-left border-collapse bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
-        <thead class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400 w-[15%]">分韻</th>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400 w-[25%]">韻部 - 小韻</th>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400 w-[30%]">聲 - 韻 - 調</th>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
-            <template v-for="(row, idx) in props.data" :key="idx">
-                <tr>
-                    <td class="p-3 text-slate-800 dark:text-slate-200">{{ row.name }}</td>
-                    <td class="p-3 text-slate-600 dark:text-slate-400">{{ row.yunbu }} - {{ row.siuwan }}</td>
-                    <td class="p-3 text-slate-600 dark:text-slate-400">{{ row.initial_ch }}-{{ row.final_ch }}-{{ row.tone_ch }}</td>
-                    <td rowspan="2" class="p-3 font-mono text-accent">
-                        <!-- Legacy code uses Jyutping parser to display colored text -->
-                        <!-- Accessing jpp raw? The API returns many fields but not raw jpp usually unless requested? -->
-                        <!-- Actually FanwanData returns 'meaning' etc. -->
-                        <!-- Let's assume we don't have color logic yet for this specific column without raw data -->
-                        <!-- Wait, view.class says $data->getJpp(). If API sends it... -->
-                        <!-- Looking at Detail PHP: K-V mapping excludes JPP for Fanwan? -->
-                        <!-- Valid keys: name... meaning, siuwan, yunbu, initial_ch... -->
-                        <!-- It seems API does NOT return JPP for Fanwan? Check lines 130-143 of index.php... no. -->
-                        <!-- Wait, line 56 of detail.php defines Keys. "jpp" is NOT in the key map! -->
-                        <!-- So the API might NOT be returning the field needed for coloring? -->
-                        <!-- Ah, legacy uses Views which access Data objects having direct DB access. API is serialized. -->
-                        <!-- If API doesn't expose it, I can't render it. -->
-                        <!-- I should check the JSON response in browser once I can. -->
+    <!-- Fanwan Table (Legacy Style) -->
+    <div v-if="isFanwan" class="border border-slate-300 dark:border-slate-600 mb-4 bg-white dark:bg-slate-800 text-sm">
+        <table class="w-full border-collapse">
+             <!-- No header in legacy? Or just rows? Legacy usually has headers. -->
+             <!-- Assuming standard headers based on view.class.php if I could see it. -->
+             <!-- Let's follow the user's "Restore original effect" instruction. -->
+             <!-- Standard header: Name | Yunbu-Siuwan | Pronunciation | [Empty/Note] -->
+             <thead class="bg-slate-100 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-300">
+                 <tr>
+                     <td class="p-2 border-r border-slate-300 dark:border-slate-600 w-24 text-center">分韻</td>
+                     <td class="p-2 border-r border-slate-300 dark:border-slate-600">韻部 - 小韻</td>
+                     <td class="p-2 border-r border-slate-300 dark:border-slate-600">聲 - 韻 - 調</td>
+                     <td class="p-2">備註</td>
+                 </tr>
+             </thead>
+             <tbody>
+                 <template v-for="(row, idx) in props.data" :key="idx">
+                     <tr class="border-b border-slate-200 dark:border-slate-700">
+                         <td rowspan="2" class="p-2 border-r border-slate-300 dark:border-slate-600 text-center font-serif font-bold text-lg align-middle bg-slate-50 dark:bg-slate-800/50">
+                             {{ row.name }}
+                         </td>
+                         <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-serif">
+                             {{ row.yunbu }} - {{ row.siuwan }}
+                         </td>
+                         <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-mono text-base">
+                             <!-- Colored Components -->
+                             <span class="text-[#D32913] dark:text-red-400">{{ row.initial }}</span><span class="text-emerald-700 dark:text-emerald-400">{{ row.nuclei }}</span><span class="text-emerald-700 dark:text-emerald-400">{{ row.coda }}</span><span class="text-amber-600 dark:text-amber-400">{{ row.tone }}</span>
+                             <span class="text-slate-400 mx-1">/</span>
+                             {{ row.initial_ch }}{{ row.final_ch }}{{ row.tone_ch }}
+                         </td>
+                         <td class="p-2 text-xs text-slate-500">
+                             <!-- Placeholder/Note -->
+                         </td>
+                     </tr>
+                     <tr class="border-b border-slate-300 dark:border-slate-600">
+                         <td colspan="3" class="p-2 text-slate-700 dark:text-slate-300 font-serif bg-slate-50/50 dark:bg-slate-800/30">
+                             {{ row.meaning }}
+                         </td>
+                     </tr>
+                 </template>
+             </tbody>
+        </table>
+    </div>
+
+    <!-- Jingwaa Table (Legacy Style) -->
+    <div v-if="isJingwaa" class="border border-slate-300 dark:border-slate-600 mb-4 bg-white dark:bg-slate-800 text-sm">
+        <table class="w-full border-collapse text-left">
+            <thead class="bg-slate-100 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-300">
+                 <tr>
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600 w-24 text-center">英華</td>
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600">葉碼</td>
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600">筆畫</td>
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600">原標音</td>
+                    <td class="p-2"></td>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                <tr v-for="(row, idx) in props.data" :key="idx" class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600 text-center font-bold">英華</td>
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-mono">{{ row.page }}</td>
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600">
+                        {{ row.radical_stroke }}({{ row.radical }})+{{ row.extra_stroke }}
+                    </td>
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-serif text-lg">
+                        {{ row.pronunciation }}
+                    </td>
+                    <td class="p-2 font-mono text-accent">
+                        <!-- We can try to parse row.pronunciation if needed, but legacy likely just showed it. -->
+                        <!-- If user wants colors, we can try, but for now stick to simple display. -->
                     </td>
                 </tr>
-                <tr>
-                    <td class="p-3 text-slate-800 dark:text-slate-200">{{ row.name }}</td>
-                    <td colspan="3" class="p-3 text-slate-600 dark:text-slate-400">{{ row.meaning }}</td>
-                </tr>
-            </template>
-        </tbody>
-    </table>
-
-    <!-- Jingwaa Table -->
-    <table v-if="isJingwaa" class="w-full text-sm text-left border-collapse bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
-        <thead class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
-             <tr>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400">英華</th>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400">葉碼</th>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400">筆畫</th>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400">原標音</th>
-                <th class="p-3 font-semibold text-slate-600 dark:text-slate-400"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
-            <tr v-for="(row, idx) in props.data" :key="idx">
-                <td class="p-3 text-slate-800 dark:text-slate-200">英華</td>
-                <td class="p-3 text-slate-600 dark:text-slate-400">{{ row.page }}</td>
-                <td class="p-3 text-slate-600 dark:text-slate-400">
-                    {{ row.radical_stroke }}({{ row.radical }})+{{ row.extra_stroke }}
-                </td>
-                <td class="p-3 font-serif" :class="{'opacity-50': false /* logic for lastOrder comparison? */ }">
-                    {{ row.pronunciation }}
-                </td>
-                <td class="p-3 font-mono text-accent">
-                    <!-- Same issue with JPP color -->
-                </td>
-            </tr>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 
   </div>
 </template>

@@ -76,26 +76,41 @@ const loadHeaders = async () => {
   }
 };
 
-    const performSearch = async () => {
-    
+const performSearch = async () => {
     try {
         let q = query.value.trim();
+        let finalQ = q;
         // If query is empty, treat as random search '!'
+        // But do NOT show '!' in the UI input
         if (!q) {
-            q = '!';
+            finalQ = '!';
         }
         
-        // Update URL to reflect '!' if random
-        if (q === '!') {
-            // If we want the URL to explicitly show '!'
-            query.value = '!';
-            syncToUrl();
+        // Update URL: If it's random, maybe don't put '!' in URL to be cleaner?
+        // Or keep it to allow sharing random results? 
+        // User dislikes '!', so let's keep URL clean if empty.
+        if (finalQ === '!') {
+            router.replace({
+                query: {
+                    ...route.query, // keep other params
+                    q: undefined // remove q from url if it's random
+                }
+            });
         } else {
-            syncToUrl();
+            router.replace({
+                query: {
+                    q: query.value,
+                    col: location.value || undefined,
+                    fuzzy: isFuzzy.value ? '1' : undefined,
+                    trim: isTrim.value ? '1' : undefined,
+                    regex: isRegex.value ? '1' : undefined,
+                    def: isDef.value ? '1' : undefined
+                }
+            });
         }
 
         const res = await SheetApi.search({
-            query: q,
+            query: finalQ,
             location: location.value,
             isFuzzy: isFuzzy.value,
             isTrim: isTrim.value,
