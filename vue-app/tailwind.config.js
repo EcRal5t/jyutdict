@@ -13,7 +13,7 @@ export default {
                 wood: '#8b5a2b', // Auxiliary color for traditional feel?
             },
             fontFamily: {
-                serif: ['"Cactus Classical Serif"', 'serif'],
+                serif: ['"Noto Serif HK"', '"Noto Serif TC"', 'serif'],
                 sans: ['"Inter"', '"Noto Sans TC"', 'sans-serif'],
             }
         },

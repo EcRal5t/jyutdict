@@ -113,7 +113,6 @@ watch(() => route.query.chara, (newVal) => {
                   <div>
                       <h3 class="text-xl font-bold mb-6 text-slate-800 dark:text-slate-200 border-l-4 border-wood pl-3 flex items-center gap-2">
                           <span>韻書</span>
-                          <span class="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">Ancient</span>
                       </h3>
                       
                       <div v-if="entry.ancient && entry.ancient.length > 0">
@@ -139,7 +138,6 @@ watch(() => route.query.chara, (newVal) => {
                       <div class="flex justify-between items-center mb-6 border-l-4 border-accent pl-3">
                           <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                               <span>方言</span>
-                              <span class="text-xs font-normal text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">Dialects</span>
                           </h3>
                           <button 
                              @click="showIPA = !showIPA"
@@ -151,9 +149,7 @@ watch(() => route.query.chara, (newVal) => {
                       </div>
                        
                       <div v-if="entry.location && entry.location.length > 0">
-                           <template v-for="(locData, lIdx) in entry.location" :key="lIdx">
-                               <AreaTable :data="locData" :show-i-p-a="showIPA" />
-                           </template>
+                           <AreaTable :data="entry.location.flat()" :show-i-p-a="showIPA" />
                       </div>
                        <div v-else class="text-slate-400 italic text-sm text-center py-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                           暫無方言資料

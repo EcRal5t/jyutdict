@@ -48,7 +48,7 @@ const goToDetail = () => {
                   查字
               </button>
               <button 
-                  @click="router.push('/sheet')"
+                  @click="router.push({ path: '/sheet', query: inputChara ? { q: inputChara } : {} })"
                   class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 px-8 py-4 rounded-xl font-bold shadow hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap hidden sm:block"
               >
                   泛粵表
@@ -56,7 +56,7 @@ const goToDetail = () => {
           </div>
           <!-- Mobile only secondary button -->
           <button 
-              @click="router.push('/sheet')"
+              @click="router.push({ path: '/sheet', query: inputChara ? { q: inputChara } : {} })"
               class="sm:hidden w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 px-8 py-4 rounded-xl font-bold shadow hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
           >
               前往泛粵表
@@ -72,9 +72,9 @@ const goToDetail = () => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
           </svg>
         </div>
-        <h3 class="text-xl font-bold text-slate-800 mb-2">Detailed Phonology</h3>
+        <h3 class="text-xl font-bold text-slate-800 mb-2">詳細音韻</h3>
         <p class="text-slate-500 leading-relaxed">
-          Comprehensive data on Cantonese pronunciations, including detailed geographical variations.
+          收錄粵語發音的詳盡資料，包含詳細的地理變體。
         </p>
       </div>
 
@@ -84,9 +84,9 @@ const goToDetail = () => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 class="text-xl font-bold text-slate-800 mb-2">Regional Support</h3>
+        <h3 class="text-xl font-bold text-slate-800 mb-2">多地口音</h3>
         <p class="text-slate-500 leading-relaxed">
-          Explore pronunciations from various regions including Guangzhou, Hong Kong, and Macau.
+          探索包括廣州、香港、澳門在內的各地口音。
         </p>
       </div>
 
@@ -96,9 +96,9 @@ const goToDetail = () => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
         </div>
-        <h3 class="text-xl font-bold text-slate-800 mb-2">Lightning Fast</h3>
+        <h3 class="text-xl font-bold text-slate-800 mb-2">極速響應</h3>
         <p class="text-slate-500 leading-relaxed">
-          Powered by Vue 3 and Vite for an instant, seamless searching experience.
+          由 Vue 3 和 Vite 驅動，帶來即時、流暢的查詢體驗。
         </p>
       </div>
     </div>
