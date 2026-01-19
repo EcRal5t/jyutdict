@@ -23,26 +23,86 @@ const performSearch = async () => {
     router.push({ query: { chara: q } });
 };
 
+const headerData = ref({});
+const isHeaderLoaded = ref(false);
+
+const loadHeaders = async () => {
+    try {
+        const res = await DetailApi.getLocationList();
+        if (res.data && Array.isArray(res.data)) {
+            // Map header list to object for easy lookup by ID
+            // iarealist: { id, first, second, third, ... }
+            const map = {};
+            res.data.forEach(item => {
+                map[item.id] = item;
+            });
+            headerData.value = map;
+            isHeaderLoaded.value = true;
+        }
+    } catch (e) {
+        console.error("Failed to load headers", e);
+    }
+};
+
 const loadData = async (queryChara) => {
     if (!queryChara) return;
     
+    // Ensure headers are loaded
+    if (!isHeaderLoaded.value) {
+        await loadHeaders();
+    }
+
     isLoading.value = true;
     error.value = null;
     resultData.value = null;
     
-    // Legacy: split by char and only take top 10?
-    // API logic handles splitting.
-    
     try {
         const res = await DetailApi.getCharacterDetail(queryChara);
-        // API returns array of results (for each char in string)
         if (res.data && Array.isArray(res.data)) {
-             resultData.value = res.data;
+             // Process data to enrich Location IDs with Names
+             const enrichedData = res.data.map(charEntry => {
+                 if (charEntry['各地']) {
+                     // Map '各地' array items
+                     charEntry.location = charEntry['各地'].map(loc => {
+                         const headerInfo = headerData.value[loc.id] || {};
+                         // Construct display name or pass info
+                         // v0.9 had: division_adm, city, district...
+                         // iarealist has: first (div), second (city), third (district)
+                         return {
+                             ...loc,
+                             city: headerInfo.second || '',
+                             division: headerInfo.first || '',
+                             district: headerInfo.third || '',
+                             color: headerInfo.color || '',
+                             latitude: headerInfo.latitude,
+                             longitude: headerInfo.longitude
+                         };
+                     });
+                     // Use legacy key 'location' for compatibility with template or update template?
+                     // Template uses `entry.location` (from my view_file output of DetailView Step 59, line 128: `entry.location`)
+                     // So mapping `各地` to `location` is good.
+                     delete charEntry['各地'];
+
+                     // Map '韻書' to 'ancient' if needed?
+                     // Step 59 line 118: `entry.ancient`.
+                     if (charEntry['韻書']) {
+                         charEntry.ancient = charEntry['韻書'];
+                         delete charEntry['韻書'];
+                     }
+                     
+                     // Map '字' to 'chara'
+                     if (charEntry['字']) {
+                         charEntry.chara = charEntry['字'];
+                         delete charEntry['字'];
+                     }
+                 }
+                 return charEntry;
+             });
+             resultData.value = enrichedData;
+
         } else if (res.data && res.data.error) {
              error.value = res.data.error;
         } else {
-             // Sometimes it might return raw object if single? No, logic says array_push to concat.
-             // If empty?
              if (!res.data || res.data.length === 0) {
                  error.value = "未找到資料 (No data found)";
              }
@@ -56,6 +116,7 @@ const loadData = async (queryChara) => {
 };
 
 onMounted(() => {
+    loadHeaders(); // Start loading headers
     if (route.query.chara) {
         inputChara.value = route.query.chara;
         loadData(route.query.chara);

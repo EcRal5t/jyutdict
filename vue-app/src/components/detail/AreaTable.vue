@@ -16,38 +16,38 @@ const props = defineProps({
 
 // Helper to parse individual row items
 const processRow = (row) => {
-    const safeSplit = (val) => (val || '').split('=');
+    // New API structure: arrays are in row['粵拼'], row['IPA'] etc.
+    const jpps = row['粵拼'] || [];
+    const ipas = row['IPA'] || [];
+    const notes = row['注釋'] || [];
     
-    // Use Raw JPP if available for better parsing
-    const jpps = safeSplit(row.jpp || row.粵拼); 
-    const initials = safeSplit(row.initial);
-    const nucleis = safeSplit(row.nuclei);
-    const codas = safeSplit(row.coda);
-    const tones = safeSplit(row.tone);
-    const ipas = safeSplit(row.ipa);
-
-    const count = Math.max(jpps.length, initials.length, ipas.length);
+    const count = Math.max(jpps.length, ipas.length);
     const items = [];
     
     for (let i = 0; i < count; i++) {
+        const rawJpp = jpps[i] || '';
         let parsed = null;
-        if (jpps[i]) {
-            parsed = Jyutping.parse(jpps[i]);
+        if (rawJpp) {
+            parsed = Jyutping.parse(rawJpp);
         }
         
         items.push({
-            initial: parsed ? parsed.initial : (initials[i] || ''),
-            nuclei: parsed ? parsed.nuclei : (nucleis[i] || ''),
-            coda: parsed ? parsed.coda : (codas[i] || ''),
-            tone: parsed ? parsed.tone : (tones[i] || ''),
-            // If IPA is missing in split, use empty string.
-            // Check if IPA exists at all?
-            ipa: ipas[i],
-            raw: jpps[i] || ''
+            initial: parsed ? parsed.initial : '',
+            nuclei: parsed ? parsed.nuclei : '',
+            coda: parsed ? parsed.coda : '',
+            tone: parsed ? parsed.tone : '',
+            ipa: ipas[i] || '',
+            raw: rawJpp
         });
     }
 
-    return { ...row, items };
+    // Join notes if multiple? Or just pick first? 
+    // In table view, maybe we join them or show specific note per pron?
+    // Current template shows `row.note` (one string).
+    // Let's join them for now.
+    const combinedNote = notes.filter(n => n).join('; ');
+
+    return { ...row, items, note: combinedNote };
 };
 
 // Group Data by Location Key (City + District)
