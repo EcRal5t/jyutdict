@@ -46,45 +46,39 @@ const initMap = () => {
     }).addTo(map);
     
     // Add Markers
-    // Flatten locations array
-    // locations is Array of Arrays (by sheet).
-    props.locations.forEach(sheetEntries => {
-        sheetEntries.forEach(entry => {
-             if (entry.latitude && entry.longitude) {
-                 const lat = parseFloat(entry.latitude);
-                 const lng = parseFloat(entry.longitude);
-                 
-                 // Circle
-                 L.circle([lat, lng], {
-                     color: entry.color,
-                     fillColor: entry.color,
-                     fillOpacity: 0.5,
-                     radius: 1000
-                 }).addTo(map);
-                 
-                 // Marker (DivIcon)
-                 const pron = `${entry.initial}${entry.nuclei}${entry.coda}${entry.tone}`;
-                 // Text Color logic from ViewMap: if RGB sum < 384 ? white : dark
-                 // Let's simplified check or port logic.
-                 const fontColor = '#2F2F2F'; // Default dark
-                 // TODO: Precise text color logic
-                 
-                 const html = `
-                    <div class='locale-label' style='background-color: ${entry.color}; opacity: 0.85;'>
-                        <div class='label-triangle' style='border-bottom-color: ${entry.color}'></div>
-                        <span style='color: white; font-weight: bold;'>${pron}</span>
-                    </div>
-                 `;
-                 
-                 L.marker([lat, lng], {
-                     icon: L.divIcon({
-                         className: 'divIconDefault',
-                         html: html,
-                         iconSize: [60, 40] // estimate
-                     })
-                 }).addTo(map);
-             }
-        });
+    // props.locations is Array of Location Objects (enriched in DetailView)
+    props.locations.forEach(entry => {
+         if (entry.latitude && entry.longitude) {
+             const lat = parseFloat(entry.latitude);
+             const lng = parseFloat(entry.longitude);
+             
+             // Circle
+             L.circle([lat, lng], {
+                 color: entry.color,
+                 fillColor: entry.color,
+                 fillOpacity: 0.5,
+                 radius: 1000
+             }).addTo(map);
+             
+             // Label Content
+             // entry['粵拼'] is array. Join with space or newline? Space is good.
+             const prons = (entry['粵拼'] || []).join(' ');
+             
+             const html = `
+                <div class='locale-label' style='background-color: ${entry.color}; opacity: 0.85;'>
+                    <div class='label-triangle' style='border-bottom-color: ${entry.color}'></div>
+                    <span style='color: white; font-weight: bold;'>${prons}</span>
+                </div>
+             `;
+             
+             L.marker([lat, lng], {
+                 icon: L.divIcon({
+                     className: 'divIconDefault',
+                     html: html,
+                     iconSize: [60, 40] // estimate
+                 })
+             }).addTo(map);
+         }
     });
 };
 
