@@ -63,40 +63,44 @@ const rows = computed(() => {
 </script>
 
 <template>
-  <div v-if="rows && rows.length > 0" class="mb-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+  <div v-if="rows && rows.length > 0" class="mb-1">
       
-      <!-- Header per City Group -->
-      <div class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-2 py-1 flex justify-between items-center">
-          <div class="font-bold text-slate-700 dark:text-slate-300 text-xs">
-              {{ rows[0].city }} 
-              <span v-if="rows[0].division_adm" class="text-[9px] font-normal text-slate-400 ml-1 border border-slate-200 dark:border-slate-700 rounded px-1">{{ rows[0].division_adm }}</span>
-          </div>
+      <!-- Minimal Header -->
+      <div v-if="false" class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 px-1 py-0.5">
       </div>
-
-      <table class="w-full text-xs text-left">
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
-              <tr v-for="(row, idx) in rows" :key="idx" class="group hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                  <!-- Color & Location (Sub-district) -->
-                  <td class="p-1.5 w-[20%] align-top border-r border-transparent">
-                      <div class="flex items-start gap-1">
-                          <span v-if="row.color && row.color !== '#000000'" :style="{ color: darkenColor(row.color, 0.88) }" class="min-w-3 text-xs leading-none">█</span>
-                          <span v-if="row.district" class="font-medium text-slate-600 dark:text-slate-300 break-words leading-tight">{{ row.district }}</span>
-                          <span v-else class="text-slate-400 italic"> - </span>
+      
+      <!-- Dense Table -->
+      <table class="w-full text-xs text-left border-collapse">
+          <thead class="bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
+              <tr>
+                  <th class="py-1 px-2 font-bold text-slate-700 dark:text-slate-300 w-[20%]">
+                      {{ rows[0].city }}{{ rows[0].division_adm ? `(${rows[0].division_adm})` : '' }}
+                  </th>
+                  <th class="py-1 px-2 w-[35%]"></th>
+                  <th class="py-1 px-2"></th>
+              </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+              <tr v-for="(row, idx) in rows" :key="idx" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                  <!-- Color & Location -->
+                  <td class="py-0.5 px-2 align-middle border-r border-[#f0f0f0] dark:border-slate-800">
+                      <div class="flex items-center gap-1.5 whitespace-nowrap overflow-hidden text-ellipsis">
+                          <span v-if="row.color && row.color !== '#000000'" :style="{ color: darkenColor(row.color, 0.88) }" class="min-w-[10px] text-[10px] leading-none">█</span>
+                          <span v-if="row.district" class="font-normal text-slate-600 dark:text-slate-400 leading-none">{{ row.district }}</span>
                       </div>
                   </td>
 
                   <!-- Pronunciation -->
-                  <td class="p-1.5 align-top">
-                      <div class="flex flex-col gap-0.5">
-                           <div v-for="(item, i) in row.items" :key="i" class="flex flex-wrap items-baseline gap-x-2">
+                  <td class="py-0.5 px-2 align-middle border-r border-[#f0f0f0] dark:border-slate-800">
+                      <div class="flex flex-wrap items-center gap-x-2">
+                           <div v-for="(item, i) in row.items" :key="i" class="flex items-baseline gap-x-1">
                                <!-- Colored Jyutping -->
-                               <span class="font-mono text-[13px] leading-tight">
-                                   <!-- Colors: Initial=Red, Nuclei=Green, Coda=Green, Tone=Yellow -->
+                               <span class="font-mono text-[13px] leading-none tracking-tight">
                                    <span class="text-[#D32913] dark:text-red-400">{{ item.initial }}</span><span class="text-emerald-700 dark:text-emerald-400">{{ item.nuclei }}</span><span class="text-emerald-700 dark:text-emerald-400">{{ item.coda }}</span><span class="text-amber-600 dark:text-amber-400">{{ item.tone }}</span>
                                </span>
                                
                                <!-- IPA -->
-                               <span v-if="props.showIPA && item.ipa" class="font-sans text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1 rounded-sm leading-none ml-1">
+                               <span v-if="props.showIPA && item.ipa" class="font-sans text-[11px] text-slate-400 dark:text-slate-500 leading-none">
                                    [{{ item.ipa }}]
                                </span>
                            </div>
@@ -104,7 +108,7 @@ const rows = computed(() => {
                   </td>
 
                   <!-- Note -->
-                  <td class="p-1.5 text-slate-500 text-[11px] align-top w-[35%] leading-tight border-l border-slate-50 dark:border-slate-800/50">
+                  <td class="py-0.5 px-2 text-slate-400 text-[10px] align-middle leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
                       {{ row.note }}
                   </td>
               </tr>

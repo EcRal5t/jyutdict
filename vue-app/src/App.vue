@@ -20,10 +20,10 @@ const toggleTheme = () => {
 const showTooltip = ref(false)
 const tooltipContent = computed(() => {
     if (route.path === '/sheet') {
-         return updateLogs.map(l => `${l.city} - ${l.date}`).join('\n') + `\n\n主版本: ${version}`;
+        return `Version: ${version}\nLast Update: 2026-01-19`; // Placeholder or simplified for home
     }
     // Default / Home
-    return `Version: ${version}\nLast Update: 2026-01-19`; // Placeholder or simplified for home
+    return updateLogs.map(l => `${l.city} - ${l.date}`).join('\n') + `\n\n主版本: ${version}`;
 })
 
 onMounted(() => {
