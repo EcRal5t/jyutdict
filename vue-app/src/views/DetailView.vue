@@ -15,7 +15,7 @@ const inputChara = ref('');
 const isLoading = ref(false);
 const error = ref(null);
 const resultData = ref(null);
-const showIPA = ref(false);
+const showIPA = ref(true);
 
 const performSearch = async () => {
     const q = inputChara.value.trim();

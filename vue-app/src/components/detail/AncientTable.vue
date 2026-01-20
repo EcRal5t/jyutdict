@@ -39,55 +39,55 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
 </script>
 
 <template>
-  <div v-if="props.data && props.data.length > 0" class="mb-6">
+  <div v-if="props.data && props.data.length > 0" class="mb-6 page-break-inside-avoid">
     
     <!-- Kuangyon Header -->
-    <div v-if="isKuangyon" class="text-lg font-bold mb-2 p-2 bg-slate-100 dark:bg-slate-700/50 rounded">
-         廣韻
+    <div v-if="isKuangyon" class="text-lg font-bold mb-2 p-2 bg-slate-100 dark:bg-slate-700/50 rounded flex justify-between items-center">
+         <span>廣韻</span>
     </div>
-    <div v-if="isKuangyon" class="pl-4 border-l-2 border-slate-300 dark:border-slate-600 mb-4 text-slate-700 dark:text-slate-300 font-mono">
-        <div v-for="(row, idx) in props.data" :key="idx" class="mb-1">
-             {{ row.initial }}{{ row.rime_class }}{{ row.rime }}{{ row.division_cha }}{{ row.rounding }}{{ row.tone }}{{ row.transliteration }}
+    <div v-if="isKuangyon" class="pl-4 border-l-2 border-slate-300 dark:border-slate-600 mb-4 text-slate-700 dark:text-slate-300 font-mono text-lg">
+        <div v-for="(row, idx) in props.data" :key="idx" class="mb-1 flex gap-2">
+             <span>{{ row['聲母'] }}</span>
+             <span>{{ row['攝'] }}</span>
+             <span>{{ row['韻'] }}</span>
+             <span>{{ row['等'] }}</span>
+             <span>{{ row['呼'] }}</span>
+             <span>{{ row['聲調'] }}</span>
+             <span class="opacity-50 text-base">/ {{ row['轉寫'] }}</span>
         </div>
     </div>
 
-    <!-- Fanwan Table (Legacy Style) -->
-    <div v-if="isFanwan" class="border border-slate-300 dark:border-slate-600 mb-4 bg-white dark:bg-slate-800 text-sm">
-        <table class="w-full border-collapse">
-             <!-- No header in legacy? Or just rows? Legacy usually has headers. -->
-             <!-- Assuming standard headers based on view.class.php if I could see it. -->
-             <!-- Let's follow the user's "Restore original effect" instruction. -->
-             <!-- Standard header: Name | Yunbu-Siuwan | Pronunciation | [Empty/Note] -->
-             <thead class="bg-slate-100 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-300">
+    <!-- Fanwan Table -->
+    <div v-if="isFanwan" class="border border-slate-300 dark:border-slate-600 mb-4 bg-white dark:bg-slate-800 text-sm rounded-lg overflow-hidden shadow-sm">
+        <table class="w-full border-collapse text-center">
+             <thead class="bg-gray-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-300">
                  <tr>
-                     <td class="p-2 border-r border-slate-300 dark:border-slate-600 w-24 text-center">分韻</td>
+                     <td class="p-2 text-lg border-r border-slate-300 dark:border-slate-600 w-24">分韻</td>
                      <td class="p-2 border-r border-slate-300 dark:border-slate-600">韻部 - 小韻</td>
                      <td class="p-2 border-r border-slate-300 dark:border-slate-600">聲 - 韻 - 調</td>
-                     <td class="p-2">備註</td>
                  </tr>
              </thead>
              <tbody>
                  <template v-for="(row, idx) in props.data" :key="idx">
                      <tr class="border-b border-slate-200 dark:border-slate-700">
-                         <td rowspan="2" class="p-2 border-r border-slate-300 dark:border-slate-600 text-center font-serif font-bold text-lg align-middle bg-slate-50 dark:bg-slate-800/50">
-                             {{ row.name }}
+                         <td rowspan="2" class="p-2 border-r border-slate-300 dark:border-slate-600 font-serif text-lg align-middle bg-gray-50/30 dark:bg-slate-800/30">
+                             <!-- Colored Components -->
+                            <span class="text-[#D32913] dark:text-red-400">{{ row['聲母'] }}</span>
+                            <span class="text-emerald-700 dark:text-emerald-400">{{ row['韻核'] }}</span>
+                            <span class="text-emerald-700 dark:text-emerald-400">{{ row['韻尾'] }}</span>
+                            <span class="text-amber-600 dark:text-amber-400">{{ row['聲調'] }}</span>
                          </td>
-                         <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-serif">
-                             {{ row.yunbu }} - {{ row.siuwan }}
+                         <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-serif text-base">
+                             {{ row['韻部'] }} - {{ row['小韻'] }}
                          </td>
                          <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-mono text-base">
-                             <!-- Colored Components -->
-                             <span class="text-[#D32913] dark:text-red-400">{{ row.initial }}</span><span class="text-emerald-700 dark:text-emerald-400">{{ row.nuclei }}</span><span class="text-emerald-700 dark:text-emerald-400">{{ row.coda }}</span><span class="text-amber-600 dark:text-amber-400">{{ row.tone }}</span>
-                             <span class="text-slate-400 mx-1">/</span>
-                             {{ row.initial_ch }}{{ row.final_ch }}{{ row.tone_ch }}
-                         </td>
-                         <td class="p-2 text-xs text-slate-500">
-                             <!-- Placeholder/Note -->
+                             
+                             <span class="text-slate-600 dark:text-slate-400">{{ row['聲字'] }}{{ row['韻字'] }}{{ row['調類'] }}</span>
                          </td>
                      </tr>
                      <tr class="border-b border-slate-300 dark:border-slate-600">
-                         <td colspan="3" class="p-2 text-slate-700 dark:text-slate-300 font-serif bg-slate-50/50 dark:bg-slate-800/30">
-                             {{ row.meaning }}
+                         <td colspan="3" class="p-2 text-slate-700 dark:text-slate-300 font-serif bg-orange-50/30 dark:bg-amber-900/10 italic">
+                             {{ row['義'] }}
                          </td>
                      </tr>
                  </template>
@@ -95,31 +95,30 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
         </table>
     </div>
 
-    <!-- Jingwaa Table (Legacy Style) -->
-    <div v-if="isJingwaa" class="border border-slate-300 dark:border-slate-600 mb-4 bg-white dark:bg-slate-800 text-sm">
-        <table class="w-full border-collapse text-left">
-            <thead class="bg-slate-100 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-300">
+    <!-- Jingwaa Table -->
+    <div v-if="isJingwaa" class="border border-slate-300 dark:border-slate-600 mb-4 bg-white dark:bg-slate-800 text-sm rounded-lg overflow-hidden shadow-sm">
+        <table class="w-full border-collapse text-center">
+            <thead class="bg-gray-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-300">
                  <tr>
-                    <td class="p-2 border-r border-slate-300 dark:border-slate-600 w-24 text-center">英華</td>
+                    <td class="p-2 text-lg border-r border-slate-300 dark:border-slate-600 w-24">英華</td>
                     <td class="p-2 border-r border-slate-300 dark:border-slate-600">葉碼</td>
                     <td class="p-2 border-r border-slate-300 dark:border-slate-600">筆畫</td>
                     <td class="p-2 border-r border-slate-300 dark:border-slate-600">原標音</td>
-                    <td class="p-2"></td>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                <tr v-for="(row, idx) in props.data" :key="idx" class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                    <td class="p-2 border-r border-slate-300 dark:border-slate-600 text-center font-bold">英華</td>
-                    <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-mono">{{ row.page }}</td>
+                <tr v-for="(row, idx) in props.data" :key="idx" class="hover:bg-slate-50 dark:hover:bg-slate-700/30 ">
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-mono text-lg">
+                        <span class="text-[#D32913] dark:text-red-400"> {{ row['聲母'] }}</span>
+                        <span class="text-emerald-700 dark:text-emerald-400">{{ row['韻核'] }}{{ row['韻尾'] }}</span>
+                        <span class="text-amber-600 dark:text-amber-400">{{ row['聲調'] }}</span>
+                    </td>
+                    <td class="p-2 border-r border-slate-300 dark:border-slate-600">{{ row['頁'] }} . {{ row['序'] }}</td>
                     <td class="p-2 border-r border-slate-300 dark:border-slate-600">
-                        {{ row.radical_stroke }}({{ row.radical }})+{{ row.extra_stroke }}
+                        {{ row['部首'] }}({{ row['部首筆畫'] }})+{{ row['部外筆畫'] }}
                     </td>
                     <td class="p-2 border-r border-slate-300 dark:border-slate-600 font-serif text-lg">
-                        {{ row.pronunciation }}
-                    </td>
-                    <td class="p-2 font-mono text-accent">
-                        <!-- We can try to parse row.pronunciation if needed, but legacy likely just showed it. -->
-                        <!-- If user wants colors, we can try, but for now stick to simple display. -->
+                        {{ row['音'] }}
                     </td>
                 </tr>
             </tbody>

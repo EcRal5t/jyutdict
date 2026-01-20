@@ -20,6 +20,24 @@ const props = defineProps({
 const mapContainer = ref(null);
 let map = null;
 
+const getFontColorArr = (color) => {
+  // 1. 去掉 '#' 号
+  const hex = color.replace('#', '');
+  
+  // 2. 解析 RGB 分量 (对应 PHP 的 hex2bin 和 ord)
+  // 截取前2位转10进制(R)，中间2位(G)，最后2位(B)
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // 3. 执行判断逻辑 (对应 PHP 的 < 384)
+  if ((r + g + b) < 384) {
+    return "#F4F4EE"; // 背景很暗，用亮色字
+  } else {
+    return "#2F2F2F"; // 背景够亮，用暗色字
+  }
+};
+
 const initMap = () => {
     if (!window.L || !mapContainer.value) return;
     
@@ -62,12 +80,12 @@ const initMap = () => {
              
              // Label Content
              // entry['粵拼'] is array. Join with space or newline? Space is good.
-             const prons = (entry['粵拼'] || []).join(' ');
+             const prons = (entry['粵拼'] || []).join('<br>');
              
              const html = `
                 <div class='locale-label' style='background-color: ${entry.color}; opacity: 0.85;'>
                     <div class='label-triangle' style='border-bottom-color: ${entry.color}'></div>
-                    <span style='color: white; font-weight: bold;'>${prons}</span>
+                    <span style='color: ${getFontColorArr(entry.color)}'>${prons}</span>
                 </div>
              `;
              
