@@ -53,14 +53,14 @@ const externalLinks = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-background dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
+  <div class="min-h-screen bg-background dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 font-serif">
       
     <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
       <div class="container mx-auto px-4 py-3">
         <div class="flex justify-between items-center">
             <!-- Brand -->
             <RouterLink to="/" class="flex items-center gap-2 group">
-                <span class="text-2xl font-serif font-bold text-accent dark:text-red-500 tracking-tight group-hover:opacity-80 transition-opacity">
+                <span class="text-2xl font-bold text-accent dark:text-red-500 tracking-tight group-hover:opacity-80 transition-opacity">
                     泛粵大典
                 </span>
             </RouterLink>

@@ -140,14 +140,14 @@ watch(() => route.query.chara, (newVal) => {
             v-model="inputChara"
             @keypress.enter="performSearch"
             type="text" 
-            placeholder="輸入單字查詢..."
-            class="p-4 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-xl shadow-sm focus:ring-2 focus:ring-accent outline-none w-full max-w-md text-lg"
+            placeholder="輸入查詢..."
+            class="p-4 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg shadow-sm focus:ring-2 focus:ring-accent outline-none w-full max-w-md text-lg"
           >
           <button 
             @click="performSearch"
-            class="bg-accent text-white px-6 py-4 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg active:shadow-sm"
+            class="bg-accent text-white px-6 py-4 rounded-lg font-bold hover:bg-red-700 transition-colors shadow-lg active:shadow-sm"
           >
-            查字
+            耖
           </button>
       </div>
 
@@ -155,67 +155,76 @@ watch(() => route.query.chara, (newVal) => {
       <div v-if="isLoading" class="text-center py-10">
            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-accent"></div>
       </div>
-      <div v-if="error" class="text-red-500 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/30">{{ error }}</div>
+      <div v-if="error" class="text-red-500 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30">{{ error }}</div>
 
       <!-- Results -->
       <div v-if="resultData" class="space-y-12">
-          <div v-for="(entry, index) in resultData" :key="index" class="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+          <div v-for="(entry, index) in resultData" :key="index" class="glass rounded-lg p-6 md:p-8">
               
-              <!-- Character Header -->
-              <div class="flex justify-center mb-8">
-                  <div class="relative group cursor-default">
-                    <h2 class="text-6xl md:text-7xl font-serif font-bold text-slate-800 dark:text-slate-100 relative z-10">{{ entry.chara }}</h2>
-                    <div class="absolute -bottom-2 w-full h-3 bg-accent/20 dark:bg-red-500/20 rounded-full blur-sm group-hover:bg-accent/40 transition-colors"></div>
-                  </div>
-              </div>
-              
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <!-- Ancient (WanShyu) -->
-                  <div>
-                      <h3 class="text-xl font-bold mb-6 text-slate-800 dark:text-slate-200 border-l-4 border-wood pl-3 flex items-center gap-2">
-                          <span>韻書</span>
-                      </h3>
-                      
-                      <div v-if="entry.ancient && entry.ancient.length > 0">
-                           <template v-for="(bookData, bIdx) in entry.ancient" :key="bIdx">
-                               <AncientTable :data="bookData" />
-                           </template>
+              <div class="flex flex-col md:flex-row gap-8 items-start">
+                   <!-- Character Header (Side or smaller) -->
+                   <div class="w-full md:w-auto flex-shrink-0 flex justify-center md:block">
+                      <div class="relative group cursor-default inline-block">
+                        <h2 class="text-6xl font-bold text-slate-800 dark:text-slate-100 relative z-10 leading-none">{{ entry.chara }}</h2>
+                        <div class="absolute -bottom-1 w-full h-2 bg-accent/20 dark:bg-red-500/20 rounded-full blur-sm group-hover:bg-accent/40 transition-colors"></div>
                       </div>
-                      <div v-else class="text-slate-400 italic text-sm text-center py-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                          暫無韻書資料
-                      </div>
+                   </div>
 
-                      <!-- Moved Map here as requested -->
-                      <div v-if="entry.location && entry.location.length > 0" class="mt-8">
-                           <DetailMap :locations="entry.location" />
-                      </div>
-                      
-                      <!-- Moved Links here -->
-                      <RelativeLinks :chara="entry.chara" />
-                  </div>
-
-                  <!-- Location (Area) -->
-                  <div>
-                      <div class="flex justify-between items-center mb-6 border-l-4 border-accent pl-3">
-                          <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                              <span>方言</span>
-                          </h3>
-                          <button 
-                             @click="showIPA = !showIPA"
-                             class="text-xs font-bold px-3 py-1.5 rounded-lg border transition-all"
-                             :class="showIPA ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'"
-                          >
-                             顯示 IPA
-                          </button>
-                      </div>
+                   <!-- Content Grid -->
+                   <div class="flex-grow w-full">
                        
-                      <div v-if="entry.location && entry.location.length > 0">
-                           <AreaTable :data="entry.location.flat()" :show-i-p-a="showIPA" />
-                      </div>
-                       <div v-else class="text-slate-400 italic text-sm text-center py-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                          暫無方言資料
-                      </div>
-                  </div>
+                       <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                          <!-- Ancient (WanShyu) -->
+                          <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                              <h3 class="text-lg font-bold mb-4 text-slate-700 dark:text-slate-300 border-l-4 border-wood pl-3 flex items-center gap-2">
+                                  <span>韻書</span>
+                              </h3>
+                              
+                              <div v-if="entry.ancient && entry.ancient.length > 0">
+                                   <template v-for="(bookData, bIdx) in entry.ancient" :key="bIdx">
+                                       <AncientTable :data="bookData" />
+                                   </template>
+                              </div>
+                              <div v-else class="text-slate-400 italic text-sm text-center py-4">
+                                  暫無韻書資料
+                              </div>
+
+                              <!-- Map -->
+                              <div v-if="entry.location && entry.location.length > 0" class="mt-6">
+                                   <DetailMap :locations="entry.location" />
+                              </div>
+
+                              <!-- Links -->
+                              <div class="mt-6">
+                                <RelativeLinks :chara="entry.chara" />
+                              </div>
+                          </div>
+
+                          <!-- Location (Area) -->
+                          <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                              <div class="flex justify-between items-center mb-4 border-l-4 border-accent pl-3">
+                                  <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                      <span>方音</span>
+                                  </h3>
+                                  <button 
+                                     @click="showIPA = !showIPA"
+                                     class="text-xs font-bold px-3 py-1 rounded border transition-all"
+                                     :class="showIPA ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800' : 'bg-white/80 text-slate-600 border-slate-300 hover:border-slate-400 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'"
+                                  >
+                                     顯示 IPA
+                                  </button>
+                              </div>
+                               
+                              <div v-if="entry.location && entry.location.length > 0">
+                                   <AreaTable :data="entry.location.flat()" :show-i-p-a="showIPA" />
+                              </div>
+                               <div v-else class="text-slate-400 italic text-sm text-center py-4">
+                                  暫無方言資料
+                              </div>
+
+                          </div>
+                       </div>
+                   </div>
               </div>
           </div>
       </div>

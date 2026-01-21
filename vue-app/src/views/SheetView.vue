@@ -205,7 +205,7 @@ watch(() => route.query, (newQ) => {
                         @keypress.enter="performSearch"
                         type="text" 
                         placeholder="輸入字或音... (留空隨機)" 
-                        class="w-full p-4 pl-5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none transition-all dark:text-slate-100 placeholder-gray-400"
+                        class="w-full p-4 pl-5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none transition-all dark:text-slate-100 placeholder-gray-400"
                     >
                     <button 
                         @click="query=''"
@@ -216,7 +216,7 @@ watch(() => route.query, (newQ) => {
                     </button>
                 </div>
                 
-                <select v-model="location" class="p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none dark:text-slate-100 min-w-[150px]">
+                <select v-model="location" class="p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none dark:text-slate-100 min-w-[150px]">
                     <option value="">綜合音/字</option>
                     <option value="檢">檢索音/字</option>
                     <option v-for="loc in locations" :key="loc.value" :value="loc.value">
@@ -226,7 +226,7 @@ watch(() => route.query, (newQ) => {
                 
                 <button 
                     @click="performSearch"
-                    class="bg-accent hover:bg-red-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap"
+                    class="bg-accent hover:bg-red-700 text-white px-8 py-4 rounded-lg font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap"
                 >
                     查詢 Search
                 </button>
@@ -274,7 +274,7 @@ watch(() => route.query, (newQ) => {
         <p class="mt-4 text-slate-500">載入中 Loading...</p>
     </div>
     
-    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 p-6 rounded-xl text-center border border-red-100 dark:border-red-900/30">
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 p-6 rounded-lg text-center border border-red-100 dark:border-red-900/30">
         {{ error }}
     </div>
     
