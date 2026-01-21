@@ -123,7 +123,7 @@ const classification = computed(() => {
 </script>
 
 <template>
-  <div class="group relative bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+  <div class="group relative bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
     
     <!-- Color Strip -->
     <div class="absolute left-0 top-0 bottom-0 w-2 transition-colors duration-500" :style="{ backgroundColor: stripColor }"></div>
@@ -131,7 +131,7 @@ const classification = computed(() => {
     <div class="flex flex-col md:flex-row">
         <!-- Left: Char Meta (fixed width) -->
         <div class="md:w-32 bg-gray-50 dark:bg-slate-900/50 flex flex-row md:flex-col items-center md:justify-center p-4 gap-4 md:gap-2 border-b md:border-b-0 md:border-r border-gray-100 dark:border-slate-700">
-            <div class="text-4xl md:text-5xl font-serif font-bold leading-tight" :style="charInfo.style">
+            <div class="text-4xl md:text-5xl font-bold leading-tight" :style="charInfo.style">
                 {{ charInfo.display }}
             </div>
             

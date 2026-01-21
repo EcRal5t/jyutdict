@@ -8,7 +8,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="mt-8 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+  <div class="mt-8 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
       <h4 class="text-sm font-bold text-slate-500 mb-4 uppercase tracking-wider">快速查詢 (External Links): {{ chara }}</h4>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">

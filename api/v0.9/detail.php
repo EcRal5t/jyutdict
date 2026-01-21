@@ -190,11 +190,18 @@ if (isset($_REQUEST['chara'])) {
                 $data = new DataArea($dbh, $chara, $info->getSheetname(), $info->getLongitude(), $info->getLatitude(), $info->getDivision(), $info->getCity(), $info->getDistrict(), $info->getColor());
                 if ($data->listCount() > 0) {
                     for (; $data->hasNext(); $data->next()) {
+                        // 假如 color 含有“,”，就 split，只要最后一项
+                        $color = $data->getColor();
+                        if (strpos($color, ",") !== false) {
+                            $colors = explode(",", $color);
+                            $color = array_pop($colors);
+                        }
+
                         //$entry["id"]       = $data -> getID();
                         $entry[$key["division_adm"]] = $data->getDivision();
                         $entry[$key["city"]] = $data->getCity();
                         $entry[$key["district"]] = $data->getDistrict();
-                        $entry[$key["color"]] = $data->getColor();
+                        $entry[$key["color"]] = $color;
                         $entry[$key["latitude"]] = $data->getLatitude(); // Added for Map
                         $entry[$key["longitude"]] = $data->getLongitude(); // Added for Map
                         $entry[$key["initial"]] = $data->getInitial();

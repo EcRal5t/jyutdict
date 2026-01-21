@@ -56,7 +56,7 @@ SIDENAV;
     public static function printApiJson() {
         print_r(json_encode([
             "app_version"=>[0,6,7],
-            "details_of_characters"=>"https://jyutdict.org/api/v0.9/detail?chara={query}{&ascii}",
+            "details_of_characters"=>"https://jyutdict.org/api/v1.0/detail?chara={query}{&ascii}",
             "details_of_pronunciations"=>"https://jyutdict.org/api/v0.9/detail?pron={query}{&ascii}",
             "details_in_characters_sheet"=>"https://jyutdict.org/api/v0.9/sheet?query={query}{&fuzzy, regex, trim, ascii, b, col={locations}}",
             "help"=>"Apply parameter '&help' at corresponding API for detailed info."
