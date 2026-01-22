@@ -19,8 +19,8 @@ const currentArticle = computed(() => {
                 <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">紀文</h2>
                 <template v-for="article in articlesData" :key="article.id">
                     <router-link :to="{ name: 'article', params: { id: article.id } }"
-                        class="block px-4 py-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-                        :class="{ 'bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-blue-300': currentArticleId === article.id, 'text-gray-600 dark:text-gray-400': currentArticleId !== article.id }">
+                        class="block px-4 py-2 rounded-md transition-colors hover:bg-[#E8E8DD]"
+                        :class="{ 'bg-[#E8E8DD] text-[#d32913]': currentArticleId === article.id, 'text-gray-600 dark:text-gray-400 dark:hover:text-gray-900': currentArticleId !== article.id }">
                         {{ article.title }}
                     </router-link>
                 </template>
@@ -28,71 +28,153 @@ const currentArticle = computed(() => {
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 pb-12">
+        <main class="flex-1 pb-12 article-content">
             <div v-if="currentArticle" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 md:p-8">
-                <h1 class="text-3xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-2">{{ currentArticle.title
+                <h1 class="text-3xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-6">{{ currentArticle.title
                     }}</h1>
-                <p v-if="currentArticle.intro"
-                    class="text-gray-600 dark:text-gray-400 mb-8 italic border-l-4 border-gray-300 pl-4">
-                    {{ currentArticle.intro }}
-                </p>
 
-                <div v-if="currentArticle.table && currentArticle.table.rows" class="overflow-x-auto">
-                    <table
-                        class="w-full border-collapse border border-stone-400 dark:border-stone-600 font-serif text-center">
-                        <caption class="font-bold text-lg mb-2 text-stone-700 dark:text-stone-300">{{
-                            currentArticle.table.caption }}</caption>
-                        <thead>
-                            <tr
-                                class="bg-stone-100 dark:bg-stone-900 border-b-2 border-stone-400 dark:border-stone-600">
-                                <th v-for="(header, index) in currentArticle.table.headers" :key="index"
-                                    class="p-2 font-bold text-stone-800 dark:text-stone-200 border-r border-stone-300 dark:border-stone-700 last:border-0">
-                                    {{ header }}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(row, rowIndex) in currentArticle.table.rows" :key="rowIndex"
-                                class="hover:bg-amber-50 dark:hover:bg-stone-800 border-b border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100">
-                                <!-- Complex logic to handle rowspans could be added here if data structure supported it directly,
-                                  but for now we map 1:1 or need to pre-process data for rowspans.
-                                  For simpler implementation given time constraint, rendering as flat list or handling specific colspan/rowspan if JSON allows.
-                                  The JSON structure provided is flat rows. Check if we need grouping.
-                                  Legacy code used rowspans. To emulate that, we might need a computed property to process data.
-                                  For this iteration, we display flat.
-                             -->
-                                <td class="p-2 border-r border-stone-300 dark:border-stone-700">{{ row.rime }}</td>
-                                <td class="p-2 border-r border-stone-300 dark:border-stone-700">{{ row.tone }}</td>
-                                <td class="p-2 border-r border-stone-300 dark:border-stone-700"
-                                    :class="{ 'bg-blue-100 dark:bg-blue-900': row.initial === 'n', 'bg-green-100 dark:bg-green-900': row.initial === 'l' }">
-                                    {{ row.initial }}</td>
-                                <td class="p-2 border-r border-stone-300 dark:border-stone-700 font-mono text-sm">
-                                    <div>{{ row.pron }}</div>
-                                    <div v-if="row.pron_note" class="text-xs text-gray-500">{{ row.pron_note }}</div>
-                                </td>
-                                <td class="p-2 border-r border-stone-300 dark:border-stone-700 text-xl"
-                                    :class="{ 'italic': row.italic }">
-                                    <span class="font-bold text-red-700 dark:text-red-400">{{ row.char }}</span>
-                                    <span v-if="row.sub" class="block text-sm text-gray-500">{{ row.sub }}</span>
-                                </td>
-                                <td class="p-2 text-left">{{ row.def }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <template v-for="(block, index) in currentArticle.blocks" :key="index">
 
-                <div v-else class="text-center py-10 text-gray-500">
-                    Content for this article is being migrated.
-                </div>
+                    <!-- HTML Block -->
+                    <div v-if="block.type === 'html'" v-html="block.content"
+                        class="mb-6 prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 init-content">
+                    </div>
 
-                <div class="mt-8 text-sm text-gray-500 text-center border-t pt-4">
-                    <p>Data migration in progress.</p>
-                </div>
+                    <!-- Phonology Table Block -->
+                    <div v-else-if="block.type === 'phonology_table'" class="mb-8 overflow-x-auto">
+                        <table
+                            class="phonology-table w-full border-collapse border border-stone-400 dark:border-stone-600 font-serif text-center">
+                            <caption v-if="block.caption"
+                                class="font-bold text-lg mb-2 text-stone-700 dark:text-stone-300 caption-top">
+                                {{ block.caption }}
+                            </caption>
+                            <tbody>
+                                <tr v-for="(row, rIndex) in block.rows" :key="rIndex"
+                                    class="border-b border-stone-300 dark:border-stone-700 hover:bg-amber-50 dark:hover:bg-stone-700/50 w-auto">
+                                    <template v-for="(cell, cIndex) in row.cells" :key="cIndex">
+                                        <component :is="cell.tag || 'td'" :rowspan="cell.rowspan"
+                                            :colspan="cell.colspan" :style="{ width: cell.width }"
+                                            class="p-2 border-r border-stone-300 dark:border-stone-700 last:border-0 align-middle"
+                                            :class="[
+                                                cell.className || '',
+                                                (cell.tag === 'th') ? 'bg-stone-100 dark:bg-stone-900 font-bold text-stone-800 dark:text-stone-200 border-b-2 border-stone-400 dark:border-stone-600 whitespace-nowrap' : 'text-stone-900 dark:text-stone-100'
+                                            ]">
+                                            <div v-html="cell.content"></div>
+                                        </component>
+                                    </template>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </template>
+
             </div>
         </main>
     </div>
 </template>
 
-<style scoped>
-/* Optional specific styles if Tailwind isn't enough */
+<style>
+/* Global styles for article content to match PHP styling */
+.article-content .init-content p {
+    text-indent: 2em;
+    margin-bottom: 1em;
+    line-height: 2em;
+}
+
+.article-content .init-content b {
+    color: #d32913;
+    font-weight: bold;
+}
+
+.article-content .init-content i {
+    color: darkslategrey;
+    font-style: italic;
+}
+
+.article-content .init-content a {
+    color: #2563eb;
+    /* blue-600 */
+    text-decoration: underline;
+}
+
+/* Table Styles */
+.phonology-table th {
+    font-size: 1.2em;
+    line-height: 2em;
+}
+
+.phonology-table td.A {
+    background-color: rgb(193 227 255);
+}
+
+.dark .phonology-table td.A {
+    background-color: rgb(30 60 90);
+    /* Dark mode equivalent */
+}
+
+.phonology-table td.B {
+    background-color: rgb(173 251 158);
+}
+
+.dark .phonology-table td.B {
+    background-color: rgb(30 70 30);
+    /* Dark mode equivalent */
+}
+
+/* Character Column Styles */
+.phonology-table .head {
+    font-weight: bold;
+    font-size: 1.5em;
+    color: #d32913;
+    line-height: 1.5em;
+    display: inline-block;
+}
+
+.dark .phonology-table .head {
+    color: #ff6b6b;
+    /* Lighter red for dark mode */
+}
+
+.phonology-table i>.head {
+    color: darkslategrey;
+    /* Lighter red for dark mode */
+}
+
+.dark .phonology-table i>.head {
+    color: slategrey;
+    /* Lighter red for dark mode */
+}
+
+.phonology-table .sub {
+    /* Originally empty or just context for small */
+}
+
+.phonology-table .sub small {
+    font-size: 0.8em;
+    color: #4b5563;
+    /* gray-600 */
+}
+
+.dark .phonology-table .sub small {
+    color: #9ca3af;
+    /* gray-400 */
+}
+
+.phonology-table i {
+    color: darkslategrey;
+    font-style: italic;
+}
+
+.dark .phonology-table i {
+    color: #94a3b8;
+    /* slate-400 */
+}
+
+/* Meanings */
+.phonology-table .mean {
+    text-align: left;
+    padding: 1ex;
+    line-height: 1.2em;
+}
 </style>
