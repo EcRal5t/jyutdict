@@ -32,7 +32,8 @@ const tableRows = computed(() => {
 
         if (groupKey !== lastGroupKey) {
             currentGroup = {
-                displayName: city + (district ? ` ${district}` : ''),
+                cityName: city,
+                districtName: district,
                 division: loc.division,
                 locations: [],
                 totalSenses: 0
@@ -95,7 +96,8 @@ const tableRows = computed(() => {
                     
                     // City Column
                     cityData: (locIdx === 0 && senseIdx === 0) ? {
-                        name: group.displayName.replace(" ", ""),
+                        cityName: group.cityName,
+                        districtName: group.districtName,
                         span: group.totalSenses
                     } : null,
 
@@ -161,8 +163,9 @@ const getColors = (colorStr) => {
                       </div>
 
                       <!-- Centered Text -->
-                      <div class="relative z-10 w-full text-center text-slate-800 dark:text-slate-200 font-large text-md leading-tight px-2 drop-shadow-sm shadow-black">
-                          {{ row.cityData.name }}
+                      <div class="relative z-10 w-full text-center leading-tight px-2 drop-shadow-sm shadow-black">
+                          <span class="text-base text-slate-800 dark:text-slate-200">{{ row.cityData.cityName }}</span>
+                          <span v-if="row.cityData.districtName" class="text-sm text-neutral-700 dark:text-neutral-300 p-0.5">{{ row.cityData.districtName }}</span>
                       </div>
                   </td>
 

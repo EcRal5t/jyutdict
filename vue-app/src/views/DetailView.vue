@@ -190,6 +190,13 @@ watch(resultData, () => {
    }
 });
 
+watch(() => route.query.chara, (newVal) => {
+    if (newVal) {
+        inputChara.value = newVal;
+        loadData(newVal);
+    }
+});
+
 </script>
 
 <template>
@@ -280,7 +287,7 @@ watch(resultData, () => {
                                    -->
                                    <AreaTable :data="entry.location.flat()" :show-i-p-a="showIPA" />
                               </div>
-                               <div v-else class="text-slate-400 italic text-sm text-center py-4">
+                               <div v-else class="text-slate-400 italic text-xs text-center py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded">
                                   暫無資料
                               </div>
                           </div>
@@ -299,7 +306,7 @@ watch(resultData, () => {
                                            <AncientTable :data="bookData" />
                                        </template>
                                   </div>
-                                  <div v-else class="text-slate-400 italic text-sm text-center py-4">
+                                  <div v-else class="text-slate-400 italic text-xs text-center py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded">
                                       暫無資料
                                   </div>
                                </div>
