@@ -168,7 +168,8 @@ const fetchResults = async () => {
                         'border-red-500': parseStatus === 'invalid'
                     }" placeholder="輸入粵拼 (e.g. jyut6, j%t%)...">
                 <button disabled
-                    class="px-6 py-3 font-bold text-white rounded-md transition-all shadow-md opacity-50 cursor-not-allowed bg-gray-400">
+                    class="px-6 py-3 font-bold text-white rounded-md transition-all shadow-md opacity-50 cursor-not-allowed bg-gray-400"
+                    title="功能開發中">
                     耖
                 </button>
             </div>

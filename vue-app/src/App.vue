@@ -27,8 +27,6 @@ const tooltipContent = computed(() => {
     return updateLogs.map(l => `${l.city} - ${l.date}`).join('\n') + `\n\n主版本: ${version}`;
 })
 
-const hideFooter = computed(() => route.path === '/phonology');
-
 onMounted(() => {
     // Check local storage or system preference
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -42,7 +40,7 @@ onMounted(() => {
 
 const menuItems = [
     { label: '檢字', path: '/' }, // Originally index.php, now Home
-    { label: '檢音', path: '/pronunciation', style: 'text-decoration: line-through; opacity: 0.7;' },
+    { label: '檢音', path: '/pronunciation', strikethrough: true },
     { label: '泛粵字表', path: '/sheet' },
     { label: '紀文', path: '/articles' },
     { label: '相似音系測試', path: '/phonology' },
@@ -57,7 +55,7 @@ const externalLinks = [
 
 <template>
     <div
-        class="min-h-screen bg-background dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 font-serif flex flex-col">
+        class="min-h-screen flex flex-col bg-background dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 font-serif">
 
         <header
             class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
@@ -86,12 +84,14 @@ const externalLinks = [
                             <template v-for="item in menuItems" :key="item.label">
                                 <a v-if="item.external" :href="item.path"
                                     class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700"
-                                    :style="item.style" @click="showMobileMenu = false">
+                                    :class="{ 'line-through opacity-60': item.strikethrough }"
+                                    @click="showMobileMenu = false">
                                     {{ item.label }}
                                 </a>
                                 <RouterLink v-else :to="item.path"
                                     class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700"
-                                    active-class="bg-gray-50 dark:bg-slate-700/50 font-bold" :style="item.style"
+                                    :class="{ 'line-through opacity-60': item.strikethrough }"
+                                    active-class="bg-gray-50 dark:bg-slate-700/50 font-bold"
                                     @click="showMobileMenu = false">
                                     {{ item.label }}
                                 </RouterLink>
@@ -110,10 +110,11 @@ const externalLinks = [
                     <!-- Desktop Nav -->
                     <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
                         <template v-for="item in menuItems" :key="item.label">
-                            <a v-if="item.external" :href="item.path" class="nav-link" :style="item.style">{{ item.label
-                                }}</a>
-                            <RouterLink v-else :to="item.path" class="nav-link" active-class="active"
-                                :style="item.style">{{ item.label }}
+                            <a v-if="item.external" :href="item.path" class="nav-link"
+                                :class="{ 'line-through opacity-60': item.strikethrough }">{{ item.label }}</a>
+                            <RouterLink v-else :to="item.path" class="nav-link"
+                                :class="{ 'line-through opacity-60': item.strikethrough }" active-class="active">{{
+                                item.label }}
                             </RouterLink>
                         </template>
                         <div class="h-4 w-px bg-gray-300 dark:bg-slate-700 mx-2"></div>
@@ -123,7 +124,7 @@ const externalLinks = [
                                 <a :href="link.url" class="nav-link">{{ link.label }}</a>
                                 <!-- Tooltip -->
                                 <div
-                                    class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-xl rounded-lg p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[60] custom-scrollbar">
+                                    class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-xl rounded-lg p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[60]">
                                     {{ tooltipContent }}
                                 </div>
                             </div>
@@ -155,8 +156,8 @@ const externalLinks = [
             <RouterView />
         </main>
 
-        <footer v-if="!hideFooter"
-            class="mt-20 py-8 border-t border-gray-200 dark:border-slate-800 text-center text-sm text-gray-500 dark:text-slate-500">
+        <footer v-if="route.path !== '/phonology'"
+            class="mt-20 py-8 border-t border-gray-200 dark:border-slate-800 text-center text-sm text-gray-500 dark:text-slate-500 flex-shrink-0">
             <p>© 2019-2026 <a href="https://jyutjam.org" class="hover:text-accent transition-colors">嶺南粵音</a> <a
                     href="https://jyutdict.org" class="hover:text-accent transition-colors">泛粵大典</a> 開發組 版權所有</p>
         </footer>
@@ -175,25 +176,11 @@ const externalLinks = [
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    /* slate-300 */
-    border-radius: 4px;
+    @apply bg-gray-300 dark:bg-slate-600 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-    /* slate-400 */
-}
-
-/* Dark mode overrides (naive media query or class based if root has class) */
-.dark ::-webkit-scrollbar-thumb {
-    background: #475569;
-    /* slate-600 */
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-    background: #64748b;
-    /* slate-500 */
+    @apply bg-gray-400 dark:bg-slate-500;
 }
 </style>
 

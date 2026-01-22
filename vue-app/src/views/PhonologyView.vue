@@ -215,12 +215,16 @@ const loadDialectData = (index, name) => {
                                 成對的兩個字，只要一者較另一者多出了一個音，即爲不同；少數情況下，二字都有多音，則要求讀音分別相同，沒有多出來的音。
                             </p>
                         </div>
-                        <div class="pt-2 border-t border-slate-100 dark:border-slate-700 text-center mt-2">
-                            <p class="text-[10px] text-slate-400">
-                                © 2019-2026 <a href="https://jyutjam.org"
-                                    class="hover:text-slate-600 dark:hover:text-slate-300">嶺南粵音</a> <a
-                                    href="https://jyutdict.org"
-                                    class="hover:text-slate-600 dark:hover:text-slate-300">泛粵大典</a> 開發組 版權所有
+
+                        <!-- Footer inside Info Panel -->
+                        <div
+                            class="pt-2 border-t border-slate-100 dark:border-slate-700 text-center mt-2 hidden sm:block">
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed">
+                                © 2019-2026 <a href="https://jyutjam.org" target="_blank"
+                                    class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">嶺南粵音</a> <a
+                                    href="https://jyutdict.org" target="_blank"
+                                    class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">泛粵大典</a>
+                                開發組 版權所有
                             </p>
                         </div>
                     </div>
