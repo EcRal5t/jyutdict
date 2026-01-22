@@ -123,16 +123,77 @@ onMounted(() => {
     }
 });
 
-watch(() => route.query.chara, (newVal) => {
-    if (newVal) {
-        inputChara.value = newVal;
-        loadData(newVal);
+const activeIndex = ref(0);
+
+// Use IntersectionObserver to highlight active character
+// When a character section comes into view, set activeIndex.
+let observer = null;
+
+const setupObserver = () => {
+    // Cleanup previous
+    if (observer) observer.disconnect();
+
+    const options = {
+        root: null,
+        rootMargin: '-20% 0px -60% 0px', // Trigger when element is near top but not too far
+        threshold: 0
+    };
+
+    observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // ID format: 'char-INDEX'
+                const id = entry.target.id;
+                if (id && id.startsWith('char-')) {
+                    const idx = parseInt(id.replace('char-', ''), 10);
+                    if (!isNaN(idx)) {
+                        activeIndex.value = idx;
+                    }
+                }
+            }
+        });
+    }, options);
+
+    // Observe all character sections
+    // Wait for DOM
+    setTimeout(() => {
+        resultData.value?.forEach((_, idx) => {
+            const el = document.getElementById(`char-${idx}`);
+            if (el) observer.observe(el);
+        });
+    }, 500);
+};
+
+// Also scroll logic
+const scrollToChar = (idx) => {
+    const el = document.getElementById(`char-${idx}`);
+    if (el) {
+        // Offset for header (approx 80px)
+        const headerOffset = 100;
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+  
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
+        
+        // Setup active index immediately
+        activeIndex.value = idx;
     }
+}
+
+watch(resultData, () => {
+   // Re-setup observer when data changes
+   if (resultData.value && resultData.value.length > 0) {
+       setupObserver();
+   }
 });
+
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8 max-w-5xl">
+  <div class="container mx-auto px-2 py-4 md:px-4 md:py-8 max-w-7xl">
       
       <!-- Search Bar -->
       <div class="flex gap-4 mb-8 justify-center">
@@ -141,7 +202,7 @@ watch(() => route.query.chara, (newVal) => {
             @keypress.enter="performSearch"
             type="text" 
             placeholder="輸入查詢..."
-            class="p-4 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg shadow-sm focus:ring-2 focus:ring-accent outline-none w-full max-w-md text-lg"
+            class="p-4 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg shadow-sm focus:ring-2 focus:ring-accent outline-none w-full max-w-md text-lg transition-all"
           >
           <button 
             @click="performSearch"
@@ -157,74 +218,105 @@ watch(() => route.query.chara, (newVal) => {
       </div>
       <div v-if="error" class="text-red-500 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30">{{ error }}</div>
 
-      <!-- Results -->
-      <div v-if="resultData" class="space-y-12">
-          <div v-for="(entry, index) in resultData" :key="index" class="glass rounded-lg p-6 md:p-8">
-              
-              <div class="flex flex-col md:flex-row gap-8 items-start">
-                   <!-- Character Header (Side or smaller) -->
-                   <div class="w-full md:w-auto flex-shrink-0 flex justify-center md:block">
-                      <div class="relative group cursor-default inline-block">
-                        <h2 class="text-6xl font-bold text-slate-800 dark:text-slate-100 relative z-10 leading-none">{{ entry.chara }}</h2>
-                        <div class="absolute -bottom-1 w-full h-2 bg-accent/20 dark:bg-red-500/20 rounded-full blur-sm group-hover:bg-accent/40 transition-colors"></div>
-                      </div>
+      <!-- Main Layout -->
+      <div v-if="resultData" class="flex flex-col md:flex-row gap-8 relative items-start">
+          
+          <!-- Sticky Sidebar (Character Nav) -->
+          <!-- Increased top offset to 6rem (approx 96px) to avoid header overlap -->
+          <aside class="hidden md:block w-24 flex-shrink-0 sticky top-24 self-start max-h-[80vh] overflow-y-auto no-scrollbar py-2">
+               <div class="flex flex-col gap-3">
+                   <div v-for="(entry, idx) in resultData" :key="idx">
+                       <a :href="'#char-' + idx" 
+                          class="block text-center p-2 mx-1 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all group relative overflow-hidden"
+                          :class="{ 'ring-2 ring-accent dark:ring-red-500 bg-blue-50 dark:bg-slate-700': activeIndex === idx }"
+                          @click.prevent="scrollToChar(idx)"
+                       >
+                           <!-- Color Block Indicator -->
+                           <div class="absolute left-0 top-0 bottom-0 w-1 bg-accent/0 group-hover:bg-accent transition-colors"
+                                :class="{ 'bg-accent dark:bg-red-500': activeIndex === idx }"
+                           ></div>
+                           
+                           <span class="text-2xl font-bold text-slate-800 dark:text-slate-100">{{ entry.chara }}</span>
+                           <span class="block text-xs text-slate-400 mt-1" v-if="entry.location && entry.location.length">({{ entry.location.length }})</span>
+                       </a>
                    </div>
+               </div>
+          </aside>
 
-                   <!-- Content Grid -->
-                   <div class="flex-grow w-full">
-                       
-                       <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                          <!-- Ancient (WanShyu) -->
-                          <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
-                              <h3 class="text-lg font-bold mb-4 text-slate-700 dark:text-slate-300 border-l-4 border-wood pl-3 flex items-center gap-2">
-                                  <span>韻書</span>
-                              </h3>
-                              
-                              <div v-if="entry.ancient && entry.ancient.length > 0">
-                                   <template v-for="(bookData, bIdx) in entry.ancient" :key="bIdx">
-                                       <AncientTable :data="bookData" />
-                                   </template>
-                              </div>
-                              <div v-else class="text-slate-400 italic text-sm text-center py-4">
-                                  暫無韻書資料
-                              </div>
+          <!-- Content Area -->
+          <div class="flex-grow w-full space-y-16">
+              <div v-for="(entry, index) in resultData" :key="index" :id="'char-' + index" class="scroll-mt-6">
+                  <!-- Header for Mobile only (since Sidebar handles desktop) -->
+                  <div class="md:hidden flex justify-center mb-6">
+                      <h2 class="text-6xl font-bold text-slate-800 dark:text-slate-100 relative z-10 leading-none">{{ entry.chara }}</h2>
+                  </div>
 
-                              <!-- Map -->
-                              <div v-if="entry.location && entry.location.length > 0" class="mt-6">
-                                   <DetailMap :locations="entry.location" />
-                              </div>
-
-                              <!-- Links -->
-                              <div class="mt-6">
-                                <RelativeLinks :chara="entry.chara" />
-                              </div>
-                          </div>
-
-                          <!-- Location (Area) -->
-                          <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                  <!-- Per Character Card -->
+                  <div class="glass rounded-xl p-4 md:p-8">
+                      <!-- Grid Layout: Desktop 2 cols, Mobile 1 col -->
+                      <!-- Mobile Order Requirement: Dialect Table FIRST, then Ancient, then Map/Links -->
+                      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                          
+                          <!-- Dialect Table (Area) -->
+                          <!-- On Mobile: Order 1. On Desktop: Order 2 (Right Col) -->
+                          <div class="order-1 xl:order-2 bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4 h-fit">
                               <div class="flex justify-between items-center mb-4 border-l-4 border-accent pl-3">
                                   <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                                       <span>方音</span>
                                   </h3>
                                   <button 
                                      @click="showIPA = !showIPA"
-                                     class="text-xs font-bold px-3 py-1 rounded border transition-all"
+                                     class="text-xs font-bold px-3 py-1 rounded border transition-all hover:scale-105 active:scale-95"
                                      :class="showIPA ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800' : 'bg-white/80 text-slate-600 border-slate-300 hover:border-slate-400 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'"
                                   >
-                                     顯示 IPA
+                                     IPA
                                   </button>
                               </div>
                                
                               <div v-if="entry.location && entry.location.length > 0">
+                                   <!-- Flat Map is handled in JS logic in template or separate component, 
+                                        here we assume entry.location is already an array of location objects.
+                                        AreaTable expects flat array.
+                                   -->
                                    <AreaTable :data="entry.location.flat()" :show-i-p-a="showIPA" />
                               </div>
                                <div v-else class="text-slate-400 italic text-sm text-center py-4">
-                                  暫無方言資料
+                                  暫無資料
                               </div>
-
                           </div>
-                       </div>
-                   </div>
+
+                          <!-- Left Column Group: Ancient + Map + Links -->
+                          <!-- On Mobile: Order 2. On Desktop: Order 1 (Left Col) -->
+                          <div class="order-2 xl:order-1 flex flex-col gap-6">
+                               <!-- Ancient (WanShyu) -->
+                               <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                                  <h3 class="text-lg font-bold mb-4 text-slate-700 dark:text-slate-300 border-l-4 border-wood pl-3 flex items-center gap-2">
+                                      <span>韻書</span>
+                                  </h3>
+                                  
+                                  <div v-if="entry.ancient && entry.ancient.length > 0">
+                                       <template v-for="(bookData, bIdx) in entry.ancient" :key="bIdx">
+                                           <AncientTable :data="bookData" />
+                                       </template>
+                                  </div>
+                                  <div v-else class="text-slate-400 italic text-sm text-center py-4">
+                                      暫無資料
+                                  </div>
+                               </div>
+
+                               <!-- Map (Separate container) -->
+                               <div v-if="entry.location && entry.location.length > 0" class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                                   <DetailMap :locations="entry.location" />
+                               </div>
+
+                               <!-- Links -->
+                               <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                                   <RelativeLinks :chara="entry.chara" />
+                               </div>
+                          </div>
+
+                      </div>
+                  </div>
               </div>
           </div>
       </div>

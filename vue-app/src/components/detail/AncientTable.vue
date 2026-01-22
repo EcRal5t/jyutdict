@@ -42,7 +42,7 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
   <div v-if="props.data && props.data.length > 0" class="mb-6 page-break-inside-avoid">
     
     <!-- Kuangyon Header -->
-    <div v-if="isKuangyon" class="pl-2 border-l-2 border-slate-300 dark:border-slate-600 mb-2 text-slate-700 dark:text-slate-300 font-mono text-base">
+    <div v-if="isKuangyon" class="pl-2 border-l-2 border-slate-300 dark:border-slate-600 mb-2 text-slate-700 dark:text-slate-300 text-base">
         <div v-for="(row, idx) in props.data" :key="idx" class="mb-0.5 flex gap-2">
              <span>{{ row['聲母'] }}</span>
              <span>{{ row['攝'] }}</span>
@@ -67,7 +67,7 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
              <tbody>
                  <template v-for="(row, idx) in props.data" :key="idx">
                      <tr class="border-b border-slate-200 dark:border-slate-700">
-                         <td rowspan="2" class="p-1 border-r border-slate-300 dark:border-slate-600 text-base align-middle bg-gray-50/30 dark:bg-slate-800/30">
+                         <td rowspan="2" class="p-1 border-r border-slate-300 dark:border-slate-600 text-base align-middle bg-gray-50/30 dark:bg-slate-800/30  font-mono">
                              <!-- Colored Components -->
                             <span class="text-[#D32913] dark:text-red-400">{{ row['聲母'] }}</span>
                             <span class="text-emerald-700 dark:text-emerald-400">{{ row['韻核'] }}</span>
@@ -77,7 +77,7 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
                          <td class="p-1 border-r border-slate-300 dark:border-slate-600 text-sm">
                              {{ row['韻部'] }} - {{ row['小韻'] }}
                          </td>
-                         <td class="p-1 border-r border-slate-300 dark:border-slate-600 font-mono text-sm">
+                         <td class="p-1 border-r border-slate-300 dark:border-slate-600 text-sm">
                              
                              <span class="text-slate-600 dark:text-slate-400">{{ row['聲字'] }}{{ row['韻字'] }}{{ row['調類'] }}</span>
                          </td>

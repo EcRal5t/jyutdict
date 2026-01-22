@@ -13,13 +13,11 @@ const props = defineProps({
   }
 });
 
-// State for expanding long notes
-// User wants: hover to expand, never close.
-const expandedRows = reactive(new Set());
+// State for expanding long notes (using Set for ID tracking)
+// We use CSS hover for visual expansion, but maybe user wants it to stick?
+// "Mouse hover ... mutations". The user wants gradient/animation.
+// We will use CSS transitions on max-height.
 
-const expandNote = (idx) => {
-    expandedRows.add(idx);
-};
 
 // Groups Logic
 const tableRows = computed(() => {
@@ -130,17 +128,17 @@ const getColors = (colorStr) => {
 </script>
 
 <template>
-  <div v-if="tableRows.length > 0" class="mb-4 bg-white/50 dark:bg-slate-800/50 rounded lg:rounded-lg overflow-hidden text-sm border border-slate-200 dark:border-slate-700">
-      <table class="w-full text-left border-collapse">
+  <div v-if="tableRows.length > 0" class="mb-4 bg-white/50 dark:bg-slate-800/50 rounded lg:rounded-lg overflow-hidden text-md border border-slate-200 dark:border-slate-700">
+      <table class="w-full text-left border-collapse text-sm">
           <thead class="bg-gray-100/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-slate-700 backdrop-blur-sm">
               <tr>
-                  <th class="py-1 px-2 font-bold text-slate-700 dark:text-slate-300 w-[35%] border-r border-slate-200 dark:border-slate-700 whitespace-nowrap text-center text-xs">
+                  <th class="py-1 px-2 font-bold text-slate-700 dark:text-slate-300 w-[35%] border-r border-slate-200 dark:border-slate-700 whitespace-nowrap text-center">
                       地點
                   </th>
-                  <th class="py-1 px-2 w-[35%] border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center text-xs">
+                  <th class="py-1 px-2 w-[30%] border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center">
                       讀音
                   </th>
-                  <th class="py-1 px-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center text-xs">
+                  <th class="py-1 px-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center">
                       備註
                   </th>
               </tr>
@@ -153,36 +151,35 @@ const getColors = (colorStr) => {
                       :rowspan="row.locData.span" 
                       class="relative py-0.5 px-2 align-middle border-r border-slate-200 dark:border-slate-700 bg-white/40 dark:bg-slate-800/40"
                   >
-                      <!-- Absolute Color Blocks on LEFT -->
-                      <div class="absolute left-0 top-0 bottom-0 flex flex-col h-full w-auto">
+                      <!-- Absolute Color Blocks on LEFT (Horizontal Stack) -->
+                      <div class="absolute left-0 top-0 bottom-0 flex flex-row items-center h-full z-0 opacity-80">
                           <div v-for="(col, cIdx) in row.locData.color" 
                                :key="cIdx"
-                               class="flex-grow w-1.5"
+                               class="h-full w-2 border-r border-white/20"
                                :style="{ backgroundColor: col }"
                           ></div>
                       </div>
 
                       <!-- Centered Text -->
-                      <div class="w-full text-center text-slate-800 dark:text-slate-200 font-medium text-[13px] leading-tight pl-2">
+                      <div class="relative z-10 w-full text-center text-slate-800 dark:text-slate-200 font-large text-md leading-tight px-2 drop-shadow-sm shadow-black">
                           {{ row.cityData.name }}
                       </div>
                   </td>
 
                   <!-- Pronunciation -->
-                  <td class="py-0.5 px-2 align-middle border-r border-slate-200 dark:border-slate-700 relative"
+                  <td class="py-0.5 px-4 align-middle border-r border-slate-200 dark:border-slate-700 relative"
                       :colspan="(!row.note) ? 2 : 1"
                   >
                         <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                             <template v-for="(pron, pIdx) in row.prons" :key="pIdx">
                                 <div class="flex items-baseline gap-x-0.5">
-                                    <span v-if="pIdx > 0" class="text-slate-300">/</span>
+                                    <span v-if="pIdx > 0" class="text-slate-300 text-xs"> · </span>
                                     
-                                    <span class="font-mono text-[14px] leading-snug tracking-tight">
+                                    <span class="font-mono text-md leading-snug tracking-tight">
                                         <span class="text-[#CC2014] dark:text-red-400">{{ pron.initial }}</span><span class="text-emerald-800 dark:text-emerald-400">{{ pron.nuclei }}</span><span class="text-emerald-800 dark:text-emerald-400">{{ pron.coda }}</span><span class="text-amber-700 dark:text-amber-500">{{ pron.tone }}</span>
                                     </span>
                                     
-                                    <span v-if="showIPA && pron.ipa" class="font-sans text- text-slate-500 dark:text-slate-500 ml-0.5">
-                                        <!-- [{{ pron.ipa }}] -->
+                                    <span v-if="showIPA && pron.ipa" class="font-sans text-slate-500 dark:text-slate-500 ml-0.5">
                                         {{ pron.ipa }}
                                     </span>
                                 </div>
@@ -192,21 +189,22 @@ const getColors = (colorStr) => {
 
                   <!-- Note -->
                   <td v-if="row.note" 
-                      @mouseenter="expandNote(row.id)"
-                      class="py-0.5 px-2 text-slate-500 dark:text-slate-400 text-xs align-middle leading-tight max-w-[150px] relative"
+                      class="py-0.5 px-2 text-slate-500 dark:text-slate-400 align-middle leading-tight max-w-[150px] relative group/note"
                   >
-                      <div class="transition-all duration-300 ease-in-out"
-                           :class="{ 'line-clamp-1': !expandedRows.has(row.id), 'line-clamp-none': expandedRows.has(row.id) }">
-                          {{ row.note }}
+                      <!-- 
+                        Using max-height transition. 
+                        Default: max-h-[1.5em] (roughly 1 line, depends on line-height).
+                        Hover: max-h-[200px].
+                      -->
+                      <div class="relative overflow-hidden transition-all duration-500 ease-in-out max-h-[1.4rem] group-hover/note:max-h-[20rem]">
+                          <div class="">
+                            {{ row.note }}
+                          </div>
                       </div>
                       
-                      <!-- Gradient overlay for overflow if not expanded? 
-                           Actually line-clamp automatically hides it. 
-                           User asked for: 'gradient expand'. 
-                           Maybe a subtle gradient fade when collapsed?
-                      -->
-                      <div v-if="!expandedRows.has(row.id) && row.note.length > 10" 
-                           class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-800 to-transparent pointer-events-none">
+                      <!-- Gradient overlay that fades out on hover -->
+                      <div v-if="row.note.length > 8" 
+                           class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-800 to-transparent pointer-events-none transition-opacity duration-300 group-hover/note:opacity-0">
                       </div>
                   </td>
 
