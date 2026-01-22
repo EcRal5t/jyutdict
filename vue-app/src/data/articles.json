@@ -1,0 +1,59 @@
+[
+  {
+    "id": "n-l",
+    "title": "主流粵語聲母 “n” 與 “l” 轄字表",
+    "intro": "本文用於記錄主流粵語聲母“n”和“l”對立時各所轄者，但不包括容易寫出漢字的，如「你」「能」等，此類字聲母大多可由普通話簡單推出。因此，本文主要關注一般不出現在書面語的詞彙。",
+    "has_audio": false,
+    "table": {
+      "caption": "聲母 “n” 與 “l” 轄字表",
+      "headers": ["韻母", "聲調", "聲母", "記音", "字頭", "釋義"],
+      "rows": [
+        {"rime": "aa", "tone": 1, "initial": "n", "pron": "naa1", "char": "拏", "sub": "𠸎", "def": "①連詞，與：『我～渠食緊飯』；②替，幫：『我～你做』", "class": "A"},
+        {"rime": "aa", "tone": 1, "initial": "n", "pron": "naa1", "char": "𪐀", "sub": "拏𠸎", "def": "①粘貼：～墻紙；②相關連：～更｜～褦", "class": "A"},
+        {"rime": "aa", "tone": 1, "initial": "n", "pron": "naa1", "char": "𤸻", "sub": "", "def": "①疤；②補丁", "class": "A"},
+        {"rime": "aa", "tone": 1, "initial": "l", "pron": "laa1", "pron_note": "laa1/la1", "char": "啦", "sub": "", "def": "語氣詞", "class": "B"},
+        
+        {"rime": "aa", "tone": 2, "initial": "n", "pron": "naa2", "char": "俹", "sub": "", "def": "〔～簁〕作事苟且而不精細：你做事可唔可以唔好咁～", "class": "A"},
+        {"rime": "aa", "tone": 2, "initial": "n", "pron": "naa2", "char": "乸", "sub": "", "def": "雌性：雞～｜～型(娘娘腔)", "class": "A"},
+        {"rime": "aa", "tone": 2, "initial": "l", "pron": "laa2", "pron_note": "laa2/laai2", "char": "揦", "sub": "瀬", "def": "遭遇：～嘢(遇上麻煩)", "class": "B"},
+        {"rime": "aa", "tone": 2, "initial": "l", "pron": "laa2", "char": "揦", "sub": "", "def": "抓、抓拿（一隻手拿握不能完全包住的物體）：『～隻蘿蔔』｜『～～埋一䊆』｜『一手～落去，至攞得幾粒花生』", "class": "B"},
+        {"rime": "aa", "tone": 2, "initial": "l", "pron": "laa2", "char": "揦", "sub": "", "def": "①挽起，拉起：～衫袖；②攬，收回，使聚攏：～成一堆", "class": "B"},
+        {"rime": "aa", "tone": 2, "initial": "l", "pron": "laa2", "char": "揦", "sub": "", "def": "皮膚、粘膜、傷口等受強烈刺激或侵蝕而感到疼痛或者體內的絞痛：『我心～住～住』", "class": "B"},
+        
+        {"rime": "aa", "tone": 3, "initial": "l", "pron": "laa3", "char": "Ｘ", "sub": "", "def": "①〔～口〕喫到油炸辛辣食物喉嚨上火想嚥口水的感覺；②〔油～〕油渣；③變味", "class": "B", "italic": true},
+        {"rime": "aa", "tone": 3, "initial": "l", "pron": "laa3", "char": "喇", "sub": "嘑嚹", "def": "句尾語氣詞", "class": "B"},
+        {"rime": "aa", "tone": 3, "initial": "l", "pron": "laa3", "char": "罅", "sub": "", "def": "縫隙，裂痕", "class": "B"},
+        
+        {"rime": "aa", "tone": 4, "initial": "n", "pron": "naa4", "char": "那", "sub": "", "def": "地名用字，水田⟨壯語：naz⟩：～坡", "class": "A", "italic": true},
+        {"rime": "aa", "tone": 4, "initial": "n", "pron": "naa4", "char": "嗱", "sub": "", "def": "①豎中指時的附帶嘆詞，表達鄙視；②（對某人）豎中指：『～佢』；③表拒絕否定對方時的語氣詞", "class": "A"},
+        {"rime": "aa", "tone": 4, "initial": "n", "pron": "naa4", "char": "嗱", "sub": "", "def": "嘆詞，表指示，引起別人的注意：『～，幾多！』｜『～，睇了喂！』", "class": "A"},
+        {"rime": "aa", "tone": 4, "initial": "l", "pron": "laa4", "char": "喇", "sub": "𪢘", "def": "表示詢問某種情況是否發生：『王伯䎺～？』｜『啲人走澌～？』", "class": "B"},
+        {"rime": "aa", "tone": 4, "initial": "l", "pron": "laa4", "char": "Ｘ", "sub": "", "def": "〔大～～〕數額大：～幾千文", "class": "B"},
+        {"rime": "aa", "tone": 4, "initial": "l", "pron": "laa4", "char": "Ｘ", "sub": "", "def": "〔～～聲〕〔～～臨〕叫別人快點，麻利地：『～清数』", "class": "B"},
+        
+        {"rime": "aa", "tone": 5, "initial": "l", "pron": "laa5", "char": "藞", "sub": "", "def": "〔～䕢〕髒亂", "class": "B"}
+      ]
+    }
+  },
+  {
+    "id": "ng-0",
+    "title": "主流粵語聲母 “ng” 與 “0”（零聲母）轄字表",
+    "intro": "本文用於記錄主流粵語聲母“ng”和“0”對立時各所轄者",
+    "has_audio": false,
+    "table": {}
+  },
+    {
+    "id": "s-sh",
+    "title": "棺派粵語聲母 “s” 與 “sh” 轄字表",
+    "intro": "本文用於記錄棺派粵語聲母“s”和“sh”對立時各所轄者",
+    "has_audio": false,
+    "table": {}
+  },
+    {
+    "id": "j-nj",
+    "title": "呃呃粵語聲母 “j” 與 “nj” 轄字表",
+    "intro": "本文用於記錄呃呃粵語聲母“j”和“nj”對立時各所轄者",
+    "has_audio": false,
+    "table": {}
+  }
+]

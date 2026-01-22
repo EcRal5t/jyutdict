@@ -14,15 +14,15 @@ const goToDetail = () => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex flex-col items-center justify-center p-6">
+  <main class="flex-1 bg-[#F4F4EE] dark:bg-slate-900 flex flex-col items-center justify-center p-6">
     <!-- Hero Section -->
     <div class="text-center max-w-4xl mx-auto space-y-8 animate-fade-in-up">
       <div class="space-y-4">
-        <h1 class="text-6xl md:text-7xl font-extrabold tracking-tight text-slate-900">
+        <h1 class="text-6xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white">
           <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
             Jyutdict
           </span>
-          <span class="text-slate-800">Vue</span>
+          <span class="text-slate-800 dark:text-slate-200">Vue</span>
         </h1>
       </div>
 
