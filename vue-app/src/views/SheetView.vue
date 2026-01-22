@@ -228,7 +228,7 @@ watch(() => route.query, (newQ) => {
                     @click="performSearch"
                     class="bg-accent hover:bg-red-700 text-white px-8 py-4 rounded-lg font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap"
                 >
-                    查詢 Search
+                    揾
                 </button>
             </div>
             

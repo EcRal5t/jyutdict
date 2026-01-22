@@ -57,13 +57,23 @@ const externalLinks = [
       
     <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
       <div class="container mx-auto px-4 py-3">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-2">
             <!-- Brand -->
-            <RouterLink to="/" class="flex items-center gap-2 group">
+            <RouterLink to="/" class="flex items-center gap-2 group flex-shrink-0">
                 <span class="text-2xl font-bold text-accent dark:text-red-500 tracking-tight group-hover:opacity-80 transition-opacity">
                     泛粵大典
                 </span>
             </RouterLink>
+
+            <!-- Mobile Nav (Secondary Links) -->
+            <div class="md:hidden flex items-center gap-3 text-sm font-medium">
+                 <template v-for="link in externalLinks" :key="link.label">
+                     <!-- Only show simple links or handle tooltip simply -->
+                     <a :href="link.url" :target="link.label === 'GoT' ? '' : '_blank'" class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">
+                         {{ link.label }}
+                     </a>
+                 </template>
+            </div>
             
             <!-- Desktop Nav -->
             <nav class="hidden md:flex items-center gap-6 text-sm font-medium">

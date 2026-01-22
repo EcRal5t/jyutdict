@@ -28,29 +28,88 @@ const toggleNote = (key) => {
 // "determined by the calculation result of the value of all points marked as 'city' in this entry"
 // We'll simplisticly take the average color of all present city columns
 const stripColor = computed(() => {
-    let r = 0, g = 0, b = 0, count = 0;
-    
+    // === 配置区域 ===
+    const CONFIG = {
+        // 只有1个数据时：深沉、鲜艳
+        minL: 35,      // 亮度 35% (深)
+        maxS: 90,      // 饱和度 90% (艳)
+        
+        // 数据极多时：明亮、低饱和 (高级灰)
+        maxL: 92,      // 亮度 92% (接近白)
+        minS: 15,      // 饱和度 15% (灰)
+        
+        // 达到多少个数据时达到“最浅/最灰”的阈值
+        saturationThreshold: 20 
+    };
+
+    let rSum = 0, gSum = 0, bSum = 0;
+    let validCount = 0;
+
+    // 1. 遍历：只收集有效数据的颜色向量
     props.headerInfo.cities.forEach(info => {
         const val = props.rowData[info.col];
-        if (val && val !== '_' && val !== '?' && info.color) { // Valid data present
-           // Parse hex
-           const hex = info.color.startsWith('#') ? info.color.slice(1) : info.color;
-           if (hex.length === 6) {
-               r += parseInt(hex.substring(0,2), 16);
-               g += parseInt(hex.substring(2,4), 16);
-               b += parseInt(hex.substring(4,6), 16);
-               count++;
-           }
+        // 判定有效性
+        if (val && val !== '_' && val !== '?') { 
+            // 解析 Hex
+            const c = info.color.startsWith('#') ? info.color.slice(1) : info.color;
+            if (c.length === 6) {
+                rSum += parseInt(c.substring(0, 2), 16);
+                gSum += parseInt(c.substring(2, 4), 16);
+                bSum += parseInt(c.substring(4, 6), 16);
+                validCount++;
+            }
         }
+        // 完全忽略无效数据的颜色，
+        // 不让它们通过数学运算干扰色相（Hue）。
     });
 
-    if (count === 0) return 'transparent';
+    // 2. 只有0个有效数据 -> 透明
+    if (validCount === 0) return 'transparent';
+
+    // 3. 计算有效颜色的平均 RGB
+    // 这一步确保：如果只有一个红色，平均值就是纯红，绝不会偏色
+    const r = rSum / validCount;
+    const g = gSum / validCount;
+    const b = bSum / validCount;
+
+    // 4. 提取色相 (Hue)
+    // 标准 RGB -> HSL 转换算法（仅取 H）
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
     
-    r = Math.round(r / count);
-    g = Math.round(g / count);
-    b = Math.round(b / count);
-    
-    return `rgb(${r}, ${g}, ${b})`;
+    // 这是一个保险：如果有效数据的平均值本身就是黑白灰（比如有效数据是 #000000），
+    // 那么它的色相并不重要，我们记录下来，后面强制饱和度为0
+    const isInherentlyGrayscale = (max - min) < 1; 
+
+    if (!isInherentlyGrayscale) {
+        const d = max - min;
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+        h = Math.round(h * 360);
+    }
+
+    // 5. 动态计算 Saturation (S) 和 Lightness (L)
+    // 使用“进度条”逻辑 (t)：0 代表数据极少，1 代表数据极多
+    // 我们把 validCount 限制在 1 到 saturationThreshold 之间
+    const t = Math.min((validCount - 1) / (CONFIG.saturationThreshold - 1), 1);
+    const norm_t = Math.sqrt(t);
+
+    // 亮度计算：数据越少(t=0)越深(minL)，数据越多(t=1)越浅(maxL)
+    const l = Math.round(CONFIG.minL + (CONFIG.maxL - CONFIG.minL) * norm_t);
+
+    // 饱和度计算：数据越少(t=0)越艳(maxS)，数据越多(t=1)越灰(minS)
+    let s = Math.round(CONFIG.maxS - (CONFIG.maxS - CONFIG.minS) * norm_t);
+
+    // 如果原始平均色本身就是灰色（比如有效数据全是 #888888），
+    // 那么无论数据多少，饱和度都必须是 0，否则会把灰色变成红色（因为 Hue 默认为 0）
+    if (isInherentlyGrayscale) s = 0;
+
+    return `hsl(${h}, ${s}%, ${l}%)`;
 });
 
 const processedLocations = computed(() => {
@@ -183,7 +242,7 @@ const classification = computed(() => {
                         <!-- Value -->
                         <span class="text-slate-800 dark:text-slate-300" :class="{ 'italic': loc.isItalic, 'text-slate-400': loc.isDim }" v-html="loc.value"></span>
                         <!-- Note Indicator -->
-                        <span v-if="loc.note" class="text-[10px] align-top text-accent opacity-70">*</span>
+                        <span v-if="loc.note" class="text-xs align-top text-accent opacity-70">*</span>
                     </div>
                     
                     <!-- Note Popup -->
@@ -203,7 +262,7 @@ const classification = computed(() => {
             </div>
 
             <!-- Foreign (Separated by Divider) -->
-            <div v-if="processedLocations.foreign.length > 0" class="pt-3 mt-2 border-t border-dashed border-gray-200 dark:border-slate-700 flex flex-wrap gap-4 text-xs">
+            <div v-if="processedLocations.foreign.length > 0" class="pt-3 mt-2 border-t border-dashed border-gray-200 dark:border-slate-700 flex flex-wrap gap-4 text-sm/3">
                 <div v-for="loc in processedLocations.foreign" :key="loc.key" class="relative text-slate-500 dark:text-slate-400">
                     <span class="font-bold" :style="{ color: loc.color }">{{ loc.label }}</span>:
                      <span :class="{ 'italic': loc.isItalic }" v-html="loc.value"></span>
@@ -212,7 +271,7 @@ const classification = computed(() => {
 
             <!-- Footer: Classification -->
             <div v-if="classification" class="mt-4 flex justify-end">
-                <span class="text-[10px] uppercase tracking-wider text-slate-300 dark:text-slate-600 font-bold bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded">
+                <span class="text-xs uppercase tracking-wider text-slate-300 dark:text-slate-600 font-bold bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded">
                     {{ classification }}
                 </span>
             </div>
