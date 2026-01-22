@@ -18,6 +18,21 @@ const router = createRouter({
             path: '/detail',
             name: 'detail',
             component: () => import('../views/DetailView.vue')
+        },
+        {
+            path: '/articles/:id?',
+            name: 'article',
+            component: () => import('../views/ArticleView.vue')
+        },
+        {
+            path: '/phonology',
+            name: 'phonology',
+            component: () => import('../views/PhonologyView.vue')
+        },
+        {
+            path: '/pronunciation',
+            name: 'pronunciation',
+            component: () => import('../views/PronunciationView.vue')
         }
     ]
 })
