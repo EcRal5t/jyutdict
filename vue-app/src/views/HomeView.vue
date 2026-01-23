@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const router = useRouter()
 const inputChara = ref('')
@@ -11,48 +11,198 @@ const goToDetail = () => {
     router.push({ path: '/detail', query: { chara: char } })
   }
 }
+
+// Background Elements Generation
+const shards = ref([])
+const particles = ref([])
+
+const colors = [
+  '#D32913', // Brand Red
+  '#FFD700', // Gold/Yellow
+  '#2196F3', // Blue
+  '#4CAF50', // Green
+  '#9C27B0', // Purple
+  '#009688', // Teal
+  '#FF5722', // Deep Orange
+]
+
+const randomRange = (min, max) => Math.random() * (max - min) + min
+
+const isInCenter = (top, left) => {
+  // Avoid central area: Top 35%-65%, Left 20%-80%
+  return (top > 35 && top < 65) && (left > 20 && left < 80)
+}
+
+const generateElements = () => {
+  // Generate Shards (Background Shapes)
+  const shardCount = 18
+  shards.value = Array.from({ length: shardCount }, (_, i) => {
+    // Generate irregular triangle points
+    const p1 = `${randomRange(0, 40)}% ${randomRange(0, 40)}%`
+    const p2 = `${randomRange(60, 100)}% ${randomRange(0, 40)}%`
+    const p3 = `${randomRange(40, 60)}% ${randomRange(60, 100)}%`
+
+    let top, left
+    let attempts = 0
+    // Rejection sampling to avoid center
+    do {
+      top = randomRange(-10, 110)
+      left = randomRange(-10, 110)
+      attempts++
+    } while (isInCenter(top, left) && attempts < 10)
+
+    return {
+      id: i,
+      style: {
+        top: `${top}%`,
+        left: `${left}%`,
+        width: `${randomRange(150, 400)}px`,
+        height: `${randomRange(150, 400)}px`,
+        backgroundColor: colors[Math.floor(Math.random() * colors.length)],
+        opacity: randomRange(0.04, 0.09), // Slight bump to ensure visibility
+        filter: `blur(${randomRange(40, 90)}px)`,
+        transform: `rotate(${randomRange(0, 360)}deg)`,
+        clipPath: `polygon(${p1}, ${p2}, ${p3})`,
+        // Animation props
+        animationName: i % 2 === 0 ? 'bg-float' : 'bg-float-reverse',
+        animationDuration: `${randomRange(15, 45)}s`,
+        animationDelay: `${randomRange(-40, 0)}s`,
+        animationTimingFunction: 'ease-in-out',
+        animationIterationCount: 'infinite',
+        animationDirection: 'alternate'
+      }
+    }
+  })
+
+  // Generate Particles (Small dots/dust)
+  const particleCount = 50
+  particles.value = Array.from({ length: particleCount }, (_, i) => {
+    let top, left
+    top = randomRange(0, 100)
+    left = randomRange(0, 100)
+
+    return {
+      id: i,
+      style: {
+        top: `${top}%`,
+        left: `${left}%`,
+        width: `${randomRange(3, 6)}px`,
+        height: `${randomRange(3, 6)}px`,
+        backgroundColor: colors[Math.floor(Math.random() * colors.length)],
+        opacity: 1, // Base opacity, controlled by keyframes
+        borderRadius: '50%',
+        filter: 'blur(1px)',
+        // Animation props
+        animationName: 'bg-particle-float',
+        animationDuration: `${randomRange(10, 20)}s`,
+        animationDelay: `${randomRange(-20, 0)}s`,
+        animationTimingFunction: 'linear',
+        animationIterationCount: 'infinite',
+        // target opacity for randomness in CSS variable if needed, but simple keyframes work
+        '--p-opacity': randomRange(0.2, 0.5)
+      }
+    }
+  })
+}
+
+onMounted(() => {
+  generateElements()
+})
 </script>
 
 <template>
-  <div class="flex-1 bg-[#F4F4EE] dark:bg-slate-900 flex flex-col items-center justify-center p-6 w-full">
-    <!-- Hero Section -->
-    <div class="text-center max-w-4xl mx-auto space-y-8 animate-fade-in-up">
-      <div class="space-y-4">
-        <h1 class="text-6xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-            Jyutdict
-          </span>
-          <span class="text-slate-800 dark:text-slate-200">Vue</span>
-        </h1>
-      </div>
+  <div
+    class="relative w-full h-full min-h-[calc(100vh-14rem)] flex flex-col items-center justify-center overflow-hidden bg-[#F4F4EE] dark:bg-slate-900 transition-colors duration-300">
 
-      <!-- Search Section -->
-      <div class="space-y-4">
-        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
-          <input v-model="inputChara" @keypress.enter="goToDetail" type="text" placeholder="輸入查詢..."
-            class="flex-1 p-4 rounded-lg border border-gray-200 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur shadow-sm focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none text-lg transition-all dark:text-white">
+    <!-- Dynamic Background Layer -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none select-none">
+
+      <!-- Shards -->
+      <div v-for="shard in shards" :key="`shard-${shard.id}`" class="absolute will-change-transform"
+        :style="shard.style"></div>
+
+      <!-- Particles -->
+      <div v-for="particle in particles" :key="`particle-${particle.id}`" class="absolute will-change-transform"
+        :style="particle.style"></div>
+
+      <!-- Gradient Overlay for depth -->
+      <div
+        class="absolute inset-0 bg-gradient-radial from-transparent via-[#F4F4EE]/30 to-[#F4F4EE]/90 dark:via-slate-900/30 dark:to-slate-900/90">
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="relative z-10 w-full max-w-4xl mx-auto px-4 flex flex-col items-center gap-12">
+
+      <!-- Minimalist Search -->
+      <div class="w-full max-w-xl flex flex-col gap-6 animate-fade-in-up mt-10">
+        <div class="relative group">
+          <input v-model="inputChara" @keypress.enter="goToDetail" type="text" placeholder="在此輸入…"
+            class="w-full bg-transparent border-b-2 border-gray-300 dark:border-slate-600 focus:border-[#D32913] dark:focus:border-[#D32913] py-4 text-center text-3xl font-light tracking-widest outline-none transition-colors duration-300 placeholder-gray-300 dark:placeholder-slate-700 text-slate-800 dark:text-slate-100">
+        </div>
+
+        <div class="flex justify-center gap-8 mt-4">
           <button @click="goToDetail"
-            class="bg-accent hover:bg-red-700 text-white px-8 py-4 rounded-lg font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
-            通表
+            class="text-slate-500 hover:text-[#D32913] dark:text-slate-400 dark:hover:text-[#D32913] font-medium tracking-widest transition-colors duration-300 text-sm uppercase">
+            檢索於通表
           </button>
           <button @click="router.push({ path: '/sheet', query: inputChara ? { q: inputChara } : {} })"
-            class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 px-8 py-4 rounded-lg font-bold shadow hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 whitespace-nowrap hidden sm:block">
-            粵表
+            class="text-slate-500 hover:text-[#D32913] dark:text-slate-400 dark:hover:text-[#D32913] font-medium tracking-widest transition-colors duration-300 text-sm uppercase">
+            檢索於粵表
           </button>
         </div>
-        <!-- Mobile only secondary button -->
-        <button @click="router.push({ path: '/sheet', query: inputChara ? { q: inputChara } : {} })"
-          class="sm:hidden w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 px-8 py-4 rounded-lg font-bold shadow hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
-          前往泛粵表
-        </button>
       </div>
+
     </div>
   </div>
 </template>
 
+<!-- Non-scoped styles for global keyframes to ensure JS strings match -->
+<style>
+@keyframes bg-float {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(40px, 30px) rotate(10deg);
+  }
+}
+
+@keyframes bg-float-reverse {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(-40px, -30px) rotate(-10deg);
+  }
+}
+
+@keyframes bg-particle-float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: var(--p-opacity, 0.4);
+  }
+
+  80% {
+    opacity: var(--p-opacity, 0.4);
+  }
+
+  100% {
+    transform: translateY(-80px) translateX(25px);
+    opacity: 0;
+  }
+}
+</style>
+
 <style scoped>
 .animate-fade-in-up {
-  animation: fadeInUp 0.8s ease-out;
+  animation: fadeInUp 1s ease-out;
 }
 
 @keyframes fadeInUp {

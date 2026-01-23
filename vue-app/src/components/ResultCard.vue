@@ -121,13 +121,16 @@ const processedLocations = computed(() => {
         cellNotes = JSON.parse(jsonStr);
     } catch(e) { /* Error handling */ }
 
+    
+    const lightness_scale = (localStorage.theme === 'dark') ? 1.12 : 0.88;
+
     const cities = [];
     props.headerInfo.cities.forEach(info => {
         const key = info.col;
         const value = props.rowData[key] ? String(props.rowData[key]).trim() : '';
         if (!value) return;
 
-        const color = info.color ? darkenColor(info.color, 0.88) : '#000'; // Using new darken algorithm
+        const color = info.color ? darkenColor(info.color, lightness_scale) : '#000'; // Using new darken algorithm
         const fullName = info.city + (info.sub ? info.sub : '');
         
         let displayValueHtml = value;
@@ -153,7 +156,7 @@ const processedLocations = computed(() => {
         const value = props.rowData[key] ? String(props.rowData[key]).trim() : '';
         if (!value) return;
         
-        const color = info.color ? darkenColor(info.color, 0.88) : '#000';
+        const color = info.color ? darkenColor(info.color, lightness_scale) : '#000';
          foreign.push({
             key,
             label: info.fullname,
@@ -264,7 +267,7 @@ const classification = computed(() => {
             <!-- Foreign (Separated by Divider) -->
             <div v-if="processedLocations.foreign.length > 0" class="pt-3 mt-2 border-t border-dashed border-gray-200 dark:border-slate-700 flex flex-wrap gap-4 text-sm/3">
                 <div v-for="loc in processedLocations.foreign" :key="loc.key" class="relative text-slate-500 dark:text-slate-400">
-                    <span class="font-bold" :style="{ color: loc.color }">{{ loc.label }}</span>:
+                    <span class="font-bold [text-shadow:_0_0_1px_#FFF7]" :style="{ color: loc.color }">{{ loc.label }}</span>:
                      <span :class="{ 'italic': loc.isItalic }" v-html="loc.value"></span>
                 </div>
             </div>

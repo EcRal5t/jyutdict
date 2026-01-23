@@ -1,7 +1,7 @@
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { ref, onMounted, computed } from 'vue'
-import { updateLogs, version } from './utils/updates.js'
+import { updateLogs, version, pansheetver } from './utils/updates.js'
 
 const route = useRoute()
 const isDarkMode = ref(false)
@@ -21,7 +21,7 @@ const toggleTheme = () => {
 const showTooltip = ref(false)
 const tooltipContent = computed(() => {
     if (route.path === '/sheet') {
-        return `Version: ${version}\nLast Update: 2026-01-19`; // Placeholder or simplified for home
+        return `Version: ${version}\nLast Update: ${pansheetver}`; // Placeholder or simplified for home
     }
     // Default / Home
     return updateLogs.map(l => `${l.city} - ${l.date}`).join('\n') + `\n\n主版本: ${version}`;
