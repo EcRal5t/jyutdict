@@ -45,11 +45,10 @@ const menuItems = [
     { label: '紀文', path: '/articles' },
     { label: '相似音系測試', path: '/phonology' },
 ]
-
 const externalLinks = [
     { label: 'GoT', url: 'https://got.jyutdict.org' },
     { label: '關於', url: 'https://jyutjam.org/' },
-    { label: '說明', url: 'https://jyutdict.org/about', hasTooltip: true },
+    { label: '說明', path: '/about', hasTooltip: true },
 ]
 </script>
 
@@ -114,20 +113,24 @@ const externalLinks = [
                                 :class="{ 'line-through opacity-60': item.strikethrough }">{{ item.label }}</a>
                             <RouterLink v-else :to="item.path" class="nav-link"
                                 :class="{ 'line-through opacity-60': item.strikethrough }" active-class="active">{{
-                                item.label }}
+                                    item.label }}
                             </RouterLink>
                         </template>
                         <div class="h-4 w-px bg-gray-300 dark:bg-slate-700 mx-2"></div>
                         <!-- Desktop External Links -->
                         <template v-for="link in externalLinks" :key="link.label">
                             <div v-if="link.hasTooltip" class="relative group/tooltip">
-                                <a :href="link.url" class="nav-link">{{ link.label }}</a>
+                                <RouterLink v-if="link.path" :to="link.path" class="nav-link" active-class="active">{{
+                                    link.label }}</RouterLink>
+                                <a v-else :href="link.url" class="nav-link">{{ link.label }}</a>
                                 <!-- Tooltip -->
                                 <div
                                     class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-xl rounded-lg p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[60]">
                                     {{ tooltipContent }}
                                 </div>
                             </div>
+                            <RouterLink v-else-if="link.path" :to="link.path" class="nav-link" active-class="active">{{
+                                link.label }}</RouterLink>
                             <a v-else :href="link.url" target="_blank" class="nav-link">{{ link.label }}</a>
                         </template>
                     </nav>

@@ -33,6 +33,11 @@ const router = createRouter({
             path: '/pronunciation',
             name: 'pronunciation',
             component: () => import('../views/PronunciationView.vue')
+        },
+        {
+            path: '/about/:id?',
+            name: 'about',
+            component: () => import('../views/AboutView.vue')
         }
     ]
 })
