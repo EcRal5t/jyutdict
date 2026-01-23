@@ -100,6 +100,8 @@ const externalLinks = [
 
                     <!-- Always Visible Links (Mobile & Desktop) -->
                     <div class="md:hidden flex items-center gap-3 text-sm font-medium">
+                        <a href="https://got.jyutdict.org" target="_blank"
+                            class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">GoT</a>
                         <a href="https://jyutjam.org/" target="_blank"
                             class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">關於</a>
                         <a href="https://jyutdict.org/about"
@@ -155,12 +157,12 @@ const externalLinks = [
             </div>
         </header>
 
-        <main class="w-full flex-1">
+        <main class="w-full flex-1 flex flex-col">
             <RouterView />
         </main>
 
         <footer v-if="route.path !== '/phonology'"
-            class="mt-20 py-8 border-t border-gray-200 dark:border-slate-800 text-center text-sm text-gray-500 dark:text-slate-500 flex-shrink-0">
+            class="mt-20 py-8 border-t border-gray-200 dark:border-slate-800 text-center text-sm text-gray-500 dark:text-slate-500 flex-shrink-0 relative z-10">
             <p>© 2019-2026 <a href="https://jyutjam.org" class="hover:text-accent transition-colors">嶺南粵音</a> <a
                     href="https://jyutdict.org" class="hover:text-accent transition-colors">泛粵大典</a> 開發組 版權所有</p>
         </footer>

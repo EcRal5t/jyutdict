@@ -112,10 +112,12 @@ onMounted(() => {
 
 <template>
   <div
-    class="relative w-full h-full min-h-[calc(100vh-14rem)] flex flex-col items-center justify-center overflow-hidden bg-[#F4F4EE] dark:bg-slate-900 transition-colors duration-300">
+    class="relative w-full flex-1 flex flex-col items-center justify-center overflow-hidden transition-colors duration-300">
 
     <!-- Dynamic Background Layer -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none select-none">
+    <!-- Fixed position to cover entire screen including footer, but behind content -->
+    <div
+      class="fixed inset-0 overflow-hidden pointer-events-none select-none z-0 bg-[#F4F4EE] dark:bg-slate-900 transition-colors duration-300">
 
       <!-- Shards -->
       <div v-for="shard in shards" :key="`shard-${shard.id}`" class="absolute will-change-transform"
@@ -132,7 +134,10 @@ onMounted(() => {
     </div>
 
     <!-- Main Content -->
-    <div class="relative z-10 w-full max-w-4xl mx-auto px-4 flex flex-col items-center gap-12">
+    <!-- Added min-h to ensure vertical centering works against the full viewport minus header/footer if needed, but flex-1 in App.vue handles push. 
+         However, to center content *vertically* in the available space, we need this container to grow.
+    -->
+    <div class="relative z-10 w-full flex-grow flex flex-col items-center justify-center gap-12 px-4">
 
       <!-- Minimalist Search -->
       <div class="w-full max-w-xl flex flex-col gap-6 animate-fade-in-up mt-10">

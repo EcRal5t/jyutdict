@@ -192,7 +192,7 @@ const classification = computed(() => {
 
     <div class="flex flex-col md:flex-row">
         <!-- Left: Char Meta (fixed width) -->
-        <div class="md:w-32 bg-gray-50 dark:bg-slate-900/50 flex flex-row md:flex-col items-center md:justify-center p-4 gap-4 md:gap-2 border-b md:border-b-0 md:border-r border-gray-100 dark:border-slate-700">
+        <div class="md:w-32 bg-gray-50 dark:bg-slate-900/50 flex flex-row md:flex-col items-center md:justify-center px-6 py-2 gap-4 md:gap-2 border-b md:border-b-0 md:border-r border-gray-100 dark:border-slate-700">
             <div class="text-4xl md:text-5xl font-bold leading-tight" :style="charInfo.style">
                 {{ charInfo.display }}
             </div>
@@ -216,7 +216,7 @@ const classification = computed(() => {
         </div>
 
         <!-- Right: Content -->
-        <div class="flex-1 p-5 md:p-6 min-w-0">
+        <div class="flex-1 px-5 py-3 min-w-0">
             
             <!-- Meanings -->
             <div class="mb-5 text-base leading-relaxed text-slate-700 dark:text-slate-300">
