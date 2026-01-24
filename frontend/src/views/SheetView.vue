@@ -77,6 +77,8 @@ const loadHeaders = async () => {
 };
 
 const performSearch = async () => {
+    isLoading.value = true;
+    error.value = null;
     try {
         let q = query.value.trim();
         let finalQ = q;
