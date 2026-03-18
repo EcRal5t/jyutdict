@@ -62,7 +62,7 @@
 <p>圖中，粗體表示相對較常用的。方案並未確定爲最終版。</p>
 
 ### ㈡ 聲調表
-<div class="img" id="tone"><img style="width:200%;" src="img/tone_20210626.png" alt="泛粵調值表"></div>
+<div class="img" id="tone"><img style="width:200%;" src="img/tone_20260215.png" alt="泛粵調值表"></div>
 
 ### ㈢
 ### ㈣ 服務器細水管低配置，請勿 DDoS，不要爬蟲。
