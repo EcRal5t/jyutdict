@@ -96,7 +96,9 @@ for ($i = 0; $i < count($sheetHeaderArray); $i++) { // 僅放表頭
 }
 
 if (!$isRandomReturn) { // 常規檢索
-    if (!array_key_exists($queryCol, $sheetHeaderList)) { // 地名參數錯誤
+    if (strtolower($queryCol) === 'id') {
+        $queryCol = 'id';
+    } elseif (!array_key_exists($queryCol, $sheetHeaderList)) { // 地名參數錯誤
         print_r(json_encode([
             "error" => "Invalid parameters: Col=$queryCol",
             "__valid_options" => $sheetHeaderList,
