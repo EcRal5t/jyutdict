@@ -8,5 +8,10 @@
         "id": "jpp",
         "title": "擴展粵拼",
         "file": "jyutpp.md"
+    },
+    {
+        "id": "tone",
+        "title": "聲調總表",
+        "file": "tone.md"
     }
 ]
