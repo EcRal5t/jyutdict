@@ -183,4 +183,21 @@ watchEffect(async () => {
 .dark .cite {
     color: rgb(160, 160, 160);
 }
+
+ul {
+    margin-left: 2em;
+    margin-bottom: 1em;
+}
+ol {
+    margin-left: 2em;
+    margin-bottom: 1em;
+}
+
+code {
+    background: oklch(0.6 0.2 30 / 0.42);
+    padding: 0 0.2em;
+    border-radius: 0.3em;
+    color: oklch(0.95 0.1 30);
+    font-family: monospace;
+}
 </style>

@@ -3,5 +3,10 @@
         "id": "intro",
         "title": "本站",
         "file": "about.md"
+    },
+    {
+        "id": "jpp",
+        "title": "擴展粵拼",
+        "file": "jyutpp.md"
     }
 ]
