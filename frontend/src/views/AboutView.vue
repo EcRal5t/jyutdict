@@ -34,9 +34,9 @@ watchEffect(async () => {
 
         if (modules[filePath]) {
             const rawContent = await modules[filePath]();
-            // Fix image paths: ./img/ -> /img/
+            // Fix image paths: ./img/ or img/ -> /img/
             // The php version had ./img/, Vue public folder is at root so /img/ is correct.
-            const contentWithFixedPaths = rawContent.replace(/\.\/img\//g, '/img/');
+            const contentWithFixedPaths = rawContent.replace(/(src=["']|\]\()(?:\.\/)?img\//g, '$1/img/');
             markdownContent.value = marked(contentWithFixedPaths);
         } else {
             error.value = 'Article not found';

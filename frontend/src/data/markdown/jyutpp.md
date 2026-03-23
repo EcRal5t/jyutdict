@@ -28,7 +28,7 @@ J++ 的設計與實踐嚴格遵循以下四大原則：
 
 J++ 的聲母擴展基於調音部位與發聲態的矩陣進行系統性增補。原則上，**方案不強制區分所有細微音素，而以音位爲核心記錄對象，兼顧特定方言的顯著音值特徵。**
 
-<div class="img" id="jpp"><img style="width:200%;" src="img/jpp_20210626.png" alt="泛粵擴展粵拼全表"></div>
+<div class="img" id="jpp"><img style="width:200%;" src="img/jpp_20260323.png" alt="泛粵擴展粵拼全表"></div>
 
 ## 3. 聲母
 
