@@ -60,9 +60,8 @@ const n=`# 一、泛粵大典\r
 <p>見左側單獨說明頁</p>\r
 \r
 ### ㈡ 聲調表\r
-<div class="img" id="tone"><img style="width:200%;" src="img/tone_20260215.png" alt="泛粵調值表"></div>\r
+<p>見左側單獨說明頁</p>\r
 \r
-### ㈢\r
 ### ㈣ 服務器細水管低配置，請勿 DDoS，不要爬蟲。\r
 ### ㈤ 問與答\r
 Ⅰ. J++ 的必要性 / 怎麽不直接用 IPA\r
