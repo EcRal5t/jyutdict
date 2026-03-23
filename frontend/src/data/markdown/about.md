@@ -57,9 +57,7 @@
 
 # 三、補充說明及問與答
 ### ㈠ 擴展粵拼方案
-<div class="img" id="jpp"><img style="width:200%;" src="img/jpp_20210626.png" alt="泛粵擴展粵拼全表"></div>
-<p>擴展粵拼基於粵拼，僅對粵拼進行了擴充，而未修改原有方案裏就有的部分。</p>
-<p>圖中，粗體表示相對較常用的。方案並未確定爲最終版。</p>
+<p>見左側單獨說明頁</p>
 
 ### ㈡ 聲調表
 <div class="img" id="tone"><img style="width:200%;" src="img/tone_20260215.png" alt="泛粵調值表"></div>
