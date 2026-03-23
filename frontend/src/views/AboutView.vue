@@ -194,10 +194,10 @@ ol {
 }
 
 code {
-    background: oklch(0.6 0.2 30 / 0.42);
+    background: oklch(0.67 0.07 31.65 / 0.18);
     padding: 0 0.2em;
     border-radius: 0.3em;
-    color: oklch(0.95 0.1 30);
+    color: oklch(0.60 0.16 35);
     font-family: monospace;
 }
 </style>
