@@ -245,10 +245,12 @@ $queryTone = null;
 
 if (isset($_REQUEST['in']) || isset($_REQUEST['nu']) || isset($_REQUEST['co']) || isset($_REQUEST['to'])) {
     // 使用分開的參數（用於前端檢音頁面）
-    $queryInitial = isset($_REQUEST['in']) && $_REQUEST['in'] !== '' ? $_REQUEST['in'] : '%';
-    $queryNuclei = isset($_REQUEST['nu']) && $_REQUEST['nu'] !== '' ? $_REQUEST['nu'] : '%';
-    $queryCoda = isset($_REQUEST['co']) && $_REQUEST['co'] !== '' ? $_REQUEST['co'] : '%';
-    $queryTone = isset($_REQUEST['to']) && $_REQUEST['to'] !== '' ? $_REQUEST['to'] : '%';
+    // 注意：空字符串 '' 應該精確匹配空值，不是模糊匹配
+    // 只有當參數未傳遞時才使用 '%'
+    $queryInitial = isset($_REQUEST['in']) ? ($_REQUEST['in'] === '' ? '' : $_REQUEST['in']) : '%';
+    $queryNuclei = isset($_REQUEST['nu']) ? ($_REQUEST['nu'] === '' ? '' : $_REQUEST['nu']) : '%';
+    $queryCoda = isset($_REQUEST['co']) ? ($_REQUEST['co'] === '' ? '' : $_REQUEST['co']) : '%';
+    $queryTone = isset($_REQUEST['to']) ? ($_REQUEST['to'] === '' ? '' : $_REQUEST['to']) : '%';
 } else if (isset($_REQUEST['pron'])) {
     // 使用完整的粵拼字符串
     $submitPronString = $_REQUEST['pron'];
@@ -272,6 +274,27 @@ if ($queryInitial !== null) {
         $entriesInAncient = [];
         $entriesInLocations = [];
 
+        // 構建查詢條件
+        // 如果參數包含 %，使用 LIKE；否則使用精確匹配
+        $buildCondition = function($field, $value) {
+            $field = "`" . $field . "`";
+            if ($value === '%') {
+                return "$field LIKE '%'";
+            } elseif (strpos($value, '%') !== false) {
+                return "$field LIKE '$value'";
+            } else {
+                return "$field = '$value'";
+            }
+        };
+
+        // 構建 WHERE 條件
+        $whereConditions = [];
+        $whereConditions[] = $buildCondition('initial', $queryInitial);
+        $whereConditions[] = $buildCondition('nuclei', $queryNuclei);
+        $whereConditions[] = $buildCondition('coda', $queryCoda);
+        $whereConditions[] = $buildCondition('tone', $queryTone);
+        $whereClause = implode(' AND ', $whereConditions);
+
         //獲取韻書列表
         $inWanshyuList_sql = " SELECT `name`, `sheetname`
                                 FROM `IWanshyuList`";
@@ -280,20 +303,12 @@ if ($queryInitial !== null) {
         $wanshyuListArray = $inWanshyuList_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         //對每本韻書：
-        $inWanshyu_sql = "SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
-                          FROM `%s`
-                          WHERE `nuclei` LIKE :nuclei
-                            AND `initial` LIKE :initial
-                            AND `coda` LIKE :coda
-                            AND `tone` LIKE :tone";
         foreach ($wanshyuListArray as $eachWanshyu) {
-            $inWanshyu_stmt = $dbh->prepare(sprintf($inWanshyu_sql, $eachWanshyu['sheetname']));
-            $inWanshyu_stmt->execute([
-                ':initial' => $queryInitial,
-                ':nuclei' => $queryNuclei,
-                ':coda' => $queryCoda,
-                ':tone' => $queryTone,
-            ]);
+            $tableName = $eachWanshyu['sheetname'];
+            $inWanshyu_sql = "SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
+                              FROM `$tableName`
+                              WHERE $whereClause";
+            $inWanshyu_stmt = $dbh->query($inWanshyu_sql);
             $inWanshyu_result = $inWanshyu_stmt->fetchAll(PDO::FETCH_ASSOC);
 
             $allPron = ["__name" => $eachWanshyu['name']];
@@ -319,20 +334,12 @@ if ($queryInitial !== null) {
         $cityListArray = $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         //对每个地点：
-        $inCity_sql = " SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
-                        FROM `%s`
-                        WHERE `nuclei` LIKE :nuclei
-                          AND `initial` LIKE :initial
-                          AND `coda` LIKE :coda
-                          AND `tone` LIKE :tone";
         foreach ($cityListArray as $eachCity) {
-            $inCity_stmt = $dbh->prepare(sprintf($inCity_sql, $eachCity['sheetname']));
-            $inCity_stmt->execute([
-                ':initial' => $queryInitial,
-                ':nuclei' => $queryNuclei,
-                ':coda' => $queryCoda,
-                ':tone' => $queryTone,
-            ]);
+            $tableName = $eachCity['sheetname'];
+            $inCity_sql = " SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
+                            FROM `$tableName`
+                            WHERE $whereClause";
+            $inCity_stmt = $dbh->query($inCity_sql);
             $inCity_result = $inCity_stmt->fetchAll(PDO::FETCH_ASSOC);
 
             $allPron = [
