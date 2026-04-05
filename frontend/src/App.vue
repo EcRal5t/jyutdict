@@ -40,7 +40,7 @@ onMounted(() => {
 
 const menuItems = [
     { label: '檢字', path: '/' }, // Originally index.php, now Home
-    { label: '檢音', path: '/pronunciation', strikethrough: true },
+    { label: '檢音', path: '/pronunciation' },
     { label: '泛粵字表', path: '/sheet' },
     { label: '紀文', path: '/articles' },
     { label: '相似音系測試', path: '/phonology' },

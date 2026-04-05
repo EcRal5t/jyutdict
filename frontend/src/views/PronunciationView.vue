@@ -5,8 +5,10 @@ import axios from 'axios';
 // 粵拼解析正則
 // 空格在音節中表示模糊匹配該位置
 const format = /^[a-z ]{1,10}\d{0,2}$/;
-const initialFormat = /^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]| )(?=[aeoiyu])/;
-const codaFormat = /[aoreiwu](n[ng]?|[mptkh])(\d{0,2})$/;
+// 聲母正則：允許後面是元音或空格（模糊匹配韻核）
+const initialFormat = /^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]| )(?=[aeoiyu ])/;
+// 韻尾正則：匹配末尾的韻尾（不包含前面的元音）
+const codaFormat = /(n[ng]?|[mptkh])(\d{0,2})$/;
 const toneFormat = /\d{1,2}$/;
 const vowelFormat = /^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y)/;
 
