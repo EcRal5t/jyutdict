@@ -45,38 +45,68 @@ const tableRows = computed(() => {
         const jpps = loc['粵拼'] || [];
         const ipas = loc['IPA'] || [];
         const notes = loc['注釋'] || [];
-        
-        const count = Math.max(jpps.length, ipas.length, 1);
-        const senses = [];
+        const altGroups = loc['又音組'] || [];
 
-        for (let i = 0; i < count; i++) {
+        // 根据 alt_group 分组读音
+        // 如果多个读音有相同的 alt_group（非 null），它们是又音，需要用 · 连接
+        // 如果 alt_group 不同或为 null，它们是多音，需要分行显示
+        const senseMap = new Map(); // alt_group -> { prons: [], note: '' }
+        const nullGroupProns = []; // alt_group 为 null 的读音
+
+        for (let i = 0; i < jpps.length; i++) {
             const rawJpp = jpps[i] || '';
             const rawIpa = ipas[i] || '';
             const note = notes[i] || '';
+            const altGroup = altGroups[i];
 
-            const jppParts = rawJpp.split('=').map(s => s.trim()).filter(s => s);
-            const ipaParts = rawIpa.split('=').map(s => s.trim()).filter(s => s);
-            
-            const prons = jppParts.map((part, pIdx) => {
-                const parsed = Jyutping.parse(part);
-                return {
-                    initial: parsed ? parsed.initial : '',
-                    nuclei: parsed ? parsed.nuclei : '',
-                    coda: parsed ? parsed.coda : '',
-                    tone: parsed ? parsed.tone : '',
-                    val: part,
-                    ipa: ipaParts[pIdx] || ''
-                };
-            });
+            const parsed = Jyutping.parse(rawJpp);
+            const pronObj = {
+                initial: parsed ? parsed.initial : '',
+                nuclei: parsed ? parsed.nuclei : '',
+                coda: parsed ? parsed.coda : '',
+                tone: parsed ? parsed.tone : '',
+                val: rawJpp,
+                ipa: rawIpa
+            };
 
-            senses.push({
-                prons,
-                note
-            });
+            if (altGroup !== null && altGroup !== undefined) {
+                // 有又音组标记
+                const key = String(altGroup);
+                if (!senseMap.has(key)) {
+                    senseMap.set(key, { prons: [], note: note });
+                }
+                senseMap.get(key).prons.push(pronObj);
+            } else {
+                // 没有又音组标记，独立读音
+                nullGroupProns.push({
+                    prons: [pronObj],
+                    note: note
+                });
+            }
         }
 
+        const senses = [];
+
+        // 添加有又音组标记的读音
+        senseMap.forEach((sense) => {
+            senses.push({
+                prons: sense.prons,
+                note: sense.note,
+                isAltPron: sense.prons.length > 1 // 标记是否为又音
+            });
+        });
+
+        // 添加独立的读音
+        nullGroupProns.forEach(sense => {
+            senses.push({
+                prons: sense.prons,
+                note: sense.note,
+                isAltPron: false
+            });
+        });
+
         currentGroup.locations.push({
-            name: loc.division || '地點', 
+            name: loc.division || '地點',
             color: loc.color || '#999999',
             senses: senses,
             totalSenses: senses.length

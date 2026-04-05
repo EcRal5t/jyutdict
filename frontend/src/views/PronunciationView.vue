@@ -1,28 +1,23 @@
 <script setup>
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, reactive, computed, onMounted } from 'vue';
 import axios from 'axios';
 
-// Ported Regex from legacy pron.php
-const format = /^[a-z%]{1,10}\d{0,2}$/;
-const initialFormat = /^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]|%)(?=[aeoiuy%])/;
-const codaFormat = /[aoreiwu%](n[ng]?|[mptkh]|%)(\d{0,2})$/;
+// 粵拼解析正則（空格作為模糊查詢符號）
+const format = /^[a-z ]{1,10}\d{0,2}$/;
+const initialFormat = /^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]| )(?=[aeoiuy ])/;
+const codaFormat = /[aoreiwu ](n[ng]?|[mptkh]| )(\d{0,2})$/;
 const toneFormat = /\d{1,2}$/;
-const vowelFormat = /^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y|%$)/;
-
-const router = useRouter();
+const vowelFormat = /^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y| $)/;
 
 const form = reactive({
     pron: '',
     in: '',
     nu: '',
     co: '',
-    to: '',
-    wanshyu: true,
-    area: true
+    to: ''
 });
 
-const parseStatus = ref('neutral'); // neutral, valied, invalid
+const parseStatus = ref('neutral'); // neutral, valid, invalid
 const inputDisabled = ref(true);
 
 const parsedComponents = reactive({
@@ -32,7 +27,69 @@ const parsedComponents = reactive({
     to: ''
 });
 
-// Ported inputAnalyse function
+// 地點選擇相關
+const locations = ref([]);
+const selectedLocations = ref(new Set());
+const loadingLocations = ref(false);
+
+// 載入地點列表
+const loadLocations = async () => {
+    loadingLocations.value = true;
+    try {
+        const response = await axios.get('/api/v1.0/detail.php', {
+            params: { chara: '' }
+        });
+        if (response.data && Array.isArray(response.data)) {
+            locations.value = response.data;
+            // 默認全選
+            response.data.forEach(loc => selectedLocations.value.add(loc.id));
+        }
+    } catch (e) {
+        console.error('Failed to load locations', e);
+    } finally {
+        loadingLocations.value = false;
+    }
+};
+
+// 地點選擇操作
+const selectAll = () => {
+    locations.value.forEach(loc => selectedLocations.value.add(loc.id));
+};
+
+const deselectAll = () => {
+    selectedLocations.value.clear();
+};
+
+const invertSelection = () => {
+    locations.value.forEach(loc => {
+        if (selectedLocations.value.has(loc.id)) {
+            selectedLocations.value.delete(loc.id);
+        } else {
+            selectedLocations.value.add(loc.id);
+        }
+    });
+};
+
+const toggleLocation = (id) => {
+    if (selectedLocations.value.has(id)) {
+        selectedLocations.value.delete(id);
+    } else {
+        selectedLocations.value.add(id);
+    }
+};
+
+// 按片區分組的地點
+const groupedLocations = computed(() => {
+    const groups = {};
+    locations.value.forEach(loc => {
+        const div = loc.first || '其他';
+        if (!groups[div]) groups[div] = [];
+        groups[div].push(loc);
+    });
+    return groups;
+});
+
+// 解析輸入（空格作為模糊查詢符號）
 const analyzeInput = () => {
     const pron = form.pron;
     // Reset parsed components
@@ -41,9 +98,7 @@ const analyzeInput = () => {
     parsedComponents.co = '';
     parsedComponents.to = '';
 
-    // Legacy logic: if (pron.split("%").length<4 && format.test(pron))
-    // We allow wildcards but the regex is strict.
-    if (pron.split("%").length < 4 && format.test(pron)) {
+    if (pron.split(" ").length < 4 && format.test(pron)) {
         const toneMatch = pron.match(toneFormat);
         const tone = toneMatch ? toneMatch[0] : "";
 
@@ -73,16 +128,16 @@ const analyzeInput = () => {
 
         if (validVowels) {
             parsedComponents.in = initial;
-            parsedComponents.nu = vowels; // Array of vowels
+            parsedComponents.nu = vowels;
             parsedComponents.co = coda;
             parsedComponents.to = tone;
 
-            form.in = initial;
-            // Join vowels for form submission as logic implies full nuclei string in legacy?
-            // "document.querySelector('#inputNuclei').value = nuclei;" -> Yes.
-            form.nu = nuclei;
-            form.co = coda;
-            form.to = tone;
+            // 將空格轉為 % 作為 SQL LIKE 查詢
+            form.in = initial.trim() || '%';
+            // nuclei 中空格表示模糊匹配，轉為 %
+            form.nu = nuclei.trim() === '' ? '%' : nuclei.replace(/ /g, '%');
+            form.co = coda.trim() || '%';
+            form.to = tone.trim() || '%';
 
             parseStatus.value = 'valid';
             inputDisabled.value = false;
@@ -95,30 +150,14 @@ const analyzeInput = () => {
     inputDisabled.value = true;
 };
 
-const submitSearch = () => {
-    if (inputDisabled.value) return;
-
-    const query = {
-        in: form.in,
-        nu: form.nu,
-        co: form.co,
-        to: form.to
-    };
-    if (form.wanshyu) query['option[]'] = query['option[]'] ? [...query['option[]'], 'wanshyu'] : ['wanshyu'];
-    // Axios or Router push?
-    // The legacy app used form submit to same page. DetailView handles API?
-    // Detail.php handles it. We should probably reuse DetailView or fetch here?
-    // The plan was "Connect to api/v0.9/detail.php". "Create Vue View for Pronunciation".
-    // If we use DetailView, it's designed for Char or Pron query.
-    // detail.php now supports in/nu/co/to.
-    // So we can fetch data here and display it, OR query detail.php and show results.
-    // Let's fetch data here to display "Result" as in legacy pron.php.
-
-    fetchResults();
-};
-
+// 結果相關
 const results = ref(null);
 const loading = ref(false);
+
+const submitSearch = async () => {
+    if (inputDisabled.value) return;
+    await fetchResults();
+};
 
 const fetchResults = async () => {
     loading.value = true;
@@ -128,29 +167,27 @@ const fetchResults = async () => {
         params.append('nu', form.nu);
         params.append('co', form.co);
         params.append('to', form.to);
-        if (form.wanshyu) params.append('option[]', 'wanshyu');
-        if (form.area) params.append('option[]', 'area');
 
-        const response = await axios.get('https://jyutdict.org/api/v0.9/detail.php', { params });
-        // Note: URL hardcoded? Should be relative or config.
-        // During migration, if we are serving from vue-app, we might need proxy or absolute URL.
-        // User's Env: "http://jyutdict.org" is likely live. We are migrating content.
-        // The API files are local: d:\Proj\Jyutdict\Jyutdict-Old\api\v0.9\detail.php
-        // We probably need to point to the local API if we have a dev server proxy, or relative path if deployed.
-        // Assume relative '/api/v0.9/detail.php' works if deployed together.
-        // For dev, assume proxy or mocked. usage of absolute URI in `axios.get` above might fail CORS if not configured.
-        // Let's use relative for now.
-
-        // Wait, I am running "run_command" not browser. I can't test "axios" easily during dev unless I assume the user runs backend.
-        // I will use relative path.
+        const response = await axios.get('/api/v1.0/detail.php', { params });
+        results.value = response.data;
     } catch (e) {
         console.error(e);
     } finally {
         loading.value = false;
     }
-    // Mocking response logic mostly because we don't have the API running here.
-    // In real implementation I'd store response.data in results.
 };
+
+// 處理結果顯示
+const hasResults = computed(() => {
+    if (!results.value) return false;
+    const ancient = results.value['韻書'] || [];
+    const locations = results.value['各地'] || [];
+    return ancient.some(a => Object.keys(a).length > 1) || locations.some(l => Object.keys(l).length > 8);
+});
+
+onMounted(() => {
+    loadLocations();
+});
 </script>
 
 <template>
@@ -166,30 +203,26 @@ const fetchResults = async () => {
                         'border-gray-200 dark:border-slate-700': parseStatus === 'neutral',
                         'border-green-500': parseStatus === 'valid',
                         'border-red-500': parseStatus === 'invalid'
-                    }" placeholder="輸入粵拼 (e.g. jyut6, j%t%)...">
-                <button disabled
-                    class="px-6 py-3 font-bold text-white rounded-md transition-all shadow-md opacity-50 cursor-not-allowed bg-gray-400"
-                    title="功能開發中">
+                    }" placeholder="輸入粵拼 (e.g. jyut6, j t6, j t)...">
+                <button
+                    @click="submitSearch"
+                    :disabled="inputDisabled"
+                    class="px-6 py-3 font-bold text-white rounded-md transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :class="inputDisabled ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'"
+                >
                     耖
                 </button>
             </div>
 
-            <div class="flex justify-center gap-6 text-sm text-slate-600 dark:text-slate-400 mb-8">
-                <label class="flex items-center gap-2 cursor-pointer hover:text-accent">
-                    <input type="checkbox" v-model="form.wanshyu" class="w-4 h-4 rounded text-accent focus:ring-accent">
-                    韻書音
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer hover:text-accent">
-                    <input type="checkbox" v-model="form.area" class="w-4 h-4 rounded text-accent focus:ring-accent">
-                    地方音
-                </label>
-            </div>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 text-center">
+                空格表示模糊匹配，如 "j t6" 可匹配 "jyt6"、"jot6" 等
+            </p>
 
             <!-- Color Blocks Visualization -->
             <div class="flex justify-center gap-1 font-mono text-xl h-10">
                 <div
                     class="w-10 flex items-center justify-center rounded bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300">
-                    {{ parsedComponents.in }}</div>
+                    {{ parsedComponents.in || ' ' }}</div>
                 <template v-for="(v, i) in parsedComponents.nu" :key="i">
                     <div
                         class="w-10 flex items-center justify-center rounded bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
@@ -197,18 +230,85 @@ const fetchResults = async () => {
                 </template>
                 <div
                     class="w-10 flex items-center justify-center rounded bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
-                    {{ parsedComponents.co }}</div>
+                    {{ parsedComponents.co || ' ' }}</div>
                 <div
                     class="w-10 flex items-center justify-center rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
                     {{ parsedComponents.to }}</div>
             </div>
         </div>
 
-        <!-- Results Placeholder -->
-        <div v-if="loading" class="mt-8 text-gray-500">Loading...</div>
-        <div v-if="results" class="mt-8 w-full max-w-4xl">
-            <!-- Result Tables Implementation needed here based on API format -->
-            <!-- For now leaving empty as backend connectivity is not verifiable in this env -->
+        <!-- Location Selection -->
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 w-full max-w-4xl mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">選擇地點</h2>
+                <div class="flex gap-2">
+                    <button @click="selectAll" class="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">全選</button>
+                    <button @click="deselectAll" class="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">全不選</button>
+                    <button @click="invertSelection" class="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">反選</button>
+                </div>
+            </div>
+
+            <div v-if="loadingLocations" class="text-center py-4 text-slate-500">載入中...</div>
+
+            <div v-else class="max-h-60 overflow-y-auto">
+                <div v-for="(locs, division) in groupedLocations" :key="division" class="mb-3">
+                    <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-1">{{ division }}</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <label v-for="loc in locs" :key="loc.id"
+                            class="flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors text-sm"
+                            :class="selectedLocations.has(loc.id) ? 'bg-accent/10 text-accent' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'">
+                            <input type="checkbox" :checked="selectedLocations.has(loc.id)" @change="toggleLocation(loc.id)" class="w-3 h-3">
+                            {{ loc.second }}{{ loc.third ? ' ' + loc.third : '' }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div v-if="loading" class="mt-8 text-slate-500">載入中...</div>
+
+        <div v-if="hasResults" class="mt-8 w-full max-w-4xl">
+            <!-- 韻書結果 -->
+            <div v-if="results['韻書'] && results['韻書'].length > 0" class="mb-6">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">韻書</h2>
+                <div v-for="(book, idx) in results['韻書']" :key="idx" class="mb-4">
+                    <h3 class="font-bold text-slate-700 dark:text-slate-300 mb-2">{{ book.__name }}</h3>
+                    <div v-for="(tones, pron) in book" :key="pron" class="mb-2">
+                        <template v-if="pron !== '__name'">
+                            <span class="font-mono text-accent">{{ pron }}</span>
+                            <span v-for="(chars, tone) in tones" :key="tone" class="ml-2">
+                                <span class="text-amber-600 dark:text-amber-400">{{ tone }}</span>
+                                <span class="text-slate-700 dark:text-slate-300">{{ chars }}</span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 各地結果 -->
+            <div v-if="results['各地'] && results['各地'].length > 0">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">各地</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <div v-for="loc in results['各地']" :key="loc.__id"
+                        class="p-2 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-3 h-3 rounded" :style="{ backgroundColor: loc.__color || '#999' }"></div>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ loc.__city }}</span>
+                            <span v-if="loc.__district" class="text-sm text-slate-500">{{ loc.__district }}</span>
+                        </div>
+                        <div v-for="(tones, pron) in loc" :key="pron" class="text-sm">
+                            <template v-if="!pron.startsWith('__')">
+                                <span class="font-mono text-accent">{{ pron }}</span>
+                                <span v-for="(chars, tone) in tones" :key="tone" class="ml-1">
+                                    <span class="text-amber-600 dark:text-amber-400">{{ tone }}</span>
+                                    <span class="text-slate-700 dark:text-slate-300">{{ chars }}</span>
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
