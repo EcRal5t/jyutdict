@@ -42,11 +42,131 @@ if (isset($_REQUEST['chara']) && $_REQUEST['chara'] === "") {
     }
 }
 
-// If 'chara' is not set at all, maybe return help or error? 
+// If 'chara' is not set at all, maybe return help or error?
 // User implied strictness. Let's return help if no valid params.
-if (!isset($_REQUEST['chara'])) {
+if (!isset($_REQUEST['chara']) && !isset($_REQUEST['in']) && !isset($_REQUEST['nu']) && !isset($_REQUEST['co']) && !isset($_REQUEST['to']) && !isset($_REQUEST['pron'])) {
     outputJson(["error" => "No parameters provided. Use ?help for usage."]);
 }
+
+// =====================================================
+// 檢音邏輯 (Pronunciation Search)
+// =====================================================
+$queryInitial = null;
+$queryNuclei = null;
+$queryCoda = null;
+$queryTone = null;
+
+if (isset($_REQUEST['in']) || isset($_REQUEST['nu']) || isset($_REQUEST['co']) || isset($_REQUEST['to'])) {
+    // 使用分開的參數（用於前端檢音頁面）
+    $queryInitial = isset($_REQUEST['in']) && $_REQUEST['in'] !== '' ? $_REQUEST['in'] : '%';
+    $queryNuclei = isset($_REQUEST['nu']) && $_REQUEST['nu'] !== '' ? $_REQUEST['nu'] : '%';
+    $queryCoda = isset($_REQUEST['co']) && $_REQUEST['co'] !== '' ? $_REQUEST['co'] : '%';
+    $queryTone = isset($_REQUEST['to']) && $_REQUEST['to'] !== '' ? $_REQUEST['to'] : '%';
+} else if (isset($_REQUEST['pron'])) {
+    // 使用完整的粵拼字符串
+    $jyutping = new Jyutping();
+    if ($jyutping->setWithRaw($_REQUEST['pron'])) {
+        $queryInitial = $jyutping->getInitial();
+        $queryNuclei = $jyutping->getNuclei();
+        $queryCoda = $jyutping->getCoda();
+        $queryTone = $jyutping->getTone();
+    } else {
+        outputJson(["error" => "Invalid Jyutping"]);
+    }
+}
+
+if ($queryInitial !== null) {
+    // 檢音查詢
+    $entriesInAncient = [];
+    $entriesInLocations = [];
+
+    // 獲取韻書列表
+    $wanshyuListSql = "SELECT `name`, `sheetname` FROM `IWanshyuList`";
+    $wanshyuStmt = $dbh->prepare($wanshyuListSql);
+    $wanshyuStmt->execute();
+    $wanshyuList = $wanshyuStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 對每本韻書
+    $inWanshyu_sql = "SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
+                      FROM `%s`
+                      WHERE `nuclei` LIKE :nuclei
+                        AND `initial` LIKE :initial
+                        AND `coda` LIKE :coda
+                        AND `tone` LIKE :tone";
+    foreach ($wanshyuList as $eachWanshyu) {
+        $inWanshyu_stmt = $dbh->prepare(sprintf($inWanshyu_sql, $eachWanshyu['sheetname']));
+        $inWanshyu_stmt->execute([
+            ':initial' => $queryInitial,
+            ':nuclei' => $queryNuclei,
+            ':coda' => $queryCoda,
+            ':tone' => $queryTone,
+        ]);
+        $inWanshyu_result = $inWanshyu_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $allPron = ["__name" => $eachWanshyu['name']];
+        foreach ($inWanshyu_result as $inWanshyuPron) {
+            $pron = $inWanshyuPron['initial'] . $inWanshyuPron['nuclei'] . $inWanshyuPron['coda'];
+            $allPron[$pron][$inWanshyuPron['tone']] =
+                empty($allPron[$pron][$inWanshyuPron['tone']]) ?
+                $inWanshyuPron['chara'] :
+                $allPron[$pron][$inWanshyuPron['tone']] . $inWanshyuPron['chara'];
+        }
+        $entriesInAncient[] = $allPron;
+    }
+
+    // 獲取地方列表（包含詳細信息）
+    $inCityList_sql = "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`, `color`
+                        FROM `IAreaList`";
+    $inCityList_stmt = $dbh->prepare($inCityList_sql);
+    $inCityList_stmt->execute();
+    $cityListArray = $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 對每個地點
+    $inCity_sql = "SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
+                   FROM `%s`
+                   WHERE `nuclei` LIKE :nuclei
+                     AND `initial` LIKE :initial
+                     AND `coda` LIKE :coda
+                     AND `tone` LIKE :tone";
+    foreach ($cityListArray as $eachCity) {
+        $inCity_stmt = $dbh->prepare(sprintf($inCity_sql, $eachCity['sheetname']));
+        $inCity_stmt->execute([
+            ':initial' => $queryInitial,
+            ':nuclei' => $queryNuclei,
+            ':coda' => $queryCoda,
+            ':tone' => $queryTone,
+        ]);
+        $inCity_result = $inCity_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $allPron = [
+            "__id" => $eachCity['id'],
+            "__city" => $eachCity['second'],
+            "__district" => empty($eachCity['third']) ? "" : $eachCity['third'],
+            "__division" => $eachCity['first'],
+            "__color" => $eachCity['color'],
+            "__latitude" => $eachCity['latitude'],
+            "__longitude" => $eachCity['longitude']
+        ];
+
+        foreach ($inCity_result as $inCityPron) {
+            $pron = $inCityPron['initial'] . $inCityPron['nuclei'] . $inCityPron['coda'];
+            $allPron[$pron][$inCityPron['tone']] =
+                empty($allPron[$pron][$inCityPron['tone']]) ?
+                $inCityPron['chara'] :
+                $allPron[$pron][$inCityPron['tone']] . $inCityPron['chara'];
+        }
+        $entriesInLocations[] = $allPron;
+    }
+
+    outputJson([
+        "韻書" => $entriesInAncient,
+        "各地" => $entriesInLocations
+    ]);
+}
+
+// =====================================================
+// 查字邏輯 (Character Search)
+// =====================================================
 
 // 2. Process 'chara' request
 $submitCharaString = $_REQUEST['chara'];
@@ -274,30 +394,26 @@ foreach ($charaTransArray as $chara) {
         // Although DB content should be trusted, safe binding or check is good.
         // But for now trust iarealist content (it's internal).
 
-        $sql = "SELECT `initial` AS `聲母`, `nuclei` AS `韻核`, `coda` AS `韻尾`, `tone` AS `聲調`, `ipa` AS `IPA`, `note` AS `注釋` FROM `$table` WHERE `chara` = :chara";
+        $sql = "SELECT `initial` AS `聲母`, `nuclei` AS `韻核`, `coda` AS `韻尾`, `tone` AS `聲調`, `ipa` AS `IPA`, `note` AS `注釋`, `alt_group` FROM `$table` WHERE `chara` = :chara";
         $stmt = $dbh->prepare($sql);
         $stmt->execute([':chara' => $chara]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (count($rows) > 0) {
-            // Grouping
+            // Grouping by alt_group (又音)
             $locObj = [
                 "id" => $id,
                 "粵拼" => [],
                 "IPA" => [],
-                "注釋" => []  // Note: user asked for "注釋", v0.9 had "note" => "註"
-                // User example: "注釋": ...
+                "注釋" => [],
+                "又音組" => []  // alt_group values for frontend processing
             ];
 
             foreach ($rows as $row) {
-                // Combining jpp from components might be safer or just take column?
-                // v0.9 `DataArea` constructed jpp?
-                // `DataArea.class.php`: getJpp() usually returns the column `jpp`.
-                // I will use the columns directly.
-
                 $locObj["粵拼"][] = $row['聲母'] . $row['韻核'] . $row['韻尾'] . $row['聲調'];
                 $locObj["IPA"][] = $row['IPA'];
                 $locObj["注釋"][] = $row['注釋'];
+                $locObj["又音組"][] = $row['alt_group'];
             }
             $entriesLocations[] = $locObj;
         }

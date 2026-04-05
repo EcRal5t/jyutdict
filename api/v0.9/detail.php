@@ -237,15 +237,37 @@ if (isset($_REQUEST['chara'])) {
 } // 查字部分
 
 
-if (isset($_REQUEST['pron'])) {
+// 檢音部分：支持 pron 參數或 in/nu/co/to 分開參數
+$queryInitial = null;
+$queryNuclei = null;
+$queryCoda = null;
+$queryTone = null;
+
+if (isset($_REQUEST['in']) || isset($_REQUEST['nu']) || isset($_REQUEST['co']) || isset($_REQUEST['to'])) {
+    // 使用分開的參數（用於前端檢音頁面）
+    $queryInitial = isset($_REQUEST['in']) && $_REQUEST['in'] !== '' ? $_REQUEST['in'] : '%';
+    $queryNuclei = isset($_REQUEST['nu']) && $_REQUEST['nu'] !== '' ? $_REQUEST['nu'] : '%';
+    $queryCoda = isset($_REQUEST['co']) && $_REQUEST['co'] !== '' ? $_REQUEST['co'] : '%';
+    $queryTone = isset($_REQUEST['to']) && $_REQUEST['to'] !== '' ? $_REQUEST['to'] : '%';
+} else if (isset($_REQUEST['pron'])) {
+    // 使用完整的粵拼字符串
     $submitPronString = $_REQUEST['pron'];
-    $jyutping = new Jyutping($submitPronString);
-    if (!$jyutping->isValid()) {
+    $jyutping = new Jyutping();
+    if ($jyutping->setWithRaw($submitPronString)) {
+        $queryInitial = $jyutping->getInitial();
+        $queryNuclei = $jyutping->getNuclei();
+        $queryCoda = $jyutping->getCoda();
+        $queryTone = $jyutping->getTone();
+    } else {
         print_r(json_encode([
             "error" => "Invalid Jyutping",
             "__ref" => "http://jyutdict.org/about"
         ], JSON_UNESCAPED_SLASHES));
-    } else {
+        return;
+    }
+}
+
+if ($queryInitial !== null) {
         $entriesConcat = [];
         $entriesInAncient = [];
         $entriesInLocations = [];
@@ -267,10 +289,10 @@ if (isset($_REQUEST['pron'])) {
         foreach ($wanshyuListArray as $eachWanshyu) {
             $inWanshyu_stmt = $dbh->prepare(sprintf($inWanshyu_sql, $eachWanshyu['sheetname']));
             $inWanshyu_stmt->execute([
-                ':initial' => $jyutping->getInitial(),
-                ':nuclei' => $jyutping->getNuclei(),
-                ':coda' => $jyutping->getCoda(),
-                ':tone' => $jyutping->getTone(),
+                ':initial' => $queryInitial,
+                ':nuclei' => $queryNuclei,
+                ':coda' => $queryCoda,
+                ':tone' => $queryTone,
             ]);
             $inWanshyu_result = $inWanshyu_stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -306,10 +328,10 @@ if (isset($_REQUEST['pron'])) {
         foreach ($cityListArray as $eachCity) {
             $inCity_stmt = $dbh->prepare(sprintf($inCity_sql, $eachCity['sheetname']));
             $inCity_stmt->execute([
-                ':initial' => $jyutping->getInitial(),
-                ':nuclei' => $jyutping->getNuclei(),
-                ':coda' => $jyutping->getCoda(),
-                ':tone' => $jyutping->getTone(),
+                ':initial' => $queryInitial,
+                ':nuclei' => $queryNuclei,
+                ':coda' => $queryCoda,
+                ':tone' => $queryTone,
             ]);
             $inCity_result = $inCity_stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -341,5 +363,4 @@ if (isset($_REQUEST['pron'])) {
         } else {
             print_r(json_encode($entriesConcat, !$isReturnAscii * JSON_UNESCAPED_UNICODE));
         }
-    }
-} // 查音部分
+    } // 查音部分
