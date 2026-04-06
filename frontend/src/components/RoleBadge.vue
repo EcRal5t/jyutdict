@@ -23,7 +23,7 @@ const badgeClass = computed(() => {
 </script>
 
 <template>
-    <span v-if="label" class="inline-flex items-center justify-center text-[10px] px-2 py-0.5 rounded-md border font-semibold tracking-wide transition-colors" :class="badgeClass">
+    <span v-if="label" class="inline-flex items-center justify-center text-[10px] px-2 py-0.5 rounded-none border font-semibold tracking-wide transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5" :class="badgeClass">
         {{ label }}
     </span>
 </template>

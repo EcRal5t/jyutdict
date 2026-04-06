@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, watchEffect, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import aboutPagesData from '../data/about_pages.json';
 import { marked } from 'marked';
@@ -23,9 +23,9 @@ watchEffect(async () => {
 
     try {
         // Dynamic import of markdown file as raw string
-        // Note: Vite requires known paths or glob for dynamic imports. 
+        // Note: Vite requires known paths or glob for dynamic imports.
         // Since we have a specific directory, we can use a switch or mapping if the files are few,
-        // or use `import.meta.glob` if we want to be generic. 
+        // or use `import.meta.glob` if we want to be generic.
         // Given the user wants to add files manually to json, we should probably map them.
         // But for simplicity/extensibility with Vite, import.meta.glob is best.
 
@@ -46,6 +46,18 @@ watchEffect(async () => {
         error.value = 'Failed to load content';
     } finally {
         loading.value = false;
+    }
+
+    // 处理页内锚点滚动（hash history 模式下 URL 格式为 /#/about#fjb）
+    await nextTick();
+    const hash = window.location.hash;
+    const anchorMatch = hash.match(/#([^/]+)$/);
+    if (anchorMatch) {
+        const anchorId = anchorMatch[1];
+        const element = document.getElementById(anchorId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
     }
 });
 </script>
