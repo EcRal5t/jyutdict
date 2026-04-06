@@ -79,9 +79,9 @@ onMounted(() => {
                 <!-- 搜索框 -->
                 <div class="flex gap-2 mb-4">
                     <input v-model="searchQuery" @keypress.enter="search" placeholder="搜尋地點..."
-                        class="flex-1 p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg outline-none focus:ring-1 focus:ring-accent" />
+                        class="flex-1 p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-none outline-none focus:ring-1 focus:ring-accent" />
                     <button @click="search"
-                        class="px-3 py-2 text-sm bg-accent text-white rounded-lg hover:bg-red-700">
+                        class="px-3 py-2 text-sm bg-accent text-white rounded-none hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all">
                         搜尋
                     </button>
                 </div>
@@ -92,13 +92,13 @@ onMounted(() => {
                 </div>
 
                 <!-- 列表 -->
-                <div v-else class="space-y-1 max-h-[70vh] overflow-y-auto">
+                <div v-else class="space-y-1 max-h-[70vh] overflow-y-auto overflow-x-hidden pr-1">
                     <button v-for="art in articles" :key="art.location_name"
                         @click="selectArticle(art)"
-                        class="w-full text-left p-3 rounded-lg border transition-colors"
+                        class="w-full text-left p-3 rounded-none border border-transparent border-l-4 transition-all duration-300 hover:translate-x-1 hover:shadow-sm"
                         :class="selectedArticle?.location_name === art.location_name
-                            ? 'border-accent bg-accent/5 dark:bg-accent/10'
-                            : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800'">
+                            ? 'border-l-accent bg-accent/5 dark:bg-accent/10 border-t-gray-100 border-r-gray-100 border-b-gray-100 dark:border-y-slate-700 dark:border-r-slate-700'
+                            : 'border-l-transparent hover:border-l-gray-300 dark:hover:border-l-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'">
                         <div class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ art.location_name }}</div>
                         <div class="text-xs text-slate-400 mt-0.5">
                             {{ art.author_nickname }} · {{ art.updated_at?.split(' ')[0] }}
@@ -124,7 +124,7 @@ onMounted(() => {
                 </div>
 
                 <!-- 文章内容 -->
-                <div v-else-if="articleContent" class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 md:p-8 border border-gray-100 dark:border-slate-700">
+                <div v-else-if="articleContent" class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-6 md:p-8 border border-gray-100 dark:border-slate-700 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-800 dark:to-slate-900/50">
                     <div v-if="renderedContent"
                         class="prose dark:prose-invert max-w-none"
                         v-html="renderedContent">
@@ -139,7 +139,7 @@ onMounted(() => {
                         </div>
                         <router-link v-if="canEditSelected"
                             :to="{ name: 'location-article', params: { locationName: selectedArticle.location_name } }"
-                            class="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-red-700">
+                            class="text-xs px-3 py-1.5 rounded-none bg-accent text-white hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all">
                             前往編輯
                         </router-link>
                     </div>

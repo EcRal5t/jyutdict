@@ -125,8 +125,8 @@ const externalLinks = [
                             class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">GoT</a>
                         <a href="https://jyutjam.org/" target="_blank"
                             class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">關於</a>
-                        <a href="https://jyutdict.org/about"
-                            class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">說明</a>
+                        <RouterLink to="/about"
+                            class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">說明</RouterLink>
                         <!-- 移動端用戶入口 -->
                         <LoginButton />
                     </div>

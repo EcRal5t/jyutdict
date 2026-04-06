@@ -71,7 +71,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
     <div class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm transition-all duration-300 flex items-center justify-center p-4 md:py-[100px]"
          @click="onOverlayClick">
         <!-- 弹窗主体 -->
-        <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-gray-100/50 dark:border-slate-700/50 w-full max-w-[600px] max-h-full overflow-hidden flex flex-col scale-100">
+        <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-none shadow-[8px_8px_0_rgba(0,0,0,0.15)] dark:shadow-[8px_8px_0_rgba(0,0,0,0.5)] border border-gray-100/50 dark:border-slate-700/50 w-full max-w-[600px] max-h-full overflow-hidden flex flex-col scale-100 translate-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <!-- 标题栏 -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100/50 dark:border-slate-700/50">
                 <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">{{ locationName }}</h2>
@@ -114,7 +114,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
                 <router-link v-if="canEdit"
                     :to="{ name: 'location-article', params: { locationName } }"
                     @click="emit('close')"
-                    class="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-red-700">
+                    class="text-xs px-3 py-1.5 rounded-none bg-accent text-white hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all">
                     前往修改
                 </router-link>
             </div>

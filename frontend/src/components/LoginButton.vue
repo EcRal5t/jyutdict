@@ -13,7 +13,7 @@ const authStore = useAuthStore()
 
     <!-- 已登入：顯示用戶菜單 -->
     <div v-else-if="authStore.isLoggedIn" class="relative group/user">
-        <button class="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-accent dark:hover:text-red-400 transition-colors py-1.5 px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
+        <button class="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-accent dark:hover:text-red-400 transition-colors py-1.5 px-2 rounded-none hover:bg-black/5 dark:hover:bg-white/5">
             <span>{{ authStore.displayName }}</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover/user:rotate-180 duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -21,7 +21,7 @@ const authStore = useAuthStore()
         </button>
 
         <!-- 下拉菜單 (Glassmorphism + Scales) -->
-        <div class="absolute right-0 top-full mt-2 w-52 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] py-2 opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible scale-95 group-hover/user:scale-100 origin-top-right transition-all duration-300 ease-out z-[60]">
+        <div class="absolute right-0 top-full mt-2 w-52 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-none shadow-[4px_4px_0_rgba(0,0,0,0.05)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] py-2 opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible -translate-y-2 group-hover/user:translate-y-0 origin-top transition-all duration-300 ease-out z-[60]">
             <!-- 角色標籤 -->
             <div class="px-4 py-2.5 border-b border-gray-100/50 dark:border-slate-700/50 flex flex-col gap-1.5 mb-1">
                 <span class="text-xs text-slate-500 font-medium truncate">{{ authStore.user.email }}</span>
@@ -44,7 +44,7 @@ const authStore = useAuthStore()
 
     <!-- 未登入：顯示登入按鈕 -->
     <button v-else @click="authStore.login()"
-        class="text-sm font-bold text-white bg-accent dark:bg-[#B72914] shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300 py-1.5 px-4 rounded-lg">
+        class="text-sm font-bold text-white bg-accent dark:bg-[#B72914] shadow-[4px_4px_0_rgba(183,41,20,0.2)] dark:shadow-[4px_4px_0_rgba(183,41,20,0.4)] hover:shadow-[6px_6px_0_rgba(183,41,20,0.3)] dark:hover:shadow-[6px_6px_0_rgba(183,41,20,0.5)] hover:-translate-y-0.5 hover:-translate-x-0.5 transition-all duration-300 py-1.5 px-4 rounded-none">
         登入
     </button>
 </template>

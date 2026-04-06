@@ -170,11 +170,11 @@ watch(locationName, () => {
             </div>
             <div class="flex gap-2">
                 <button v-if="article && !isEditing" @click="toggleVersions"
-                    class="text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">
+                    class="text-xs px-3 py-1.5 rounded-none border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:-translate-y-0.5 transition-all">
                     {{ showVersions ? '隱藏' : '版本歷史' }}
                 </button>
                 <button v-if="canEdit && !isEditing" @click="startEdit"
-                    class="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-red-700">
+                    class="text-xs px-3 py-1.5 rounded-none bg-accent text-white hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all">
                     {{ article ? '編輯' : '撰寫文章' }}
                 </button>
             </div>
@@ -182,16 +182,16 @@ watch(locationName, () => {
 
         <!-- 版本预览提示 -->
         <div v-if="previewVersion"
-            class="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center justify-between">
+            class="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-none flex items-center justify-between">
             <span class="text-sm text-amber-700 dark:text-amber-400">
                 正在查看版本 #{{ previewVersion.id }}（{{ previewVersion.created_at }}）
             </span>
             <div class="flex gap-2">
                 <button v-if="authStore.isAdmin && article" @click="rollbackToVersion(previewVersion.article_id, previewVersion.id)"
-                    class="text-xs px-2 py-1 bg-amber-600 text-white rounded hover:bg-amber-700">
+                    class="text-xs px-2 py-1 bg-amber-600 text-white rounded-none hover:bg-amber-700 hover:-translate-y-0.5 transition-all">
                     回滾到此版本
                 </button>
-                <button @click="clearVersionPreview" class="text-xs px-2 py-1 border border-amber-300 text-amber-600 rounded hover:bg-amber-100">
+                <button @click="clearVersionPreview" class="text-xs px-2 py-1 border border-amber-300 text-amber-600 rounded-none hover:bg-amber-100 hover:-translate-y-0.5 transition-all">
                     返回當前版本
                 </button>
             </div>
@@ -212,30 +212,30 @@ watch(locationName, () => {
                 <div>
                     <label class="text-xs font-bold text-slate-500 mb-1 block">Markdown 編輯</label>
                     <textarea v-model="editContent"
-                        class="w-full h-[60vh] p-4 text-sm font-mono bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg resize-none focus:ring-1 focus:ring-accent outline-none"
+                        class="w-full h-[60vh] p-4 text-sm font-mono bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-none resize-none focus:ring-1 focus:ring-accent outline-none"
                         placeholder="在此輸入 Markdown 內容..."></textarea>
                 </div>
                 <!-- 即時預覽 -->
                 <div>
                     <label class="text-xs font-bold text-slate-500 mb-1 block">預覽</label>
-                    <div class="w-full h-[60vh] p-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-y-auto prose dark:prose-invert max-w-none"
+                    <div class="w-full h-[60vh] p-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-none overflow-y-auto prose dark:prose-invert max-w-none"
                          v-html="editPreviewHtml"></div>
                 </div>
             </div>
 
             <!-- 編輯摘要 -->
             <input v-model="editSummary" placeholder="編輯摘要（可選，如：'修正聲調描述'）"
-                class="w-full p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg outline-none" />
+                class="w-full p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-none outline-none" />
 
             <p v-if="saveError" class="text-sm text-red-500">{{ saveError }}</p>
 
             <!-- 按鈕 -->
             <div class="flex gap-3">
                 <button @click="saveArticle" :disabled="isSaving"
-                    class="bg-accent text-white px-6 py-2 text-sm rounded-lg hover:bg-red-700 disabled:opacity-50 font-bold">
+                    class="bg-accent text-white px-6 py-2 text-sm rounded-none hover:bg-red-700 disabled:opacity-50 font-bold hover:-translate-y-0.5 hover:shadow-[3px_3px_0_rgba(183,41,20,0.3)] active:translate-y-0 active:shadow-none transition-all">
                     {{ isSaving ? '儲存中...' : '儲存' }}
                 </button>
-                <button @click="cancelEdit" class="px-6 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">
+                <button @click="cancelEdit" class="px-6 py-2 text-sm rounded-none border border-slate-300 text-slate-600 hover:bg-slate-50 hover:-translate-y-0.5 transition-all">
                     取消
                 </button>
             </div>
@@ -245,7 +245,7 @@ watch(locationName, () => {
         <template v-else>
             <!-- 文章内容 -->
             <div v-if="renderedContent"
-                class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 md:p-8 border border-gray-100 dark:border-slate-700 prose dark:prose-invert max-w-none"
+                class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-800 dark:to-slate-800/80 p-6 md:p-8 border border-gray-100 dark:border-slate-700 prose dark:prose-invert max-w-none"
                 v-html="renderedContent">
             </div>
 
@@ -264,7 +264,7 @@ watch(locationName, () => {
 
         <!-- ===== 版本歷史側欄 ===== -->
         <div v-if="showVersions"
-            class="mt-6 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4">
+            class="mt-6 bg-white dark:bg-slate-800 rounded-none shadow-[4px_4px_0_rgba(0,0,0,0.04)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-700 p-4">
             <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">版本歷史</h3>
 
             <div v-if="versionsLoading" class="text-center py-4 text-slate-400 text-sm">載入中...</div>
@@ -272,10 +272,10 @@ watch(locationName, () => {
 
             <div v-else class="space-y-2 max-h-80 overflow-y-auto">
                 <button v-for="v in versions" :key="v.id" @click="viewVersion(v.id)"
-                    class="w-full text-left p-3 rounded-lg border transition-colors text-sm"
+                    class="w-full text-left p-3 rounded-none border transition-all duration-300 text-sm hover:translate-x-1 hover:shadow-sm"
                     :class="previewVersion?.id === v.id
-                        ? 'border-accent bg-accent/5'
-                        : 'border-gray-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'">
+                        ? 'border-accent bg-accent/5 shadow-sm'
+                        : 'border-gray-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-500'">
                     <div class="flex items-center justify-between">
                         <span class="font-medium text-slate-700 dark:text-slate-300">
                             #{{ v.id }}
