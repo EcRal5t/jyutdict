@@ -3,12 +3,12 @@
  * 编纂者地点分配 API
  *
  * GET    /api/v1.0/admin/editors?editor_id={id}              → 获取某编纂者的分配地点
- * GET    /api/v1.0/admin/editors?location_source=area&location_name={name}  → 获取某地点的编纂者
+ * GET    /api/v1.0/admin/editors?location_name={name}        → 获取某地点的编纂者
  * GET    /api/v1.0/admin/editors?list_locations=1             → 获取所有可分配的地点列表
  * POST   /api/v1.0/admin/editors                             → 分配地点给编纂者
- *   Body: { "editor_id": 123, "location_source": "area", "location_name": "廣州市荔灣區" }
+ *   Body: { "editor_id": 123, "location_name": "廣州" }
  * DELETE /api/v1.0/admin/editors                             → 取消分配
- *   Body: { "editor_id": 123, "location_source": "area", "location_name": "廣州市荔灣區" }
+ *   Body: { "editor_id": 123, "location_name": "廣州" }
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -31,22 +31,24 @@ $method = $_SERVER['REQUEST_METHOD'];
 // ========== GET ==========
 if ($method === 'GET') {
 
-    // 获取所有可分配的地点列表
+    // 获取所有可分配的地点列表（合并去重）
     if (isset($_GET['list_locations'])) {
         try {
+            $locationSet = []; // name => { name, sources: [] }
+
             // i_area_list 地点
             $stmt = $dbh->prepare("SELECT `first`, `second`, `third` FROM `i_area_list` ORDER BY `id`");
             $stmt->execute();
             $areaRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            $areaLocations = [];
             foreach ($areaRows as $row) {
-                $areaLocations[] = [
-                    'name' => $row['second'] . ($row['third'] ?: ''),
-                    'first' => $row['first'],
-                    'second' => $row['second'],
-                    'third' => $row['third'],
-                ];
+                $name = $row['second'] . ($row['third'] ?: '');
+                if (!isset($locationSet[$name])) {
+                    $locationSet[$name] = [
+                        'name' => $name,
+                        'first' => $row['first'],
+                    ];
+                }
             }
 
             // i_faamjyut 地点（仅 kind=1，即真正的地名）
@@ -54,18 +56,18 @@ if ($method === 'GET') {
             $stmt->execute();
             $faamjyutRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            $faamjyutLocations = [];
             foreach ($faamjyutRows as $row) {
-                $faamjyutLocations[] = [
-                    'name' => $row['fullname'] . ($row['fullname_note'] ?: ''),
-                    'fullname' => $row['fullname'],
-                    'fullname_note' => $row['fullname_note'],
-                ];
+                $name = $row['fullname'] . ($row['fullname_note'] ?: '');
+                if (!isset($locationSet[$name])) {
+                    $locationSet[$name] = [
+                        'name' => $name,
+                        'first' => '',
+                    ];
+                }
             }
 
             outputJson([
-                'area_locations' => $areaLocations,
-                'faamjyut_locations' => $faamjyutLocations,
+                'locations' => array_values($locationSet),
             ]);
         } catch (PDOException $e) {
             outputJson(['error' => 'Database error'], 500);
@@ -77,7 +79,7 @@ if ($method === 'GET') {
         $editorId = (int) $_GET['editor_id'];
         try {
             $stmt = $dbh->prepare("
-                SELECT el.`location_source`, el.`location_name`, el.`assigned_at`,
+                SELECT el.`location_name`, el.`assigned_at`,
                        u2.`nickname` AS assigned_by_name
                 FROM `editor_locations` el
                 LEFT JOIN `users` u2 ON el.`assigned_by` = u2.`id`
@@ -93,19 +95,18 @@ if ($method === 'GET') {
     }
 
     // 查询某地点的编纂者
-    if (isset($_GET['location_source']) && isset($_GET['location_name'])) {
-        $locSource = $_GET['location_source'];
+    if (isset($_GET['location_name'])) {
         $locName = $_GET['location_name'];
         try {
             $stmt = $dbh->prepare("
                 SELECT el.`editor_id`, u.`nickname`, u.`email`, el.`assigned_at`
                 FROM `editor_locations` el
                 JOIN `users` u ON el.`editor_id` = u.`id`
-                WHERE el.`location_source` = :source AND el.`location_name` = :lname
+                WHERE el.`location_name` = :lname
             ");
-            $stmt->execute([':source' => $locSource, ':lname' => $locName]);
+            $stmt->execute([':lname' => $locName]);
             $editors = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            outputJson(['location_source' => $locSource, 'location_name' => $locName, 'editors' => $editors]);
+            outputJson(['location_name' => $locName, 'editors' => $editors]);
         } catch (PDOException $e) {
             outputJson(['error' => 'Database error'], 500);
         }
@@ -120,15 +121,10 @@ if ($method === 'POST') {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $editorId = (int) ($input['editor_id'] ?? 0);
-    $locSource = $input['location_source'] ?? '';
     $locName = $input['location_name'] ?? '';
 
-    if (!$editorId || !$locSource || !$locName) {
-        outputJson(['error' => 'Missing required fields: editor_id, location_source, location_name'], 400);
-    }
-
-    if (!in_array($locSource, ['area', 'faamjyut'])) {
-        outputJson(['error' => 'Invalid location_source (must be area or faamjyut)'], 400);
+    if (!$editorId || !$locName) {
+        outputJson(['error' => 'Missing required fields: editor_id, location_name'], 400);
     }
 
     try {
@@ -146,12 +142,11 @@ if ($method === 'POST') {
 
         // 插入分配记录
         $stmt = $dbh->prepare("
-            INSERT INTO `editor_locations` (`editor_id`, `location_source`, `location_name`, `assigned_by`)
-            VALUES (:eid, :source, :lname, :assignee)
+            INSERT INTO `editor_locations` (`editor_id`, `location_name`, `assigned_by`)
+            VALUES (:eid, :lname, :assignee)
         ");
         $stmt->execute([
             ':eid' => $editorId,
-            ':source' => $locSource,
             ':lname' => $locName,
             ':assignee' => $currentUserId,
         ]);
@@ -171,19 +166,18 @@ if ($method === 'DELETE') {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $editorId = (int) ($input['editor_id'] ?? 0);
-    $locSource = $input['location_source'] ?? '';
     $locName = $input['location_name'] ?? '';
 
-    if (!$editorId || !$locSource || !$locName) {
+    if (!$editorId || !$locName) {
         outputJson(['error' => 'Missing required fields'], 400);
     }
 
     try {
         $stmt = $dbh->prepare("
             DELETE FROM `editor_locations`
-            WHERE `editor_id` = :eid AND `location_source` = :source AND `location_name` = :lname
+            WHERE `editor_id` = :eid AND `location_name` = :lname
         ");
-        $stmt->execute([':eid' => $editorId, ':source' => $locSource, ':lname' => $locName]);
+        $stmt->execute([':eid' => $editorId, ':lname' => $locName]);
 
         if ($stmt->rowCount() === 0) {
             outputJson(['error' => 'Assignment not found'], 404);

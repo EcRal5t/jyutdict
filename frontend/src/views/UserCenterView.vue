@@ -177,7 +177,6 @@ onMounted(() => {
                     class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700">
                     <div>
                         <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ loc.name }}</span>
-                        <span class="text-xs text-slate-400 ml-2">{{ loc.source === 'area' ? '通用字表' : '泛粵字表' }}</span>
                     </div>
                     <router-link
                         :to="{ name: 'location-article', params: { source: loc.source, locationName: loc.name } }"

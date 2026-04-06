@@ -23,16 +23,16 @@ apiClient.interceptors.request.use((config) => {
 
 export default {
     // 获取单个地点的文章
-    getArticle(source, locationName) {
-        return apiClient.get('/', { params: { source, location_name: locationName } });
+    getArticle(locationName) {
+        return apiClient.get('/', { params: { location_name: locationName } });
     },
     // 保存文章（创建或更新）
     saveArticle(data) {
         return apiClient.post('/', data);
     },
     // 获取版本历史
-    getVersions(source, locationName) {
-        return apiClient.get('/', { params: { source, location_name: locationName, versions: 1 } });
+    getVersions(locationName) {
+        return apiClient.get('/', { params: { location_name: locationName, versions: 1 } });
     },
     // 获取单个版本内容
     getVersion(versionId) {

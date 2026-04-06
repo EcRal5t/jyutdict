@@ -9,7 +9,6 @@ import articlesApi from '@/api/articles.js'
 const route = useRoute()
 const authStore = useAuthStore()
 
-const source = computed(() => route.params.source)             // 'area' | 'faamjyut'
 const locationName = computed(() => decodeURIComponent(route.params.locationName))  // 地点名称字符串
 
 // ===== 文章数据 =====
@@ -33,12 +32,10 @@ const previewVersion = ref(null)   // 正在预览的版本
 // ===== 权限判断 =====
 const canEdit = computed(() => {
     if (!authStore.isLoggedIn) return false
-    // 管理员+可编辑任意地点
     if (authStore.isAdmin) return true
-    // 编纂者需检查是否被分配了此地点
     if (authStore.userRole === 'editor' && authStore.user?.assigned_locations) {
         return authStore.user.assigned_locations.some(
-            loc => loc.location_source === source.value && loc.location_name === locationName.value
+            loc => loc.location_name === locationName.value
         )
     }
     return false
@@ -49,7 +46,7 @@ const loadArticle = async () => {
     isLoading.value = true
     error.value = null
     try {
-        const res = await articlesApi.getArticle(source.value, locationName.value)
+        const res = await articlesApi.getArticle(locationName.value)
         article.value = res.data.article
     } catch (e) {
         error.value = '載入文章失敗'
@@ -84,7 +81,6 @@ const saveArticle = async () => {
     saveError.value = ''
     try {
         await articlesApi.saveArticle({
-            location_source: source.value,
             location_name: locationName.value,
             content: editContent.value,
             edit_summary: editSummary.value || null,
@@ -108,7 +104,7 @@ const editPreviewHtml = computed(() => {
 const loadVersions = async () => {
     versionsLoading.value = true
     try {
-        const res = await articlesApi.getVersions(source.value, locationName.value)
+        const res = await articlesApi.getVersions(locationName.value)
         versions.value = res.data.versions || []
     } catch (e) {
         console.error(e)
@@ -153,7 +149,7 @@ onMounted(() => {
     loadArticle()
 })
 
-watch([source, locationName], () => {
+watch(locationName, () => {
     loadArticle()
     showVersions.value = false
     previewVersion.value = null

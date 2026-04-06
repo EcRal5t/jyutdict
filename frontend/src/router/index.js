@@ -60,7 +60,7 @@ const router = createRouter({
             component: () => import('../views/LocationListView.vue'),
         },
         {
-            path: '/location-article/:source/:locationName',
+            path: '/location-article/:locationName',
             name: 'location-article',
             component: () => import('../views/LocationArticleView.vue'),
         },
