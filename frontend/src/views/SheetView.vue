@@ -4,6 +4,20 @@ import { useRouter, useRoute } from 'vue-router';
 import SheetApi from '@/api/sheet.js';
 import ResultCard from '@/components/ResultCard.vue';
 import { darkenColor } from '@/utils/formatters.js';
+import CommentSidebar from '@/components/CommentSidebar.vue';
+
+// 评论侧边栏
+const commentSidebarVisible = ref(false)
+const commentTarget = ref('')
+
+const openSheetComments = (sheetKey) => {
+    if (!sheetKey) {
+        alert('此条目暂无评论标识（鍵）')
+        return
+    }
+    commentTarget.value = sheetKey
+    commentSidebarVisible.value = true
+}
 
 const router = useRouter();
 const route = useRoute();
@@ -306,11 +320,28 @@ watch(() => route.query, (newQ) => {
         </div>
 
         <div v-else class="space-y-4">
-            <ResultCard v-for="row in results" :key="row.id || Math.random()" :row-data="row"
-                :header-info="headerInfo" />
+            <div v-for="row in results" :key="row.id || Math.random()" class="relative">
+                <ResultCard :row-data="row" :header-info="headerInfo" />
+                <!-- 评论按钮（仅当行有鍵值时显示） -->
+                <button v-if="row['鍵']" @click="openSheetComments(row['鍵'])"
+                    class="absolute top-2 right-2 text-slate-400 hover:text-accent transition-colors p-1"
+                    title="查看评论">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                </button>
+            </div>
             <div v-if="results.length > 0" class="text-center text-slate-400 text-sm py-8">
                 —— 到底了 End ——
             </div>
         </div>
+
+        <!-- 评论侧边栏 -->
+        <CommentSidebar
+            type="sheet"
+            :target="commentTarget"
+            :visible="commentSidebarVisible"
+            @close="commentSidebarVisible = false"
+        />
     </div>
 </template>

@@ -12,8 +12,12 @@ dist
 .python-version
 pyproject.toml
 .venv
+*.py
 uv.lock
 
 .claude
 CLAUDE.md
 docs/
+
+# OAuth 配置
+api/config/oauth.php

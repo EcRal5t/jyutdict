@@ -16,9 +16,8 @@ export default defineConfig({
     server: {
         proxy: {
             '/api': {
-                target: 'http://jyutdict/api', // Assumption: Local PHP is served at this root? Or we verify later.
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, '')
+                target: 'http://localhost:8888',
+                changeOrigin: true
             }
         }
     }
