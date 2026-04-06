@@ -1,0 +1,41 @@
+<?php
+/**
+ * Google OAuth 配置
+ *
+ * 自动检测本地/生产环境，使用对应的配置
+ *
+ * 部署前需要：
+ * 1. 在 Google Cloud Console 创建 OAuth 2.0 Client ID
+ * 2. 在 Authorized redirect URIs 中添加：
+ *    - https://jyutdict.org/api/auth/google?action=callback
+ *    - http://localhost:8888/api/auth/google?action=callback
+ * 3. 填入下方的 client_id 和 client_secret
+ */
+
+// 检测当前环境
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$isLocal = in_array($host, ['localhost:8888', '127.0.0.1:8888', 'localhost', '127.0.0.1']);
+
+// Google Cloud Console 的 OAuth Client（本地和开发共用一个）
+$client_id = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+$client_secret = 'YOUR_GOOGLE_CLIENT_SECRET';
+
+if ($isLocal) {
+    // 本地开发环境
+    return [
+        'client_id'        => $client_id,
+        'client_secret'    => $client_secret,
+        'redirect_uri'     => 'http://localhost:8888/api/auth/google?action=callback',
+        'frontend_url'     => 'http://localhost:8888/#/',
+        'session_lifetime' => 604800,
+    ];
+} else {
+    // 生产环境
+    return [
+        'client_id'        => $client_id,
+        'client_secret'    => $client_secret,
+        'redirect_uri'     => 'https://jyutdict.org/api/auth/google?action=callback',
+        'frontend_url'     => 'https://jyutdict.org/#/',
+        'session_lifetime' => 604800,
+    ];
+}
