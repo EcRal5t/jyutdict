@@ -33,7 +33,7 @@ if (isset($_REQUEST['help'])) {
 // 1. If 'chara' is set but empty, return iarealist (Header/Location list)
 if (isset($_REQUEST['chara']) && $_REQUEST['chara'] === "") {
     try {
-        $stmt = $dbh->prepare("SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `color` FROM `IAreaList`");
+        $stmt = $dbh->prepare("SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `color` FROM `i_area_list`");
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         outputJson($result);
@@ -118,7 +118,7 @@ if ($queryInitial !== null) {
     }
 
     // 獲取韻書列表
-    $wanshyuListSql = "SELECT `name`, `sheetname` FROM `IWanshyuList`";
+    $wanshyuListSql = "SELECT `name`, `sheetname` FROM `i_wanshyu_list`";
     $wanshyuStmt = $dbh->prepare($wanshyuListSql);
     $wanshyuStmt->execute();
     $wanshyuList = $wanshyuStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -160,7 +160,7 @@ if ($queryInitial !== null) {
 
     // 獲取地方列表（包含詳細信息）
     $inCityList_sql = "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`, `color`
-                        FROM `IAreaList`";
+                        FROM `i_area_list`";
     $inCityList_stmt = $dbh->prepare($inCityList_sql);
     $inCityList_stmt->execute();
     $cityListArray = $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -235,12 +235,12 @@ try {
 $entriesConcat = [];
 
 // Prepare SQL statements
-$wanshyuListSql = "SELECT `name`, `sheetname` FROM `IWanshyuList`";
+$wanshyuListSql = "SELECT `name`, `sheetname` FROM `i_wanshyu_list`";
 // Note: Ancient data logic remains largely similar to v0.9 regarding fetching
 // We will look up each char in each book.
 
 // For Locations, we first get the list of tables
-$areaListSql = "SELECT `id`, `sheetname` FROM `IAreaList`";
+$areaListSql = "SELECT `id`, `sheetname` FROM `i_area_list`";
 // We select id to index the result as requested
 
 try {
@@ -344,7 +344,7 @@ foreach ($charaTransArray as $chara) {
 
     // 1. Kuangyon (hardcoded in v0.9 as first item)
     $kyEntries = [];
-    $data = new DataKuangyon($dbh, $chara, "YKuangyon", "", "", "");
+    $data = new DataKuangyon($dbh, $chara, "y_kuangyon", "", "", "");
     $kyKeyMap = [
         "name" => "書名",
         "initial" => "聲母",

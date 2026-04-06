@@ -100,7 +100,7 @@ if (isset($_REQUEST['chara'])) {
         #----------------------------------------------#
 
         if ($options["wanshyu"]) {
-            $data = new DataKuangyon($dbh, $chara, "YKuangyon", "", "", "");
+            $data = new DataKuangyon($dbh, $chara, "y_kuangyon", "", "", "");
             for (; $data->hasNext(); $data->next()) {
                 $entry[$key["name"]] = "廣韻"; // 不整齊，難受
                 //$entry["id"]                  = $data -> getID();
@@ -297,7 +297,7 @@ if ($queryInitial !== null) {
 
         //獲取韻書列表
         $inWanshyuList_sql = " SELECT `name`, `sheetname`
-                                FROM `IWanshyuList`";
+                                FROM `i_wanshyu_list`";
         $inWanshyuList_stmt = $dbh->prepare($inWanshyuList_sql);
         $inWanshyuList_stmt->execute();
         $wanshyuListArray = $inWanshyuList_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -328,7 +328,7 @@ if ($queryInitial !== null) {
 
         //獲取地方列表
         $inCityList_sql = "SELECT `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`
-                            FROM `IAreaList`";
+                            FROM `i_area_list`";
         $inCityList_stmt = $dbh->prepare($inCityList_sql);
         $inCityList_stmt->execute();
         $cityListArray = $inCityList_stmt->fetchAll(PDO::FETCH_ASSOC);
