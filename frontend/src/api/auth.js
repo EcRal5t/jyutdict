@@ -7,23 +7,23 @@ const apiClient = axios.create({
     withCredentials: true,
 });
 
-// 请求拦截器：自动带 CSRF Token
+// 請求攔截器：自動帶 CSRF Token
 apiClient.interceptors.request.use((config) => {
-    // 注意：store 要在函数内获取，避免在模块加载时 Pinia 未初始化
+    // 注意：store 要在函數內獲取，避免在模組載入時 Pinia 未初始化
     try {
         const authStore = useAuthStore();
         if (authStore.csrfToken && ['post', 'put', 'delete', 'patch'].includes(config.method)) {
             config.headers['X-CSRF-Token'] = authStore.csrfToken;
         }
     } catch (e) {
-        // Pinia 未初始化时（如初次 getMe 请求），跳过
+        // Pinia 未初始化時（如初次 getMe 請求），跳過
     }
     return config;
 });
 
 export default {
     /**
-     * 获取当前登录用户信息
+     * 獲取當前登入用戶信息
      * @returns {Promise<{user: Object|null, csrf_token: string}>}
      */
     getMe() {
@@ -38,8 +38,8 @@ export default {
     },
 
     /**
-     * 获取 Google OAuth 登录 URL
-     * 前端直接跳转到此 URL
+     * 獲取 Google OAuth 登入 URL
+     * 前端直接跳轉到此 URL
      */
     getLoginUrl() {
         return '/api/auth/google';

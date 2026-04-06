@@ -52,7 +52,7 @@ const loadArticle = async () => {
         const res = await articlesApi.getArticle(source.value, locationId.value)
         article.value = res.data.article
     } catch (e) {
-        error.value = '加载文章失败'
+        error.value = '載入文章失敗'
         console.error(e)
     } finally {
         isLoading.value = false
@@ -92,7 +92,7 @@ const saveArticle = async () => {
         isEditing.value = false
         await loadArticle() // 刷新
     } catch (e) {
-        saveError.value = e.response?.data?.error || '保存失败'
+        saveError.value = e.response?.data?.error || '儲存失敗'
     } finally {
         isSaving.value = false
     }
@@ -166,7 +166,7 @@ watch([source, locationId], () => {
         <div class="flex items-center justify-between mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">
-                    地点文章
+                    地點文章
                 </h1>
                 <p class="text-sm text-slate-400 mt-1">
                     {{ source }} #{{ locationId }}
@@ -175,11 +175,11 @@ watch([source, locationId], () => {
             <div class="flex gap-2">
                 <button v-if="article && !isEditing" @click="toggleVersions"
                     class="text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">
-                    {{ showVersions ? '隐藏' : '版本历史' }}
+                    {{ showVersions ? '隱藏' : '版本歷史' }}
                 </button>
                 <button v-if="canEdit && !isEditing" @click="startEdit"
                     class="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-red-700">
-                    {{ article ? '编辑' : '撰写文章' }}
+                    {{ article ? '編輯' : '撰寫文章' }}
                 </button>
             </div>
         </div>
@@ -193,10 +193,10 @@ watch([source, locationId], () => {
             <div class="flex gap-2">
                 <button v-if="authStore.isAdmin && article" @click="rollbackToVersion(previewVersion.article_id, previewVersion.id)"
                     class="text-xs px-2 py-1 bg-amber-600 text-white rounded hover:bg-amber-700">
-                    回滚到此版本
+                    回滾到此版本
                 </button>
                 <button @click="clearVersionPreview" class="text-xs px-2 py-1 border border-amber-300 text-amber-600 rounded hover:bg-amber-100">
-                    返回当前版本
+                    返回當前版本
                 </button>
             </div>
         </div>
@@ -214,30 +214,30 @@ watch([source, locationId], () => {
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <!-- 编辑器 -->
                 <div>
-                    <label class="text-xs font-bold text-slate-500 mb-1 block">Markdown 编辑</label>
+                    <label class="text-xs font-bold text-slate-500 mb-1 block">Markdown 編輯</label>
                     <textarea v-model="editContent"
                         class="w-full h-[60vh] p-4 text-sm font-mono bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg resize-none focus:ring-1 focus:ring-accent outline-none"
-                        placeholder="在此输入 Markdown 内容..."></textarea>
+                        placeholder="在此輸入 Markdown 內容..."></textarea>
                 </div>
-                <!-- 实时预览 -->
+                <!-- 即時預覽 -->
                 <div>
-                    <label class="text-xs font-bold text-slate-500 mb-1 block">预览</label>
+                    <label class="text-xs font-bold text-slate-500 mb-1 block">預覽</label>
                     <div class="w-full h-[60vh] p-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-y-auto prose dark:prose-invert max-w-none"
                          v-html="editPreviewHtml"></div>
                 </div>
             </div>
 
-            <!-- 编辑摘要 -->
-            <input v-model="editSummary" placeholder="编辑摘要（可选，如：'修正声调描述'）"
+            <!-- 編輯摘要 -->
+            <input v-model="editSummary" placeholder="編輯摘要（可選，如：'修正聲調描述'）"
                 class="w-full p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg outline-none" />
 
             <p v-if="saveError" class="text-sm text-red-500">{{ saveError }}</p>
 
-            <!-- 按钮 -->
+            <!-- 按鈕 -->
             <div class="flex gap-3">
                 <button @click="saveArticle" :disabled="isSaving"
                     class="bg-accent text-white px-6 py-2 text-sm rounded-lg hover:bg-red-700 disabled:opacity-50 font-bold">
-                    {{ isSaving ? '保存中...' : '保存' }}
+                    {{ isSaving ? '儲存中...' : '儲存' }}
                 </button>
                 <button @click="cancelEdit" class="px-6 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">
                     取消
@@ -253,26 +253,26 @@ watch([source, locationId], () => {
                 v-html="renderedContent">
             </div>
 
-            <!-- 无文章 -->
+            <!-- 無文章 -->
             <div v-else class="text-center py-16 text-slate-400">
-                <p class="text-lg mb-2">暂无文章</p>
-                <p v-if="canEdit" class="text-sm">点击右上角「撰写文章」开始编写</p>
+                <p class="text-lg mb-2">暫無文章</p>
+                <p v-if="canEdit" class="text-sm">點擊右上角「撰寫文章」開始編寫</p>
             </div>
 
-            <!-- 文章元数据 -->
+            <!-- 文章元數據 -->
             <div v-if="article" class="mt-4 text-xs text-slate-400 flex items-center gap-4">
-                <span>最后编辑：{{ article.nickname || article.email }}</span>
+                <span>最後編輯：{{ article.nickname || article.email }}</span>
                 <span>{{ article.updated_at }}</span>
             </div>
         </template>
 
-        <!-- ===== 版本历史侧栏 ===== -->
+        <!-- ===== 版本歷史側欄 ===== -->
         <div v-if="showVersions"
             class="mt-6 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4">
-            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">版本历史</h3>
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">版本歷史</h3>
 
-            <div v-if="versionsLoading" class="text-center py-4 text-slate-400 text-sm">加载中...</div>
-            <div v-else-if="versions.length === 0" class="text-center py-4 text-slate-400 text-sm">无版本历史</div>
+            <div v-if="versionsLoading" class="text-center py-4 text-slate-400 text-sm">載入中...</div>
+            <div v-else-if="versions.length === 0" class="text-center py-4 text-slate-400 text-sm">無版本歷史</div>
 
             <div v-else class="space-y-2 max-h-80 overflow-y-auto">
                 <button v-for="v in versions" :key="v.id" @click="viewVersion(v.id)"

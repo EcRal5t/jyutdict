@@ -8,7 +8,7 @@ import DetailMap from '@/components/detail/DetailMap.vue';
 import RelativeLinks from '@/components/detail/RelativeLinks.vue';
 import CommentSidebar from '@/components/CommentSidebar.vue';
 
-// 评论侧边栏
+// 評論側邊欄
 const commentSidebarVisible = ref(false)
 const commentTarget = ref('')
 
@@ -252,10 +252,10 @@ watch(() => route.query.chara, (newVal) => {
                             <span class="block text-xs text-slate-400 mt-1"
                                 v-if="entry.location && entry.location.length">({{ entry.location.length }})</span>
                         </a>
-                        <!-- 评论按钮 -->
+                        <!-- 評論按鈕 -->
                         <button @click="openComments(entry.chara)"
                             class="absolute top-1 right-1 text-slate-300 hover:text-accent transition-colors p-0.5"
-                            title="评论">
+                            title="評論">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
@@ -271,7 +271,7 @@ watch(() => route.query.chara, (newVal) => {
                     <div class="md:hidden flex justify-center items-center mb-4 gap-2">
                         <h2 class="text-4xl font-bold text-slate-800 dark:text-slate-100 relative z-10 leading-none">{{
                             entry.chara }}</h2>
-                        <button @click="openComments(entry.chara)" class="text-slate-400 hover:text-accent" title="评论">
+                        <button @click="openComments(entry.chara)" class="text-slate-400 hover:text-accent" title="評論">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
@@ -351,7 +351,7 @@ watch(() => route.query.chara, (newVal) => {
             </div>
         </div>
 
-        <!-- 评论侧边栏 -->
+        <!-- 評論側邊欄 -->
         <CommentSidebar
             type="char"
             :target="commentTarget"

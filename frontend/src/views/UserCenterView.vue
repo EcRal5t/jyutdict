@@ -20,7 +20,7 @@ const startEditNickname = () => {
 const saveNickname = async () => {
     const val = nicknameInput.value.trim()
     if (!val || val.length > 50) {
-        nicknameError.value = '昵称长度为 1-50 个字符'
+        nicknameError.value = '暱稱長度為 1-50 個字元'
         return
     }
     nicknameSaving.value = true
@@ -31,7 +31,7 @@ const saveNickname = async () => {
         await authStore.refreshUser()
         editingNickname.value = false
     } catch (e) {
-        nicknameError.value = e.response?.data?.error || '保存失败'
+        nicknameError.value = e.response?.data?.error || '儲存失敗'
     } finally {
         nicknameSaving.value = false
     }
@@ -58,8 +58,8 @@ const loadComments = async (page = 1) => {
 
 // ===== 角色显示 =====
 const roleLabel = computed(() => {
-    const map = { owner: '站长', admin: '管理员', editor: '编纂者', user: '普通用户' }
-    return map[authStore.userRole] || '普通用户'
+    const map = { owner: '站長', admin: '管理員', editor: '編纂者', user: '普通用戶' }
+    return map[authStore.userRole] || '普通用戶'
 })
 
 const roleColor = computed(() => {
@@ -79,16 +79,16 @@ onMounted(() => {
 
 <template>
     <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-8">用户中心</h1>
+        <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-8">用戶中心</h1>
 
-        <!-- 个人资料卡片 -->
+        <!-- 個人資料卡片 -->
         <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-8">
-            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-accent pl-3">个人资料</h2>
+            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-accent pl-3">個人資料</h2>
 
             <div class="space-y-4">
-                <!-- 邮箱（不可编辑） -->
+                <!-- 郵箱（不可編輯） -->
                 <div class="flex items-center gap-4">
-                    <span class="text-sm text-slate-500 w-20">邮箱</span>
+                    <span class="text-sm text-slate-500 w-20">郵箱</span>
                     <span class="text-sm text-slate-800 dark:text-slate-200">{{ authStore.user?.email }}</span>
                 </div>
 
@@ -98,38 +98,38 @@ onMounted(() => {
                     <span class="text-xs px-2 py-1 rounded font-medium" :class="roleColor">{{ roleLabel }}</span>
                 </div>
 
-                <!-- 昵称（可编辑） -->
+                <!-- 暱稱（可編輯） -->
                 <div class="flex items-center gap-4">
-                    <span class="text-sm text-slate-500 w-20">昵称</span>
+                    <span class="text-sm text-slate-500 w-20">暱稱</span>
                     <template v-if="!editingNickname">
-                        <span class="text-sm text-slate-800 dark:text-slate-200">{{ authStore.user?.nickname || '(未设置)' }}</span>
+                        <span class="text-sm text-slate-800 dark:text-slate-200">{{ authStore.user?.nickname || '(未設定)' }}</span>
                         <button @click="startEditNickname" class="text-xs text-accent hover:underline">修改</button>
                     </template>
                     <template v-else>
                         <input v-model="nicknameInput" @keypress.enter="saveNickname"
                             class="text-sm p-1.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-900 rounded w-48 focus:ring-1 focus:ring-accent outline-none"
-                            maxlength="50" placeholder="输入昵称" />
+                            maxlength="50" placeholder="輸入暱稱" />
                         <button @click="saveNickname" :disabled="nicknameSaving"
                             class="text-xs bg-accent text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50">
-                            {{ nicknameSaving ? '...' : '保存' }}
+                            {{ nicknameSaving ? '...' : '儲存' }}
                         </button>
                         <button @click="editingNickname = false" class="text-xs text-slate-400 hover:text-slate-600">取消</button>
                     </template>
                 </div>
                 <p v-if="nicknameError" class="text-xs text-red-500 ml-24">{{ nicknameError }}</p>
 
-                <!-- 注册时间 -->
+                <!-- 註冊時間 -->
                 <div class="flex items-center gap-4">
-                    <span class="text-sm text-slate-500 w-20">注册时间</span>
+                    <span class="text-sm text-slate-500 w-20">註冊時間</span>
                     <span class="text-sm text-slate-800 dark:text-slate-200">{{ authStore.user?.created_at }}</span>
                 </div>
             </div>
         </section>
 
-        <!-- 编纂者：负责地点 -->
+        <!-- 編纂者：負責地點 -->
         <section v-if="authStore.isEditor && authStore.user?.assigned_locations?.length"
             class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-8">
-            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-green-500 pl-3">我负责的地点</h2>
+            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-green-500 pl-3">我負責的地點</h2>
             <div class="flex flex-wrap gap-2">
                 <router-link v-for="loc in authStore.user.assigned_locations" :key="`${loc.location_source}-${loc.location_id}`"
                     :to="{ name: 'location-article', params: { source: loc.location_source, locationId: loc.location_id } }"
@@ -139,16 +139,16 @@ onMounted(() => {
             </div>
         </section>
 
-        <!-- 我的评论 -->
+        <!-- 我的評論 -->
         <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
-            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-wood pl-3">我的评论</h2>
+            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-wood pl-3">我的評論</h2>
 
             <div v-if="commentsLoading" class="text-center py-8">
                 <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-accent"></div>
             </div>
 
             <div v-else-if="comments.length === 0" class="text-center text-slate-400 py-8 text-sm">
-                暂无评论
+                暫無評論
             </div>
 
             <div v-else class="space-y-3">
@@ -157,14 +157,14 @@ onMounted(() => {
                     <div class="flex items-center gap-2 mb-1">
                         <span class="text-xs px-1.5 py-0.5 rounded"
                               :class="comment.type === 'char' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'">
-                            {{ comment.type === 'char' ? '字评论' : '字表评论' }}
+                            {{ comment.type === 'char' ? '字評論' : '字表評論' }}
                         </span>
                         <span class="text-xs text-slate-400">{{ comment.target }}</span>
                         <span class="text-xs text-slate-400 ml-auto">{{ comment.created_at }}</span>
-                        <span v-if="comment.is_deleted" class="text-xs text-red-400">(已删除)</span>
+                        <span v-if="comment.is_deleted" class="text-xs text-red-400">(已刪除)</span>
                     </div>
                     <p class="text-sm text-slate-700 dark:text-slate-300 line-clamp-2">
-                        {{ comment.is_deleted ? '该评论已删除' : comment.content }}
+                        {{ comment.is_deleted ? '該評論已刪除' : comment.content }}
                     </p>
                 </div>
             </div>
