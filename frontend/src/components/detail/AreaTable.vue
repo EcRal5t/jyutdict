@@ -17,7 +17,6 @@ const props = defineProps({
 
 // ===== 地点文章相关 =====
 const articleLocationSet = ref(new Set()) // 存储有文章的地点名称
-const modalSource = ref('')
 const modalLocationName = ref('')
 const showModal = ref(false)
 
@@ -28,10 +27,7 @@ const loadArticleLocations = async () => {
         const articles = res.data.articles || []
         const set = new Set()
         articles.forEach(a => {
-            // AreaTable 展示的是 area 类型的地点
-            if (a.location_source === 'area') {
-                set.add(a.location_name)
-            }
+            set.add(a.location_name)
         })
         articleLocationSet.value = set
     } catch (e) {
@@ -49,7 +45,6 @@ const hasArticle = (cityName, districtName) => {
 const openArticleModal = (cityName, districtName) => {
     const name = cityName + (districtName || '')
     if (!articleLocationSet.value.has(name)) return
-    modalSource.value = 'area'
     modalLocationName.value = name
     showModal.value = true
 }
@@ -307,7 +302,6 @@ const getColors = (colorStr) => {
   <!-- 地点文章弹窗 -->
   <Teleport to="body">
       <LocationArticleModal v-if="showModal"
-          :source="modalSource"
           :location-name="modalLocationName"
           @close="closeModal" />
   </Teleport>

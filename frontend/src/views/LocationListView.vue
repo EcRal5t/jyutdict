@@ -37,7 +37,7 @@ const selectArticle = async (art) => {
     selectedArticle.value = art
     articleLoading.value = true
     try {
-        const res = await articlesApi.getArticle(art.location_source, art.location_name)
+        const res = await articlesApi.getArticle(art.location_name)
         articleContent.value = res.data.article
     } catch (e) {
         console.error(e)
@@ -58,8 +58,7 @@ const canEditSelected = computed(() => {
     if (authStore.isAdmin) return true
     if (authStore.userRole === 'editor' && authStore.user?.assigned_locations) {
         return authStore.user.assigned_locations.some(
-            loc => loc.location_source === selectedArticle.value.location_source
-                && loc.location_name === selectedArticle.value.location_name
+            loc => loc.location_name === selectedArticle.value.location_name
         )
     }
     return false
@@ -94,10 +93,10 @@ onMounted(() => {
 
                 <!-- 列表 -->
                 <div v-else class="space-y-1 max-h-[70vh] overflow-y-auto">
-                    <button v-for="art in articles" :key="`${art.location_source}-${art.location_name}`"
+                    <button v-for="art in articles" :key="art.location_name"
                         @click="selectArticle(art)"
                         class="w-full text-left p-3 rounded-lg border transition-colors"
-                        :class="selectedArticle?.location_name === art.location_name && selectedArticle?.location_source === art.location_source
+                        :class="selectedArticle?.location_name === art.location_name
                             ? 'border-accent bg-accent/5 dark:bg-accent/10'
                             : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800'">
                         <div class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ art.location_name }}</div>
@@ -139,7 +138,7 @@ onMounted(() => {
                             <span>{{ articleContent.updated_at }}</span>
                         </div>
                         <router-link v-if="canEditSelected"
-                            :to="{ name: 'location-article', params: { source: selectedArticle.location_source, locationName: selectedArticle.location_name } }"
+                            :to="{ name: 'location-article', params: { locationName: selectedArticle.location_name } }"
                             class="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-red-700">
                             前往編輯
                         </router-link>

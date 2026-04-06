@@ -186,7 +186,6 @@ const classification = computed(() => {
 
 // ===== 地点文章相关 =====
 const articleLocationSet = ref(new Set())
-const modalSource = ref('')
 const modalLocationName = ref('')
 const showModal = ref(false)
 
@@ -196,9 +195,7 @@ const loadArticleLocations = async () => {
         const articles = res.data.articles || []
         const set = new Set()
         articles.forEach(a => {
-            if (a.location_source === 'faamjyut') {
-                set.add(a.location_name)
-            }
+            set.add(a.location_name)
         })
         articleLocationSet.value = set
     } catch (e) {
@@ -213,7 +210,6 @@ const hasArticle = (label) => {
 const openArticleModal = (label, event) => {
     if (!articleLocationSet.value.has(label)) return
     event.stopPropagation() // 阻止冒泡到备注 toggle
-    modalSource.value = 'faamjyut'
     modalLocationName.value = label
     showModal.value = true
 }
@@ -340,7 +336,6 @@ onMounted(() => {
   <!-- 地点文章弹窗 -->
   <Teleport to="body">
       <LocationArticleModal v-if="showModal"
-          :source="modalSource"
           :location-name="modalLocationName"
           @close="closeModal" />
   </Teleport>

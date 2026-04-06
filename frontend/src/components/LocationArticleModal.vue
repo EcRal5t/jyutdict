@@ -6,7 +6,6 @@ import { useAuthStore } from '@/stores/auth.js'
 import articlesApi from '@/api/articles.js'
 
 const props = defineProps({
-    source: { type: String, required: true },       // 'area' | 'faamjyut'
     locationName: { type: String, required: true },  // 地点名称
 })
 
@@ -27,7 +26,7 @@ const canEdit = computed(() => {
     if (authStore.isAdmin) return true
     if (authStore.userRole === 'editor' && authStore.user?.assigned_locations) {
         return authStore.user.assigned_locations.some(
-            loc => loc.location_source === props.source && loc.location_name === props.locationName
+            loc => loc.location_name === props.locationName
         )
     }
     return false
@@ -37,7 +36,7 @@ const loadArticle = async () => {
     isLoading.value = true
     error.value = null
     try {
-        const res = await articlesApi.getArticle(props.source, props.locationName)
+        const res = await articlesApi.getArticle(props.locationName)
         article.value = res.data.article
     } catch (e) {
         error.value = '載入文章失敗'
@@ -58,7 +57,7 @@ const onKeydown = (e) => {
     if (e.key === 'Escape') emit('close')
 }
 
-watch(() => [props.source, props.locationName], () => {
+watch(() => props.locationName, () => {
     loadArticle()
 }, { immediate: true })
 
@@ -113,7 +112,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
                     <span class="ml-3">{{ article.updated_at }}</span>
                 </div>
                 <router-link v-if="canEdit"
-                    :to="{ name: 'location-article', params: { source, locationName } }"
+                    :to="{ name: 'location-article', params: { locationName } }"
                     @click="emit('close')"
                     class="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-red-700">
                     前往修改

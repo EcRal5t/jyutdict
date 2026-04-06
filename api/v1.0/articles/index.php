@@ -5,14 +5,14 @@
  * GET    /api/v1.0/articles/?list=1[&search={keyword}]
  *        → 获取所有有文章的地点列表（公开，无需登录）
  *
- * GET    /api/v1.0/articles/?source={area|faamjyut}&location_name={name}
+ * GET    /api/v1.0/articles/?location_name={name}
  *        → 获取某地点的文章（公开，无需登录）
  *
  * POST   /api/v1.0/articles/
  *        → 创建或更新文章（编纂者：限已分配地点；管理员+：任意地点）
- *        Body: { "location_source": "area", "location_name": "廣州市荔灣區", "content": "# 标题...", "edit_summary": "初稿" }
+ *        Body: { "location_name": "廣州", "content": "# 标题...", "edit_summary": "初稿" }
  *
- * GET    /api/v1.0/articles/?source={}&location_name={}&versions=1
+ * GET    /api/v1.0/articles/?location_name={}&versions=1
  *        → 获取文章版本历史列表
  *
  * GET    /api/v1.0/articles/?version_id={id}
@@ -44,7 +44,7 @@ if ($method === 'GET') {
         $search = $_GET['search'] ?? '';
         try {
             $sql = "
-                SELECT a.`location_source`, a.`location_name`, a.`updated_at`,
+                SELECT a.`location_name`, a.`updated_at`,
                        u.`nickname` AS author_nickname,
                        LEFT(a.`content`, 200) AS excerpt
                 FROM `articles` a
@@ -100,20 +100,19 @@ if ($method === 'GET') {
         }
     }
 
-    // --- 需要 source 和 location_name ---
-    $source = $_GET['source'] ?? '';
+    // --- 需要 location_name ---
     $locationName = $_GET['location_name'] ?? '';
 
-    if (!$source || !$locationName) {
-        outputJson(['error' => 'Missing source and location_name parameters'], 400);
+    if (!$locationName) {
+        outputJson(['error' => 'Missing location_name parameter'], 400);
     }
 
     // --- 获取版本历史 ---
     if (isset($_GET['versions'])) {
         try {
             // 先找文章
-            $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_source` = :source AND `location_name` = :lname");
-            $stmt->execute([':source' => $source, ':lname' => $locationName]);
+            $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname");
+            $stmt->execute([':lname' => $locationName]);
             $article = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$article) {
@@ -144,9 +143,9 @@ if ($method === 'GET') {
                    u.`nickname`, u.`email`, u.`role`
             FROM `articles` a
             JOIN `users` u ON a.`author_id` = u.`id`
-            WHERE a.`location_source` = :source AND a.`location_name` = :lname
+            WHERE a.`location_name` = :lname
         ");
-        $stmt->execute([':source' => $source, ':lname' => $locationName]);
+        $stmt->execute([':lname' => $locationName]);
         $article = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$article) {
@@ -218,25 +217,21 @@ if ($method === 'POST') {
     requireRole('editor'); // 至少是编纂者
 
     $input = json_decode(file_get_contents('php://input'), true);
-    $locSource = $input['location_source'] ?? '';
     $locName = $input['location_name'] ?? '';
     $content = $input['content'] ?? '';
     $editSummary = $input['edit_summary'] ?? null;
 
-    if (!$locSource || !$locName) {
-        outputJson(['error' => 'Missing location_source or location_name'], 400);
-    }
-    if (!in_array($locSource, ['area', 'faamjyut'])) {
-        outputJson(['error' => 'Invalid location_source'], 400);
+    if (!$locName) {
+        outputJson(['error' => 'Missing location_name'], 400);
     }
 
     // 权限检查：编纂者只能编辑已分配地点，管理员+可以编辑任意地点
     if (getRoleLevel($currentUserRole) < getRoleLevel('admin')) {
         $stmt = $dbh->prepare("
             SELECT COUNT(*) FROM `editor_locations`
-            WHERE `editor_id` = :eid AND `location_source` = :source AND `location_name` = :lname
+            WHERE `editor_id` = :eid AND `location_name` = :lname
         ");
-        $stmt->execute([':eid' => $currentUserId, ':source' => $locSource, ':lname' => $locName]);
+        $stmt->execute([':eid' => $currentUserId, ':lname' => $locName]);
         $assigned = $stmt->fetchColumn();
 
         if (!$assigned) {
@@ -248,8 +243,8 @@ if ($method === 'POST') {
         $dbh->beginTransaction();
 
         // 查找已有文章
-        $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_source` = :source AND `location_name` = :lname");
-        $stmt->execute([':source' => $locSource, ':lname' => $locName]);
+        $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname");
+        $stmt->execute([':lname' => $locName]);
         $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($existing) {
@@ -260,10 +255,10 @@ if ($method === 'POST') {
         } else {
             // 新建
             $stmt = $dbh->prepare("
-                INSERT INTO `articles` (`location_source`, `location_name`, `content`, `author_id`)
-                VALUES (:source, :lname, :content, :uid)
+                INSERT INTO `articles` (`location_name`, `content`, `author_id`)
+                VALUES (:lname, :content, :uid)
             ");
-            $stmt->execute([':source' => $locSource, ':lname' => $locName, ':content' => $content, ':uid' => $currentUserId]);
+            $stmt->execute([':lname' => $locName, ':content' => $content, ':uid' => $currentUserId]);
             $articleId = $dbh->lastInsertId();
         }
 

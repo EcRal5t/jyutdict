@@ -25,14 +25,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     try {
         $stmt = $dbh->prepare("
-            SELECT u.`id`, u.`email`, u.`nickname`, u.`role`, u.`created_at`,
-                   GROUP_CONCAT(
-                       CONCAT(el.`location_source`, ':', el.`location_id`) SEPARATOR ','
-                   ) AS assigned_locations_raw
-            FROM `users` u
-            LEFT JOIN `editor_locations` el ON u.`id` = el.`editor_id`
-            WHERE u.`id` = :id
-            GROUP BY u.`id`
+            SELECT `id`, `email`, `nickname`, `role`, `created_at`
+            FROM `users`
+            WHERE `id` = :id
         ");
         $stmt->execute([':id' => $currentUserId]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -41,17 +36,16 @@ if ($method === 'GET') {
             outputJson(['error' => 'User not found'], 404);
         }
 
-        // 解析 assigned_locations
-        $locations = [];
-        if ($user['assigned_locations_raw']) {
-            foreach (explode(',', $user['assigned_locations_raw']) as $loc) {
-                list($source, $locId) = explode(':', $loc);
-                $locations[] = ['location_source' => $source, 'location_id' => (int)$locId];
-            }
-        }
-        unset($user['assigned_locations_raw']);
-        $user['assigned_locations'] = $locations;
         $user['id'] = (int)$user['id'];
+
+        // 获取编纂者分配的地点
+        $locations = [];
+        if ($user['role'] === 'editor') {
+            $stmt2 = $dbh->prepare("SELECT `location_name` FROM `editor_locations` WHERE `editor_id` = :eid");
+            $stmt2->execute([':eid' => $currentUserId]);
+            $locations = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+        }
+        $user['assigned_locations'] = $locations;
 
         // 获取评论计数
         $stmt = $dbh->prepare("SELECT COUNT(*) FROM `char_comments` WHERE `user_id` = :uid AND `is_deleted` = 0");

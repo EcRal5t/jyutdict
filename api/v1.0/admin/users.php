@@ -55,7 +55,7 @@ if ($method === 'GET') {
             $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // 获取分配的地点
-            $stmt = $dbh->prepare("SELECT `location_source`, `location_id`, `assigned_at` FROM `editor_locations` WHERE `editor_id` = :eid");
+            $stmt = $dbh->prepare("SELECT `location_name`, `assigned_at` FROM `editor_locations` WHERE `editor_id` = :eid");
             $stmt->execute([':eid' => $targetId]);
             $locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
