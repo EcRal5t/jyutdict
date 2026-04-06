@@ -1,5 +1,6 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth.js'
+import RoleBadge from './RoleBadge.vue'
 
 const authStore = useAuthStore()
 </script>
@@ -12,38 +13,30 @@ const authStore = useAuthStore()
 
     <!-- 已登入：顯示用戶菜單 -->
     <div v-else-if="authStore.isLoggedIn" class="relative group/user">
-        <button class="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-red-400 transition-colors py-1">
+        <button class="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-accent dark:hover:text-red-400 transition-colors py-1.5 px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
             <span>{{ authStore.displayName }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover/user:rotate-180 duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
         </button>
 
-        <!-- 下拉菜單 -->
-        <div class="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-xl py-1 opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible transition-all duration-200 z-[60]">
+        <!-- 下拉菜單 (Glassmorphism + Scales) -->
+        <div class="absolute right-0 top-full mt-2 w-52 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] py-2 opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible scale-95 group-hover/user:scale-100 origin-top-right transition-all duration-300 ease-out z-[60]">
             <!-- 角色標籤 -->
-            <div class="px-4 py-2 border-b border-gray-100 dark:border-slate-700">
-                <span class="text-xs text-slate-400">{{ authStore.user.email }}</span>
-                <span v-if="authStore.userRole !== 'user'"
-                      class="ml-1 inline-block text-xs px-1.5 py-0.5 rounded"
-                      :class="{
-                          'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': authStore.isOwner,
-                          'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': authStore.userRole === 'admin',
-                          'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': authStore.userRole === 'editor',
-                      }">
-                    {{ { owner: '站長', admin: '管理員', editor: '編纂者' }[authStore.userRole] }}
-                </span>
+            <div class="px-4 py-2.5 border-b border-gray-100/50 dark:border-slate-700/50 flex flex-col gap-1.5 mb-1">
+                <span class="text-xs text-slate-500 font-medium truncate">{{ authStore.user.email }}</span>
+                <RoleBadge v-if="authStore.userRole !== 'user'" :role="authStore.userRole" />
             </div>
 
-            <router-link to="/user" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700">
+            <router-link to="/user" class="block px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-accent/10 hover:text-accent transition-colors">
                 用戶中心
             </router-link>
 
-            <router-link v-if="authStore.isAdmin" to="/admin" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700">
+            <router-link v-if="authStore.isAdmin" to="/admin" class="block px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-accent/10 hover:text-accent transition-colors">
                 後台管理
             </router-link>
 
-            <button @click="authStore.logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-slate-700">
+            <button @click="authStore.logout()" class="w-full text-left px-4 py-2 mt-1 border-t border-gray-100/50 dark:border-slate-700/50 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                 登出
             </button>
         </div>
@@ -51,7 +44,7 @@ const authStore = useAuthStore()
 
     <!-- 未登入：顯示登入按鈕 -->
     <button v-else @click="authStore.login()"
-        class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-red-400 transition-colors py-1 px-3 border border-slate-300 dark:border-slate-600 rounded-lg hover:border-accent dark:hover:border-red-500">
+        class="text-sm font-bold text-white bg-accent dark:bg-[#B72914] shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300 py-1.5 px-4 rounded-lg">
         登入
     </button>
 </template>

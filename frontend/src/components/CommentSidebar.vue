@@ -144,13 +144,13 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
 <template>
     <!-- 半透明遮罩 -->
     <Transition name="fade">
-        <div v-if="visible" class="fixed inset-0 bg-black/20 z-40 lg:hidden" @click="emit('close')"></div>
+        <div v-if="visible" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden" @click="emit('close')"></div>
     </Transition>
 
     <!-- 側邊欄面板 -->
     <Transition name="slide">
         <aside v-if="visible"
-            class="fixed right-0 top-0 h-full w-80 sm:w-96 bg-white dark:bg-slate-800 shadow-2xl z-50 flex flex-col border-l border-gray-200 dark:border-slate-700">
+            class="fixed right-0 top-0 h-full w-80 sm:w-96 bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl shadow-[-10px_0_40px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_40px_rgba(0,0,0,0.5)] z-50 flex flex-col border-l border-gray-200/50 dark:border-slate-700/50">
 
             <!-- 頭部 -->
             <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
@@ -174,7 +174,7 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
 
                 <!-- 單條評論 -->
                 <div v-for="comment in comments" :key="comment.id"
-                    class="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50">
+                    class="p-4 rounded-xl bg-white dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
 
                     <!-- 已刪除 -->
                     <div v-if="comment.is_deleted" class="text-xs text-slate-400 italic">該評論已刪除</div>
@@ -199,7 +199,7 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
                         <!-- 內容（編輯模式） -->
                         <div v-else class="space-y-2">
                             <textarea v-model="editContent"
-                                class="w-full p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded resize-none focus:ring-1 focus:ring-accent outline-none"
+                                class="w-full p-3 text-sm border border-gray-300/50 dark:border-slate-600/50 dark:bg-slate-900/50 rounded-xl resize-none focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none transition-shadow"
                                 rows="3"></textarea>
                             <div class="flex gap-2">
                                 <button @click="saveEdit" :disabled="isEditSaving"
@@ -222,9 +222,9 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
             </div>
 
             <!-- 發表新評論（底部固定） -->
-            <div v-if="authStore.isLoggedIn" class="p-4 border-t border-gray-200 dark:border-slate-700">
+            <div v-if="authStore.isLoggedIn" class="p-4 border-t border-gray-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50">
                 <textarea v-model="newComment" @keydown.ctrl.enter="submitComment"
-                    class="w-full p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg resize-none focus:ring-1 focus:ring-accent outline-none"
+                    class="w-full p-3 text-sm border border-gray-300/50 dark:border-slate-600/50 dark:bg-slate-900/50 rounded-xl resize-none focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none transition-shadow"
                     rows="2" placeholder="發表評論... (Ctrl+Enter 發送)"></textarea>
                 <div class="flex justify-end mt-2">
                     <button @click="submitComment" :disabled="isSubmitting || !newComment.trim()"
