@@ -8,3 +8,12 @@ Empty.php
 
 node_modules
 dist
+
+.python-version
+pyproject.toml
+.venv
+uv.lock
+
+.claude
+CLAUDE.md
+docs/

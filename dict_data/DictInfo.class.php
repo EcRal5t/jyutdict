@@ -6,7 +6,7 @@ class InfoArea extends ResultIterator
   `id`,`longitude`,`latitude`,`first`,`second`,`third`,`sheetname`,`color`") : void
   { $this->select_sql	=	$sql; }
 
-  protected final function setTableName(string $tableName = "IAreaList") : void
+  protected final function setTableName(string $tableName = "i_area_list") : void
   { $this->tableName	=	$tableName; }
 
   protected final function setWhereClause(string $sql = "1") : void
@@ -44,7 +44,7 @@ class InfoWanshyu extends ResultIterator
   `id`,`name`,`fullname`,`date`,`sheetname` ") : void
   { $this->select_sql	=	$sql; }
 
-  protected final function setTableName(string $tableName = "IWanshyuList") : void
+  protected final function setTableName(string $tableName = "i_wanshyu_list") : void
   { $this->tableName	=	$tableName; }
 
   protected final function setWhereClause(string $sql = "1") : void

@@ -27,7 +27,7 @@ require_once("ResultIterator.class.php");
     { $this->select_sql = $sql;}
     
     #此处默认参数非必要 因为会从Info里面获取
-    protected final function setTableName(string $tableName = "YKuangyon"): void
+    protected final function setTableName(string $tableName = "y_kuangyon"): void
     { $this->tableName  = $tableName; }
     
     private function setDate(string $date)
@@ -93,7 +93,7 @@ require_once("ResultIterator.class.php");
     { $this->select_sql = $sql;}
     
     #此处默认参数非必要 因为会从Info里面获取
-    protected final function setTableName(string $tableName = "YFanwan"): void
+    protected final function setTableName(string $tableName = "y_fanwan"): void
     { $this->tableName  = $tableName; }
 
     private function setDate(string $date)
@@ -185,7 +185,7 @@ require_once("ResultIterator.class.php");
     { $this->select_sql = $sql;}
     
     #此处默认参数非必要 因为会从Info里面获取
-    protected final function setTableName(string $tableName = "YJingwaa"): void
+    protected final function setTableName(string $tableName = "y_jingwaa"): void
     { $this->tableName  = $tableName; }
 
 

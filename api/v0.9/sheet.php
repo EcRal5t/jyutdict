@@ -57,7 +57,7 @@ $randomReturnCount = (isset($_REQUEST['limit']) and is_numeric($_REQUEST['limit'
 $randomReturnCount = $randomReturnCount <= 30 ? $randomReturnCount : 30;
 
 
-$sheetHeader_sql = "SELECT * FROM `IFaamjyut`"; // 偷個懶，直接獲取表頭
+$sheetHeader_sql = "SELECT * FROM `i_faamjyut`"; // 偷個懶，直接獲取表頭
 $sheetHeader_stmt = $dbh->prepare($sheetHeader_sql);
 $sheetHeader_stmt->execute();
 $sheetHeaderArray = $sheetHeader_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -122,26 +122,26 @@ if (!$isRandomReturn) { // 常規檢索
 
     if ($isUsingRegex) {
         if ($isFuzzyQuery) {
-            $inCharaSheet_sql = "SELECT * FROM `JFaamjyut` WHERE `$queryCol` REGEXP :str LIMIT 50";
+            $inCharaSheet_sql = "SELECT * FROM `j_faamjyut` WHERE `$queryCol` REGEXP :str LIMIT 50";
         } else {
-            $inCharaSheet_sql = "SELECT * FROM `JFaamjyut` WHERE `$queryCol` REGEXP :str LIMIT 50";
+            $inCharaSheet_sql = "SELECT * FROM `j_faamjyut` WHERE `$queryCol` REGEXP :str LIMIT 50";
             $queryString = "^$queryString$";
         }
     } else {
         if ($isFuzzyQuery) {
-            $inCharaSheet_sql = "SELECT * FROM `JFaamjyut` WHERE `$queryCol` LIKE :str LIMIT 50";
+            $inCharaSheet_sql = "SELECT * FROM `j_faamjyut` WHERE `$queryCol` LIKE :str LIMIT 50";
             $queryString = "%$queryString%";
         } else {
-            $inCharaSheet_sql = "SELECT * FROM `JFaamjyut` WHERE `$queryCol` = :str LIMIT 50";
+            $inCharaSheet_sql = "SELECT * FROM `j_faamjyut` WHERE `$queryCol` = :str LIMIT 50";
         }
     }
 } else { // 隨機返回
     $inCharaSheet_sql = "
     SELECT t1.*
-    FROM `JFaamjyut` AS t1
+    FROM `j_faamjyut` AS t1
     JOIN (
         SELECT id
-        FROM `JFaamjyut`
+        FROM `j_faamjyut`
         ORDER BY RAND()
         LIMIT $randomReturnCount
     ) AS t2 ON t1.id = t2.id;
