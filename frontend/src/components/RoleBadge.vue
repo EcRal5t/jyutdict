@@ -14,16 +14,16 @@ const label = computed(() => {
 
 const badgeClass = computed(() => {
     const map = {
-        owner: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800',
-        admin: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-        editor: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800',
+        owner: 'bg-red-50 text-red-700 border-red-200/60 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20 dark:shadow-[0_0_8px_rgba(239,68,68,0.15)]',
+        admin: 'bg-blue-50 text-blue-700 border-blue-200/60 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20 dark:shadow-[0_0_8px_rgba(59,130,246,0.15)]',
+        editor: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20 dark:shadow-[0_0_8px_rgba(16,185,129,0.15)]',
     }
     return map[props.role] || ''
 })
 </script>
 
 <template>
-    <span v-if="label" class="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border font-medium" :class="badgeClass">
+    <span v-if="label" class="inline-flex items-center justify-center text-[10px] px-2 py-0.5 rounded-md border font-semibold tracking-wide transition-colors" :class="badgeClass">
         {{ label }}
     </span>
 </template>

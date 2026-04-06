@@ -107,7 +107,7 @@ onMounted(() => {
         <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-8">用戶中心</h1>
 
         <!-- 個人資料卡片 -->
-        <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-8">
+        <section class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-white/50 dark:border-slate-700/50 p-6 mb-8 transition-shadow hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
             <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-accent pl-3">個人資料</h2>
 
             <div class="space-y-4">
@@ -132,7 +132,7 @@ onMounted(() => {
                     </template>
                     <template v-else>
                         <input v-model="nicknameInput" @keypress.enter="saveNickname"
-                            class="text-sm p-1.5 border border-gray-300 dark:border-slate-600 dark:bg-slate-900 rounded w-48 focus:ring-1 focus:ring-accent outline-none"
+                            class="text-sm p-2 border border-gray-200 dark:border-slate-600 dark:bg-slate-900/50 rounded-lg w-48 focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none transition-all shadow-sm"
                             maxlength="50" placeholder="輸入暱稱" />
                         <button @click="saveNickname" :disabled="nicknameSaving"
                             class="text-xs bg-accent text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50">
@@ -153,15 +153,15 @@ onMounted(() => {
 
         <!-- 地點文章管理（編纂者/管理員/站長可見） -->
         <section v-if="authStore.isEditor"
-            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-8">
+            class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-white/50 dark:border-slate-700/50 p-6 mb-8 transition-shadow hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
             <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-green-500 pl-3">地點文章管理</h2>
 
             <!-- 搜索框 -->
             <div class="flex gap-2 mb-4">
                 <input v-model="locationSearch" @keypress.enter="searchLocations" placeholder="搜尋地點名稱..."
-                    class="flex-1 p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg outline-none focus:ring-1 focus:ring-accent" />
+                    class="flex-1 p-2.5 text-sm border border-gray-200 dark:border-slate-700 dark:bg-slate-900/50 rounded-xl outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-sm" />
                 <button @click="searchLocations"
-                    class="px-4 py-2 text-sm bg-accent text-white rounded-lg hover:bg-red-700">
+                    class="px-5 py-2.5 text-sm font-medium bg-accent text-white rounded-xl shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300">
                     搜尋
                 </button>
             </div>
@@ -174,7 +174,7 @@ onMounted(() => {
             <!-- 地点列表 -->
             <div v-else-if="availableLocations.length > 0" class="space-y-2">
                 <div v-for="loc in availableLocations" :key="`${loc.source}-${loc.name}`"
-                    class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                    class="flex items-center justify-between p-4 bg-white dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
                     <div>
                         <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ loc.name }}</span>
                     </div>
@@ -196,7 +196,7 @@ onMounted(() => {
         </section>
 
         <!-- 我的評論 -->
-        <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
+        <section class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-white/50 dark:border-slate-700/50 p-6 transition-shadow hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
             <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-wood pl-3">我的評論</h2>
 
             <div v-if="commentsLoading" class="text-center py-8">
@@ -209,7 +209,7 @@ onMounted(() => {
 
             <div v-else class="space-y-3">
                 <div v-for="comment in comments" :key="`${comment.type}-${comment.id}`"
-                    class="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                    class="p-4 bg-white dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
                     <div class="flex items-center gap-2 mb-1">
                         <span class="text-xs px-1.5 py-0.5 rounded"
                               :class="comment.type === 'char' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'">

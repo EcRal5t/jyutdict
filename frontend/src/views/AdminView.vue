@@ -115,15 +115,15 @@ onMounted(() => {
         <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6">後台管理</h1>
 
         <!-- Tab 切換 -->
-        <div class="flex gap-4 mb-6 border-b border-gray-200 dark:border-slate-700">
+        <div class="flex gap-2 mb-8 bg-gray-100/50 dark:bg-slate-800/50 p-1.5 rounded-xl w-fit">
             <button @click="activeTab = 'users'"
-                class="pb-2 text-sm font-medium transition-colors border-b-2"
-                :class="activeTab === 'users' ? 'border-accent text-accent' : 'border-transparent text-slate-500 hover:text-slate-700'">
+                class="px-5 py-2 text-sm font-medium rounded-lg transition-all duration-300"
+                :class="activeTab === 'users' ? 'bg-white dark:bg-slate-700 text-accent shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-gray-200/50 dark:hover:bg-slate-700/50'">
                 用戶管理
             </button>
             <button @click="activeTab = 'editors'; searchEditors()"
-                class="pb-2 text-sm font-medium transition-colors border-b-2"
-                :class="activeTab === 'editors' ? 'border-accent text-accent' : 'border-transparent text-slate-500 hover:text-slate-700'">
+                class="px-5 py-2 text-sm font-medium rounded-lg transition-all duration-300"
+                :class="activeTab === 'editors' ? 'bg-white dark:bg-slate-700 text-accent shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-gray-200/50 dark:hover:bg-slate-700/50'">
                 編纂者地點分配
             </button>
         </div>
@@ -131,40 +131,41 @@ onMounted(() => {
         <!-- ===== 用戶管理 Tab ===== -->
         <div v-if="activeTab === 'users'">
             <!-- 搜索與篩選 -->
-            <div class="flex flex-col sm:flex-row gap-3 mb-4">
+            <div class="flex flex-col sm:flex-row gap-3 mb-6">
                 <input v-model="searchQuery" @keypress.enter="loadUsers(1)" placeholder="搜索郵箱或暱稱..."
-                    class="flex-1 p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg outline-none focus:ring-1 focus:ring-accent" />
+                    class="flex-1 p-2.5 text-sm border border-gray-200 dark:border-slate-700 dark:bg-slate-900/50 rounded-xl outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-sm" />
                 <select v-model="roleFilter" @change="loadUsers(1)"
-                    class="p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg">
+                    class="p-2.5 text-sm border border-gray-200 dark:border-slate-700 dark:bg-slate-900/50 rounded-xl outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-sm">
                     <option value="">全部角色</option>
                     <option value="user">普通用戶</option>
                     <option value="editor">編纂者</option>
                     <option value="admin">管理員</option>
                     <option value="owner">Owner</option>
                 </select>
-                <button @click="loadUsers(1)" class="bg-accent text-white px-4 py-2 text-sm rounded-lg hover:bg-red-700">
+                <button @click="loadUsers(1)" class="bg-accent text-white px-5 py-2.5 text-sm font-medium rounded-xl shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300">
                     搜尋
                 </button>
             </div>
 
             <!-- 用戶表格 -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-gray-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                            <th class="text-left p-3 font-medium text-slate-600 dark:text-slate-400">ID</th>
-                            <th class="text-left p-3 font-medium text-slate-600 dark:text-slate-400">暱稱</th>
-                            <th class="text-left p-3 font-medium text-slate-600 dark:text-slate-400">郵箱</th>
-                            <th class="text-left p-3 font-medium text-slate-600 dark:text-slate-400">角色</th>
-                            <th class="text-left p-3 font-medium text-slate-600 dark:text-slate-400">註冊時間</th>
-                            <th class="text-left p-3 font-medium text-slate-600 dark:text-slate-400">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="usersLoading">
-                            <td colspan="6" class="text-center py-8 text-slate-400">載入中...</td>
-                        </tr>
-                        <tr v-for="u in users" :key="u.id" class="border-b border-gray-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-900/30">
+            <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-white/50 dark:border-slate-700/50 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
+                                <th class="text-left p-4 font-semibold text-slate-600 dark:text-slate-400">ID</th>
+                                <th class="text-left p-4 font-semibold text-slate-600 dark:text-slate-400">暱稱</th>
+                                <th class="text-left p-4 font-semibold text-slate-600 dark:text-slate-400">郵箱</th>
+                                <th class="text-left p-4 font-semibold text-slate-600 dark:text-slate-400">角色</th>
+                                <th class="text-left p-4 font-semibold text-slate-600 dark:text-slate-400">註冊時間</th>
+                                <th class="text-left p-4 font-semibold text-slate-600 dark:text-slate-400">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="usersLoading">
+                                <td colspan="6" class="text-center py-8 text-slate-400">載入中...</td>
+                            </tr>
+                            <tr v-for="u in users" :key="u.id" class="border-b border-gray-50 dark:border-slate-700/30 hover:bg-slate-50/80 dark:hover:bg-slate-800/80 transition-colors">
                             <td class="p-3 text-slate-500">{{ u.id }}</td>
                             <td class="p-3">{{ u.nickname || '-' }}</td>
                             <td class="p-3 text-slate-500 text-xs">{{ u.email }}</td>
@@ -201,9 +202,10 @@ onMounted(() => {
                                 </div>
                                 <span v-else class="text-xs text-slate-300">-</span>
                             </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- 分页 -->
@@ -219,18 +221,22 @@ onMounted(() => {
         <!-- ===== 編纂者地點分配 Tab ===== -->
         <div v-if="activeTab === 'editors'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- 左欄：選擇編纂者 -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4">
-                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">選擇編纂者</h3>
-                <input v-model="editorSearchQuery" @input="searchEditors" placeholder="搜尋編纂者..."
-                    class="w-full p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg mb-3 outline-none" />
+            <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-white/50 dark:border-slate-700/50 p-5">
+                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+                    <span class="w-1 h-4 bg-accent rounded-full"></span> 選擇編纂者
+                </h3>
+                <div class="mb-4">
+                    <input v-model="editorSearchQuery" @input="searchEditors" placeholder="搜尋編纂者..."
+                        class="w-full p-2.5 text-sm border border-gray-200 dark:border-slate-700 dark:bg-slate-900/50 rounded-xl outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-sm" />
+                </div>
 
-                <div class="space-y-1 max-h-60 overflow-y-auto">
+                <div class="space-y-1 max-h-60 overflow-y-auto pr-2">
                     <button v-for="editor in editorUsers" :key="editor.id" @click="selectEditor(editor)"
-                        class="w-full text-left p-2 text-sm rounded-lg transition-colors"
-                        :class="selectedEditor?.id === editor.id ? 'bg-accent/10 text-accent' : 'hover:bg-slate-50 dark:hover:bg-slate-700'">
-                        {{ editor.nickname || editor.email }} <span class="text-xs text-slate-400">#{{ editor.id }}</span>
+                        class="w-full text-left p-3 text-sm rounded-xl transition-all duration-200"
+                        :class="selectedEditor?.id === editor.id ? 'bg-accent/10 border border-accent/20 text-accent font-medium' : 'border border-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50'">
+                        {{ editor.nickname || editor.email }} <span class="text-[10px] text-slate-400 font-normal ml-1">#{{ editor.id }}</span>
                     </button>
-                    <p v-if="editorUsers.length === 0" class="text-xs text-slate-400 text-center py-4">無編纂者</p>
+                    <p v-if="editorUsers.length === 0" class="text-xs text-slate-400 text-center py-6">無編纂者</p>
                 </div>
 
                 <!-- 已分配地點 -->
@@ -251,8 +257,10 @@ onMounted(() => {
             </div>
 
             <!-- 右欄：地點列表（可點擊分配） -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4">
-                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">可分配地點</h3>
+            <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-white/50 dark:border-slate-700/50 p-5">
+                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+                    <span class="w-1 h-4 bg-green-500 rounded-full"></span> 可分配地點
+                </h3>
                 <p v-if="!selectedEditor" class="text-xs text-slate-400 text-center py-4">請先選擇一個編纂者</p>
 
                 <template v-else>

@@ -68,12 +68,12 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 
 <template>
     <!-- 遮罩层 -->
-    <div class="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 md:py-[100px]"
+    <div class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm transition-all duration-300 flex items-center justify-center p-4 md:py-[100px]"
          @click="onOverlayClick">
         <!-- 弹窗主体 -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-[600px] max-h-full overflow-hidden flex flex-col">
+        <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-gray-100/50 dark:border-slate-700/50 w-full max-w-[600px] max-h-full overflow-hidden flex flex-col scale-100">
             <!-- 标题栏 -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100/50 dark:border-slate-700/50">
                 <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">{{ locationName }}</h2>
                 <button @click="emit('close')"
                     class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
@@ -106,7 +106,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
             </div>
 
             <!-- 底栏 -->
-            <div v-if="article" class="px-6 py-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-400">
+            <div v-if="article" class="px-6 py-3 border-t border-gray-100/50 dark:border-slate-700/50 bg-gray-50/50 dark:bg-slate-800/30 flex items-center justify-between text-xs text-slate-400">
                 <div>
                     <span>{{ article.nickname || article.email }}</span>
                     <span class="ml-3">{{ article.updated_at }}</span>
