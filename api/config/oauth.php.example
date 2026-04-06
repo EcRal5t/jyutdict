@@ -22,11 +22,12 @@ $client_secret = 'YOUR_GOOGLE_CLIENT_SECRET';
 
 if ($isLocal) {
     // 本地开发环境
+    // 注意：前端在 npm run dev 时运行在 localhost:5173
     return [
         'client_id'        => $client_id,
         'client_secret'    => $client_secret,
         'redirect_uri'     => 'http://localhost:8888/api/auth/google?action=callback',
-        'frontend_url'     => 'http://localhost:8888/#/',
+        'frontend_url'     => 'http://localhost:5173/#/',
         'session_lifetime' => 604800,
     ];
 } else {

@@ -1,0 +1,249 @@
+<script setup>
+import { ref, watch, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth.js'
+import commentsApi from '@/api/comments.js'
+import RoleBadge from './RoleBadge.vue'
+
+const props = defineProps({
+    /** 评论类型：'char' 或 'sheet' */
+    type: { type: String, required: true },
+    /** 评论目标标识：char 时为汉字字符，sheet 时为鍵值 */
+    target: { type: String, default: '' },
+    /** 是否可见 */
+    visible: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['close'])
+
+const authStore = useAuthStore()
+
+// ===== 数据 =====
+const comments = ref([])
+const isLoading = ref(false)
+const error = ref(null)
+
+// ===== 发表评论 =====
+const newComment = ref('')
+const isSubmitting = ref(false)
+
+// ===== 编辑评论 =====
+const editingId = ref(null)
+const editContent = ref('')
+const isEditSaving = ref(false)
+
+// ===== 加载评论 =====
+const loadComments = async () => {
+    if (!props.target) return
+    isLoading.value = true
+    error.value = null
+    try {
+        const res = props.type === 'char'
+            ? await commentsApi.getCharComments(props.target)
+            : await commentsApi.getSheetComments(props.target)
+        comments.value = res.data.comments || []
+    } catch (e) {
+        error.value = '加载评论失败'
+        console.error(e)
+    } finally {
+        isLoading.value = false
+    }
+}
+
+// 当目标变化时重新加载
+watch(() => props.target, (newVal) => {
+    if (newVal && props.visible) {
+        loadComments()
+    }
+    // 关闭编辑状态
+    editingId.value = null
+    newComment.value = ''
+})
+
+watch(() => props.visible, (newVal) => {
+    if (newVal && props.target) {
+        loadComments()
+    }
+})
+
+// ===== 发表 =====
+const submitComment = async () => {
+    const content = newComment.value.trim()
+    if (!content) return
+    isSubmitting.value = true
+    try {
+        if (props.type === 'char') {
+            await commentsApi.postCharComment(props.target, content)
+        } else {
+            await commentsApi.postSheetComment(props.target, content)
+        }
+        newComment.value = ''
+        await loadComments()
+    } catch (e) {
+        alert(e.response?.data?.error || '发表失败')
+    } finally {
+        isSubmitting.value = false
+    }
+}
+
+// ===== 编辑 =====
+const startEdit = (comment) => {
+    editingId.value = comment.id
+    editContent.value = comment.content
+}
+
+const cancelEdit = () => {
+    editingId.value = null
+    editContent.value = ''
+}
+
+const saveEdit = async () => {
+    if (!editContent.value.trim()) return
+    isEditSaving.value = true
+    try {
+        if (props.type === 'char') {
+            await commentsApi.editCharComment(editingId.value, editContent.value.trim())
+        } else {
+            await commentsApi.editSheetComment(editingId.value, editContent.value.trim())
+        }
+        editingId.value = null
+        await loadComments()
+    } catch (e) {
+        alert(e.response?.data?.error || '修改失败')
+    } finally {
+        isEditSaving.value = false
+    }
+}
+
+// ===== 删除 =====
+const deleteComment = async (commentId) => {
+    if (!confirm('确认删除此评论？')) return
+    try {
+        if (props.type === 'char') {
+            await commentsApi.deleteCharComment(commentId)
+        } else {
+            await commentsApi.deleteSheetComment(commentId)
+        }
+        await loadComments()
+    } catch (e) {
+        alert(e.response?.data?.error || '删除失败')
+    }
+}
+
+// ===== 判断是否可操作某条评论 =====
+const canEditComment = (comment) => {
+    return authStore.isLoggedIn && comment.user_id === authStore.user?.id && !comment.is_deleted
+}
+const canDeleteComment = (comment) => {
+    if (comment.is_deleted) return false
+    return (authStore.isLoggedIn && comment.user_id === authStore.user?.id) || authStore.isAdmin
+}
+
+const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).length)
+</script>
+
+<template>
+    <!-- 半透明遮罩 -->
+    <Transition name="fade">
+        <div v-if="visible" class="fixed inset-0 bg-black/20 z-40 lg:hidden" @click="emit('close')"></div>
+    </Transition>
+
+    <!-- 侧边栏面板 -->
+    <Transition name="slide">
+        <aside v-if="visible"
+            class="fixed right-0 top-0 h-full w-80 sm:w-96 bg-white dark:bg-slate-800 shadow-2xl z-50 flex flex-col border-l border-gray-200 dark:border-slate-700">
+
+            <!-- 头部 -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
+                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">
+                    {{ type === 'char' ? '字评论' : '字表评论' }}
+                    <span class="text-xs text-slate-400 font-normal ml-1">{{ target }}</span>
+                    <span class="text-xs text-slate-400 font-normal ml-1">({{ commentCount }})</span>
+                </h3>
+                <button @click="emit('close')" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 评论列表（可滚动） -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div v-if="isLoading" class="text-center py-8 text-slate-400 text-sm">加载中...</div>
+                <div v-else-if="error" class="text-center py-8 text-red-500 text-sm">{{ error }}</div>
+                <div v-else-if="comments.length === 0" class="text-center py-8 text-slate-400 text-sm">暂无评论</div>
+
+                <!-- 单条评论 -->
+                <div v-for="comment in comments" :key="comment.id"
+                    class="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50">
+
+                    <!-- 已删除 -->
+                    <div v-if="comment.is_deleted" class="text-xs text-slate-400 italic">该评论已删除</div>
+
+                    <!-- 正常评论 -->
+                    <template v-else>
+                        <!-- 头部：昵称 + 角色标签 + 时间 -->
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300">
+                                {{ comment.nickname || comment.email.split('@')[0] }}
+                            </span>
+                            <RoleBadge :role="comment.role" />
+                            <span class="text-[10px] text-slate-400 ml-auto">{{ comment.created_at }}</span>
+                            <span v-if="comment.updated_at !== comment.created_at" class="text-[10px] text-slate-400">(已编辑)</span>
+                        </div>
+
+                        <!-- 内容（查看模式） -->
+                        <div v-if="editingId !== comment.id" class="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap break-words">
+                            {{ comment.content }}
+                        </div>
+
+                        <!-- 内容（编辑模式） -->
+                        <div v-else class="space-y-2">
+                            <textarea v-model="editContent"
+                                class="w-full p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-800 rounded resize-none focus:ring-1 focus:ring-accent outline-none"
+                                rows="3"></textarea>
+                            <div class="flex gap-2">
+                                <button @click="saveEdit" :disabled="isEditSaving"
+                                    class="text-xs bg-accent text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50">
+                                    {{ isEditSaving ? '...' : '保存' }}
+                                </button>
+                                <button @click="cancelEdit" class="text-xs text-slate-400 hover:text-slate-600">取消</button>
+                            </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div v-if="editingId !== comment.id" class="flex gap-3 mt-2">
+                            <button v-if="canEditComment(comment)" @click="startEdit(comment)"
+                                class="text-[10px] text-slate-400 hover:text-accent">修改</button>
+                            <button v-if="canDeleteComment(comment)" @click="deleteComment(comment.id)"
+                                class="text-[10px] text-slate-400 hover:text-red-500">删除</button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- 发表新评论（底部固定） -->
+            <div v-if="authStore.isLoggedIn" class="p-4 border-t border-gray-200 dark:border-slate-700">
+                <textarea v-model="newComment" @keydown.ctrl.enter="submitComment"
+                    class="w-full p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg resize-none focus:ring-1 focus:ring-accent outline-none"
+                    rows="2" placeholder="发表评论... (Ctrl+Enter 发送)"></textarea>
+                <div class="flex justify-end mt-2">
+                    <button @click="submitComment" :disabled="isSubmitting || !newComment.trim()"
+                        class="bg-accent text-white px-4 py-1.5 text-xs rounded-lg hover:bg-red-700 disabled:opacity-50 font-bold">
+                        {{ isSubmitting ? '发送中...' : '发表' }}
+                    </button>
+                </div>
+            </div>
+            <div v-else class="p-4 border-t border-gray-200 dark:border-slate-700 text-center">
+                <button @click="authStore.login()" class="text-sm text-accent hover:underline">登录后发表评论</button>
+            </div>
+        </aside>
+    </Transition>
+</template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.slide-enter-active, .slide-leave-active { transition: transform 0.3s ease; }
+.slide-enter-from, .slide-leave-to { transform: translateX(100%); }
+</style>

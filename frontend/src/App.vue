@@ -2,8 +2,11 @@
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { ref, onMounted, computed } from 'vue'
 import { updateLogs, version, pansheetver } from './utils/updates.js'
+import { useAuthStore } from './stores/auth.js'
+import LoginButton from './components/LoginButton.vue'
 
 const route = useRoute()
+const authStore = useAuthStore()
 const isDarkMode = ref(false)
 const showMobileMenu = ref(false)
 
@@ -36,6 +39,9 @@ onMounted(() => {
         isDarkMode.value = false
         document.documentElement.classList.remove('dark')
     }
+
+    // 初始化登录状态
+    authStore.init()
 })
 
 const menuItems = [
@@ -95,6 +101,20 @@ const externalLinks = [
                                     {{ item.label }}
                                 </RouterLink>
                             </template>
+                            <!-- 移动端下拉菜单中的用户链接 -->
+                            <template v-if="authStore.isLoggedIn">
+                                <div class="h-px bg-gray-200 dark:bg-slate-700 my-1"></div>
+                                <RouterLink to="/user"
+                                    class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                    @click="showMobileMenu = false">
+                                    用户中心
+                                </RouterLink>
+                                <RouterLink v-if="authStore.isAdmin" to="/admin"
+                                    class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                    @click="showMobileMenu = false">
+                                    后台管理
+                                </RouterLink>
+                            </template>
                         </div>
                     </div>
 
@@ -106,6 +126,8 @@ const externalLinks = [
                             class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">關於</a>
                         <a href="https://jyutdict.org/about"
                             class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">說明</a>
+                        <!-- 移动端用户入口 -->
+                        <LoginButton />
                     </div>
 
                     <!-- Desktop Nav -->
@@ -136,6 +158,9 @@ const externalLinks = [
                             <a v-else :href="link.url" target="_blank" class="nav-link">{{ link.label }}</a>
                         </template>
                     </nav>
+
+                    <!-- 用户登录/菜单 -->
+                    <LoginButton />
 
                     <!-- Theme Toggle -->
                     <button @click="toggleTheme"
