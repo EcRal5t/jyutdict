@@ -83,21 +83,21 @@ const selectEditor = async (editor) => {
     }
 }
 
-const assignLocation = async (source, locationId) => {
+const assignLocation = async (source, locationName) => {
     if (!selectedEditor.value) return
     try {
-        await adminApi.assignLocation(selectedEditor.value.id, source, locationId)
+        await adminApi.assignLocation(selectedEditor.value.id, source, locationName)
         await selectEditor(selectedEditor.value) // 刷新列表
     } catch (e) {
         alert(e.response?.data?.error || '分配失敗')
     }
 }
 
-const removeLocation = async (source, locationId) => {
+const removeLocation = async (source, locationName) => {
     if (!selectedEditor.value) return
     if (!confirm('确认取消此地点分配？')) return
     try {
-        await adminApi.removeLocation(selectedEditor.value.id, source, locationId)
+        await adminApi.removeLocation(selectedEditor.value.id, source, locationName)
         await selectEditor(selectedEditor.value)
     } catch (e) {
         alert(e.response?.data?.error || '取消分配失敗')
@@ -239,10 +239,13 @@ onMounted(() => {
                         {{ selectedEditor.nickname || selectedEditor.email }} 已分配的地點：
                     </h4>
                     <div class="space-y-1">
-                        <div v-for="loc in editorLocations" :key="`${loc.location_source}-${loc.location_id}`"
+                        <div v-for="loc in editorLocations" :key="`${loc.location_source}-${loc.location_name}`"
                             class="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded text-sm">
-                            <span>{{ loc.location_source }} #{{ loc.location_id }}</span>
-                            <button @click="removeLocation(loc.location_source, loc.location_id)"
+                            <span>
+                                <span class="text-slate-800 dark:text-slate-200">{{ loc.location_name }}</span>
+                                <span class="text-xs text-slate-400 ml-1">({{ loc.location_source === 'area' ? '通用字表' : '泛粵字表' }})</span>
+                            </span>
+                            <button @click="removeLocation(loc.location_source, loc.location_name)"
                                 class="text-xs text-red-500 hover:underline">取消</button>
                         </div>
                         <p v-if="editorLocations.length === 0" class="text-xs text-slate-400">暫無分配</p>
@@ -256,22 +259,22 @@ onMounted(() => {
                 <p v-if="!selectedEditor" class="text-xs text-slate-400 text-center py-4">請先選擇一個編纂者</p>
 
                 <template v-else>
-                    <h4 class="text-xs font-bold text-slate-500 mb-2">i_area_list 地点</h4>
+                    <h4 class="text-xs font-bold text-slate-500 mb-2">通用字表地點</h4>
                     <div class="space-y-1 max-h-40 overflow-y-auto mb-4">
-                        <button v-for="loc in allLocations.area_locations" :key="'area-'+loc.id"
-                            @click="assignLocation('area', loc.id)"
+                        <button v-for="loc in allLocations.area_locations" :key="'area-'+loc.name"
+                            @click="assignLocation('area', loc.name)"
                             class="w-full text-left p-2 text-xs rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
-                            #{{ loc.id }} {{ loc.second }}{{ loc.third ? '·' + loc.third : '' }}
+                            {{ loc.name }}
                             <span class="text-slate-400">({{ loc.first }})</span>
                         </button>
                     </div>
 
-                    <h4 class="text-xs font-bold text-slate-500 mb-2">i_faamjyut 地点</h4>
+                    <h4 class="text-xs font-bold text-slate-500 mb-2">泛粵字表地點</h4>
                     <div class="space-y-1 max-h-40 overflow-y-auto">
-                        <button v-for="loc in allLocations.faamjyut_locations" :key="'faam-'+loc.id"
-                            @click="assignLocation('faamjyut', loc.id)"
+                        <button v-for="loc in allLocations.faamjyut_locations" :key="'faam-'+loc.name"
+                            @click="assignLocation('faamjyut', loc.name)"
                             class="w-full text-left p-2 text-xs rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
-                            #{{ loc.id }} {{ loc.fullname || loc.col }}
+                            {{ loc.name }}
                         </button>
                     </div>
                 </template>

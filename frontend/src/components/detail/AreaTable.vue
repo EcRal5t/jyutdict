@@ -1,6 +1,8 @@
 <script setup>
-import { computed, ref, reactive } from 'vue';
+import { computed, ref, reactive, onMounted } from 'vue';
 import { Jyutping } from '@/utils/jyutping.js';
+import articlesApi from '@/api/articles.js';
+import LocationArticleModal from '@/components/LocationArticleModal.vue';
 
 const props = defineProps({
   data: {
@@ -12,6 +14,53 @@ const props = defineProps({
     default: false
   }
 });
+
+// ===== 地点文章相关 =====
+const articleLocationSet = ref(new Set()) // 存储有文章的地点名称
+const modalSource = ref('')
+const modalLocationName = ref('')
+const showModal = ref(false)
+
+// 加载有文章的地点列表
+const loadArticleLocations = async () => {
+    try {
+        const res = await articlesApi.getArticleList()
+        const articles = res.data.articles || []
+        const set = new Set()
+        articles.forEach(a => {
+            // AreaTable 展示的是 area 类型的地点
+            if (a.location_source === 'area') {
+                set.add(a.location_name)
+            }
+        })
+        articleLocationSet.value = set
+    } catch (e) {
+        // 静默失败，不影响主功能
+    }
+}
+
+// 检查某地点是否有文章
+const hasArticle = (cityName, districtName) => {
+    const name = cityName + (districtName || '')
+    return articleLocationSet.value.has(name)
+}
+
+// 点击地点名称
+const openArticleModal = (cityName, districtName) => {
+    const name = cityName + (districtName || '')
+    if (!articleLocationSet.value.has(name)) return
+    modalSource.value = 'area'
+    modalLocationName.value = name
+    showModal.value = true
+}
+
+const closeModal = () => {
+    showModal.value = false
+}
+
+onMounted(() => {
+    loadArticleLocations()
+})
 
 // State for expanding long notes (using Set for ID tracking)
 // We use CSS hover for visual expansion, but maybe user wants it to stick?
@@ -193,9 +242,18 @@ const getColors = (colorStr) => {
                       </div>
 
                       <!-- Centered Text -->
-                      <div class="relative z-10 w-full text-center leading-tight px-2 drop-shadow-sm shadow-black">
-                          <span class="text-base text-slate-800 dark:text-slate-200">{{ row.cityData.cityName }}</span>
-                          <span v-if="row.cityData.districtName" class="text-sm text-neutral-700 dark:text-neutral-300 p-0.5">{{ row.cityData.districtName }}</span>
+                      <div class="relative z-10 w-full text-center leading-tight px-2 drop-shadow-sm shadow-black"
+                           :class="{ 'cursor-pointer': hasArticle(row.cityData.cityName, row.cityData.districtName) }"
+                           @click="openArticleModal(row.cityData.cityName, row.cityData.districtName)">
+                          <span class="text-base text-slate-800 dark:text-slate-200"
+                                :class="{ 'underline decoration-accent/40 decoration-1 underline-offset-2': hasArticle(row.cityData.cityName, row.cityData.districtName) }">
+                              {{ row.cityData.cityName }}
+                          </span>
+                          <span v-if="row.cityData.districtName"
+                                class="text-sm text-neutral-700 dark:text-neutral-300 p-0.5"
+                                :class="{ 'underline decoration-accent/40 decoration-1 underline-offset-2': hasArticle(row.cityData.cityName, row.cityData.districtName) }">
+                              {{ row.cityData.districtName }}
+                          </span>
                       </div>
                   </td>
 
@@ -245,4 +303,12 @@ const getColors = (colorStr) => {
           </tbody>
       </table>
   </div>
+
+  <!-- 地点文章弹窗 -->
+  <Teleport to="body">
+      <LocationArticleModal v-if="showModal"
+          :source="modalSource"
+          :location-name="modalLocationName"
+          @close="closeModal" />
+  </Teleport>
 </template>

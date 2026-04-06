@@ -55,7 +55,12 @@ const router = createRouter({
             meta: { requiresAuth: true, requiresRole: 'admin' }
         },
         {
-            path: '/location-article/:source/:locationId',
+            path: '/locations',
+            name: 'locations',
+            component: () => import('../views/LocationListView.vue'),
+        },
+        {
+            path: '/location-article/:source/:locationName',
             name: 'location-article',
             component: () => import('../views/LocationArticleView.vue'),
         },

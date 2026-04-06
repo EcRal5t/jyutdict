@@ -19,4 +19,7 @@ await cp(resolve(dist, 'index.html'), resolve(root, 'index.html'))
 await cp(resolve(dist, 'favicon.ico'), resolve(root, 'favicon.ico'))
 await cp(resolve(dist, 'assets'), resolve(root, 'assets'), { recursive: true })
 
+// 清理 dist 目录
+if (existsSync(dist)) await rm(dist, { recursive: true })
+
 console.log('✓ 已部署到根目录')
