@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import axios from 'axios'
+import articlesApi from '@/api/articles.js'
 
 const authStore = useAuthStore()
 
@@ -72,8 +73,32 @@ const roleColor = computed(() => {
     return map[authStore.userRole] || map.user
 })
 
+// ===== 地点文章管理 =====
+const availableLocations = ref([])
+const locationsLoading = ref(false)
+const locationSearch = ref('')
+
+const loadAvailableLocations = async () => {
+    locationsLoading.value = true
+    try {
+        const res = await articlesApi.getAvailableLocations(locationSearch.value)
+        availableLocations.value = res.data.locations || []
+    } catch (e) {
+        console.error('Failed to load locations', e)
+    } finally {
+        locationsLoading.value = false
+    }
+}
+
+const searchLocations = () => {
+    loadAvailableLocations()
+}
+
 onMounted(() => {
     loadComments()
+    if (authStore.isEditor) {
+        loadAvailableLocations()
+    }
 })
 </script>
 
@@ -126,16 +151,48 @@ onMounted(() => {
             </div>
         </section>
 
-        <!-- 編纂者：負責地點 -->
-        <section v-if="authStore.isEditor && authStore.user?.assigned_locations?.length"
+        <!-- 地點文章管理（編纂者/管理員/站長可見） -->
+        <section v-if="authStore.isEditor"
             class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 mb-8">
-            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-green-500 pl-3">我負責的地點</h2>
-            <div class="flex flex-wrap gap-2">
-                <router-link v-for="loc in authStore.user.assigned_locations" :key="`${loc.location_source}-${loc.location_id}`"
-                    :to="{ name: 'location-article', params: { source: loc.location_source, locationId: loc.location_id } }"
-                    class="text-sm px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
-                    {{ loc.location_source === 'area' ? 'i_area_list' : 'i_faamjyut' }} #{{ loc.location_id }}
-                </router-link>
+            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 border-l-4 border-green-500 pl-3">地點文章管理</h2>
+
+            <!-- 搜索框 -->
+            <div class="flex gap-2 mb-4">
+                <input v-model="locationSearch" @keypress.enter="searchLocations" placeholder="搜尋地點名稱..."
+                    class="flex-1 p-2 text-sm border border-gray-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg outline-none focus:ring-1 focus:ring-accent" />
+                <button @click="searchLocations"
+                    class="px-4 py-2 text-sm bg-accent text-white rounded-lg hover:bg-red-700">
+                    搜尋
+                </button>
+            </div>
+
+            <!-- 加载中 -->
+            <div v-if="locationsLoading" class="text-center py-4">
+                <div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-gray-200 border-t-accent"></div>
+            </div>
+
+            <!-- 地点列表 -->
+            <div v-else-if="availableLocations.length > 0" class="space-y-2">
+                <div v-for="loc in availableLocations" :key="`${loc.source}-${loc.name}`"
+                    class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <div>
+                        <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ loc.name }}</span>
+                        <span class="text-xs text-slate-400 ml-2">{{ loc.source === 'area' ? '通用字表' : '泛粵字表' }}</span>
+                    </div>
+                    <router-link
+                        :to="{ name: 'location-article', params: { source: loc.source, locationName: loc.name } }"
+                        class="text-xs px-3 py-1.5 rounded-lg transition-colors"
+                        :class="loc.has_article
+                            ? 'border border-accent text-accent hover:bg-accent/10'
+                            : 'bg-accent text-white hover:bg-red-700'">
+                        {{ loc.has_article ? '編輯文章' : '撰寫文章' }}
+                    </router-link>
+                </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div v-else class="text-center text-slate-400 py-4 text-sm">
+                {{ locationSearch ? '未找到匹配的地點' : '暫無可管理的地點' }}
             </div>
         </section>
 

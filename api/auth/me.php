@@ -42,7 +42,7 @@ try {
     // 如果是编纂者，附带负责地点列表
     $assignedLocations = [];
     if ($user['role'] === 'editor') {
-        $stmt = $dbh->prepare("SELECT `location_source`, `location_id` FROM `editor_locations` WHERE `editor_id` = :eid");
+        $stmt = $dbh->prepare("SELECT `location_source`, `location_name` FROM `editor_locations` WHERE `editor_id` = :eid");
         $stmt->execute([':eid' => $userId]);
         $assignedLocations = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

@@ -49,6 +49,7 @@ const menuItems = [
     { label: '檢音', path: '/pronunciation' },
     { label: '泛粵字表', path: '/sheet' },
     { label: '紀文', path: '/articles' },
+    { label: '地點介紹', path: '/locations' },
     { label: '相似音系測試', path: '/phonology' },
 ]
 const externalLinks = [

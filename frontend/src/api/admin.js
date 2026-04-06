@@ -34,16 +34,16 @@ export default {
     getEditorLocations(editorId) {
         return apiClient.get('/editors', { params: { editor_id: editorId } });
     },
-    getLocationEditors(source, locationId) {
-        return apiClient.get('/editors', { params: { location_source: source, location_id: locationId } });
+    getLocationEditors(source, locationName) {
+        return apiClient.get('/editors', { params: { location_source: source, location_name: locationName } });
     },
     getAllLocations() {
         return apiClient.get('/editors', { params: { list_locations: 1 } });
     },
-    assignLocation(editorId, source, locationId) {
-        return apiClient.post('/editors', { editor_id: editorId, location_source: source, location_id: locationId });
+    assignLocation(editorId, source, locationName) {
+        return apiClient.post('/editors', { editor_id: editorId, location_source: source, location_name: locationName });
     },
-    removeLocation(editorId, source, locationId) {
-        return apiClient.delete('/editors', { data: { editor_id: editorId, location_source: source, location_id: locationId } });
+    removeLocation(editorId, source, locationName) {
+        return apiClient.delete('/editors', { data: { editor_id: editorId, location_source: source, location_name: locationName } });
     },
 };

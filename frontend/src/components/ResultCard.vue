@@ -1,6 +1,8 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { darkenColor, formatCharacter, formatUnicode, formatPronunciation, formatMeanings } from '@/utils/formatters.js';
+import articlesApi from '@/api/articles.js';
+import LocationArticleModal from '@/components/LocationArticleModal.vue';
 
 const props = defineProps({
   rowData: {
@@ -182,6 +184,48 @@ const classification = computed(() => {
     return '';
 });
 
+// ===== 地点文章相关 =====
+const articleLocationSet = ref(new Set())
+const modalSource = ref('')
+const modalLocationName = ref('')
+const showModal = ref(false)
+
+const loadArticleLocations = async () => {
+    try {
+        const res = await articlesApi.getArticleList()
+        const articles = res.data.articles || []
+        const set = new Set()
+        articles.forEach(a => {
+            if (a.location_source === 'faamjyut') {
+                set.add(a.location_name)
+            }
+        })
+        articleLocationSet.value = set
+    } catch (e) {
+        // 静默失败
+    }
+}
+
+const hasArticle = (label) => {
+    return articleLocationSet.value.has(label)
+}
+
+const openArticleModal = (label, event) => {
+    if (!articleLocationSet.value.has(label)) return
+    event.stopPropagation() // 阻止冒泡到备注 toggle
+    modalSource.value = 'faamjyut'
+    modalLocationName.value = label
+    showModal.value = true
+}
+
+const closeModal = () => {
+    showModal.value = false
+}
+
+onMounted(() => {
+    loadArticleLocations()
+})
+
 </script>
 
 <template>
@@ -235,17 +279,28 @@ const classification = computed(() => {
             <!-- Locations (Cities) -->
             <div class="flex flex-wrap gap-3 mb-3 text-sm">
                 <div v-for="loc in processedLocations.cities" :key="loc.key" class="relative">
-                    <div 
-                        class="inline-flex flex-wrap items-baseline gap-1"
-                        :class="{'cursor-pointer hover:opacity-80': loc.note}"
-                        @click="loc.note && toggleNote(loc.key)"
-                    >
-                         <!-- Label -->
-                        <span class="font-bold" :style="{ color: loc.color }">{{ loc.label }}:</span>
-                        <!-- Value -->
-                        <span class="text-slate-800 dark:text-slate-300" :class="{ 'italic': loc.isItalic, 'text-slate-400': loc.isDim }" v-html="loc.value"></span>
+                    <div class="inline-flex flex-wrap items-baseline gap-1">
+                         <!-- Label（地点名称）— 有文章时可点击 -->
+                        <span class="font-bold"
+                              :style="{ color: loc.color }"
+                              :class="{
+                                  'cursor-pointer underline decoration-1 underline-offset-2': hasArticle(loc.label),
+                                  'decoration-current opacity-70 hover:opacity-100': hasArticle(loc.label),
+                              }"
+                              @click="openArticleModal(loc.label, $event)">{{ loc.label }}</span><span
+                              class="font-bold" :style="{ color: loc.color }">:</span>
+                        <!-- Value（读音值）— 有备注时可点击展开 -->
+                        <span class="text-slate-800 dark:text-slate-300"
+                              :class="{
+                                  'italic': loc.isItalic,
+                                  'text-slate-400': loc.isDim,
+                                  'cursor-pointer hover:opacity-80': loc.note,
+                              }"
+                              @click="loc.note && toggleNote(loc.key)"
+                              v-html="loc.value"></span>
                         <!-- Note Indicator -->
-                        <span v-if="loc.note" class="text-xs align-top text-accent opacity-70">*</span>
+                        <span v-if="loc.note" class="text-xs align-top text-accent opacity-70 cursor-pointer"
+                              @click="toggleNote(loc.key)">*</span>
                     </div>
                     
                     <!-- Note Popup -->
@@ -281,4 +336,12 @@ const classification = computed(() => {
         </div>
     </div>
   </div>
+
+  <!-- 地点文章弹窗 -->
+  <Teleport to="body">
+      <LocationArticleModal v-if="showModal"
+          :source="modalSource"
+          :location-name="modalLocationName"
+          @close="closeModal" />
+  </Teleport>
 </template>
