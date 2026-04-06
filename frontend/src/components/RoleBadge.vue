@@ -8,7 +8,7 @@ const props = defineProps({
 })
 
 const label = computed(() => {
-    const map = { owner: '站长', admin: '管理员', editor: '编纂者' }
+    const map = { owner: '站長', admin: '管理員', editor: '編纂者' }
     return map[props.role] || null
 })
 

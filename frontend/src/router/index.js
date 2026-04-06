@@ -85,17 +85,17 @@ router.beforeEach(async (to, from, next) => {
     }
 
     if (!authStore.isLoggedIn) {
-        // 未登录，跳转到首页（或弹出登录提示）
+        // 未登入，跳轉到首頁（或彈出登入提示）
         return next({ name: 'home', query: { login_required: '1' } })
     }
 
-    // 检查角色要求
+    // 檢查角色要求
     if (to.meta.requiresRole) {
         const roleLevel = { user: 0, editor: 1, admin: 2, owner: 3 }
         const required = roleLevel[to.meta.requiresRole] || 0
         const current = roleLevel[authStore.userRole] || 0
         if (current < required) {
-            return next({ name: 'home' }) // 权限不足，回首页
+            return next({ name: 'home' }) // 權限不足，回首頁
         }
     }
 

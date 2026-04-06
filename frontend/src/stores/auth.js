@@ -6,8 +6,8 @@ export const useAuthStore = defineStore('auth', () => {
     // ========== State ==========
     const user = ref(null);           // { id, email, nickname, role, assigned_locations }
     const csrfToken = ref('');
-    const isLoading = ref(true);      // 初始加载状态
-    const isInitialized = ref(false); // 是否已完成初始化检查
+    const isLoading = ref(true);      // 初始載入狀態
+    const isInitialized = ref(false); // 是否已完成初始化檢查
 
     // ========== Getters ==========
     const isLoggedIn = computed(() => !!user.value);
@@ -23,8 +23,8 @@ export const useAuthStore = defineStore('auth', () => {
     // ========== Actions ==========
 
     /**
-     * 初始化：检查登录状态
-     * 在 App.vue 的 onMounted 中调用
+     * 初始化：檢查登入狀態
+     * 在 App.vue 的 onMounted 中調用
      */
     async function init() {
         if (isInitialized.value) return;
@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     /**
-     * 跳转到 Google OAuth 登录
+     * 跳轉到 Google OAuth 登入
      */
     function login() {
         window.location.href = authApi.getLoginUrl();
@@ -66,7 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     /**
-     * 刷新用户信息（角色变更后调用）
+     * 刷新用戶信息（角色變更後調用）
      */
     async function refreshUser() {
         try {
