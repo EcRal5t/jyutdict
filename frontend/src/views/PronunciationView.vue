@@ -271,6 +271,27 @@ const hasResults = computed(() => {
     return hasAncientData || hasLocationData;
 });
 
+// 根据 ID 获取地点信息
+const getLocationById = (id) => {
+    return locations.value.find(loc => loc.id === id) || {};
+};
+
+// 根据颜色生成选中状态的样式
+const getSelectedStyle = (color) => {
+    if (!color) color = '#999999';
+    // 将颜色转换为 RGB
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return {
+        '--selected-bg-light': `rgba(${r}, ${g}, ${b}, 0.1)`,
+        '--selected-bg-dark': `rgba(${r}, ${g}, ${b}, 0.25)`,
+        '--selected-text-light': `rgb(${Math.max(0, r - 50)}, ${Math.max(0, g - 50)}, ${Math.max(0, b - 50)})`,
+        '--selected-text-dark': `rgb(${Math.min(255, r + 80)}, ${Math.min(255, g + 80)}, ${Math.min(255, b + 80)})`,
+    };
+};
+
 onMounted(() => {
     loadLocations();
 });
@@ -357,9 +378,9 @@ onMounted(() => {
                     <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 pl-2 border-b border-slate-200 dark:border-slate-700 pb-1">{{ division }}</h3>
                     <div class="flex flex-wrap gap-2">
                         <label v-for="loc in locs" :key="loc.id"
-                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-all text-sm border-l-4 hover:-translate-y-0.5 hover:shadow-sm"
-                            :style="{ borderColor: loc.color || '#999' }"
-                            :class="selectedLocations.has(loc.id) ? 'bg-accent/10 text-accent' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-all text-sm border-l-4 hover:-translate-y-0.5 hover:shadow-sm location-label"
+                            :style="selectedLocations.has(loc.id) ? { borderColor: loc.color || '#999', ...getSelectedStyle(loc.color) } : { borderColor: loc.color || '#999' }"
+                            :class="selectedLocations.has(loc.id) ? 'selected' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">
                             <input type="checkbox" :checked="selectedLocations.has(loc.id)" @change="toggleLocation(loc.id)" class="w-3 h-3">
                             {{ loc.second }}{{ loc.third ? ' ' + loc.third : '' }}
                         </label>
@@ -396,9 +417,9 @@ onMounted(() => {
                     <div v-for="loc in results['各地']" :key="loc.__id"
                         class="p-3 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-[4px_4px_0_rgba(0,0,0,0.06)] dark:hover:shadow-[4px_4px_0_rgba(0,0,0,0.3)] hover:-translate-y-0.5 transition-all">
                         <div class="flex items-center gap-2 mb-1 border-b border-slate-100 dark:border-slate-700 pb-1">
-                            <div class="w-3 h-3 rounded-none" :style="{ backgroundColor: loc.__color || '#999' }"></div>
-                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ loc.__city }}</span>
-                            <span v-if="loc.__district" class="text-sm text-slate-500">{{ loc.__district }}</span>
+                            <div class="w-3 h-3 rounded-none" :style="{ backgroundColor: getLocationById(loc.__id).color || '#999' }"></div>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ getLocationById(loc.__id).second }}</span>
+                            <span v-if="getLocationById(loc.__id).third" class="text-sm text-slate-500">{{ getLocationById(loc.__id).third }}</span>
                         </div>
                         <div v-for="(tones, pron) in loc" :key="pron" class="text-sm">
                             <template v-if="!pron.startsWith('__')">
@@ -415,3 +436,15 @@ onMounted(() => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.location-label.selected {
+    background-color: var(--selected-bg-light);
+    color: var(--selected-text-light);
+}
+
+.dark .location-label.selected {
+    background-color: var(--selected-bg-dark);
+    color: var(--selected-text-dark);
+}
+</style>

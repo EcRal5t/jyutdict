@@ -7,18 +7,43 @@ import LoginButton from './components/LoginButton.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
-const isDarkMode = ref(false)
+
+// 主题状态: 'light' | 'dark' | 'system'
+const themeMode = ref('system')
 const showMobileMenu = ref(false)
 
-const toggleTheme = () => {
-    isDarkMode.value = !isDarkMode.value
+// 计算当前是否为深色模式
+const isDarkMode = computed(() => {
+    if (themeMode.value === 'system') {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+    return themeMode.value === 'dark'
+})
+
+// 应用主题
+const applyTheme = () => {
     if (isDarkMode.value) {
         document.documentElement.classList.add('dark')
     } else {
         document.documentElement.classList.remove('dark')
     }
-    localStorage.setItem('theme', isDarkMode.value ? 'dark' : 'light')
 }
+
+// 切换主题 (循环: light -> dark -> system -> light)
+const toggleTheme = () => {
+    const modes = ['light', 'dark', 'system']
+    const currentIndex = modes.indexOf(themeMode.value)
+    themeMode.value = modes[(currentIndex + 1) % modes.length]
+    localStorage.setItem('themeMode', themeMode.value)
+    applyTheme()
+}
+
+// 主题图标
+const themeIcon = computed(() => {
+    if (themeMode.value === 'light') return 'sun'
+    if (themeMode.value === 'dark') return 'moon'
+    return 'system'
+})
 
 // Tooltip Logic
 const showTooltip = ref(false)
@@ -31,14 +56,19 @@ const tooltipContent = computed(() => {
 })
 
 onMounted(() => {
-    // Check local storage or system preference
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        isDarkMode.value = true
-        document.documentElement.classList.add('dark')
-    } else {
-        isDarkMode.value = false
-        document.documentElement.classList.remove('dark')
+    // 读取保存的主题设置
+    const savedMode = localStorage.getItem('themeMode')
+    if (savedMode && ['light', 'dark', 'system'].includes(savedMode)) {
+        themeMode.value = savedMode
     }
+    applyTheme()
+
+    // 监听系统主题变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (themeMode.value === 'system') {
+            applyTheme()
+        }
+    })
 
     // 初始化登入狀態
     authStore.init()
@@ -167,18 +197,25 @@ const externalLinks = [
 
                     <!-- Theme Toggle -->
                     <button @click="toggleTheme"
-                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400">
-                        <!-- Sun Icon -->
-                        <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+                        :title="themeMode === 'light' ? '亮色模式' : themeMode === 'dark' ? '深色模式' : '跟隨系統'">
+                        <!-- Sun Icon (light mode) -->
+                        <svg v-if="themeIcon === 'sun'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
-                        <!-- Moon Icon -->
-                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        <!-- Moon Icon (dark mode) -->
+                        <svg v-else-if="themeIcon === 'moon'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <!-- System Icon -->
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                     </button>
                 </div>
