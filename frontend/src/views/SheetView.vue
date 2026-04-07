@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted, reactive, watch, nextTick } from 'vue';
+import { ref, onMounted, reactive, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import SheetApi from '@/api/sheet.js';
+import commentsApi from '@/api/comments.js';
 import ResultCard from '@/components/ResultCard.vue';
-import { darkenColor } from '@/utils/formatters.js';
 import CommentSidebar from '@/components/CommentSidebar.vue';
 
 // 評論側邊欄
@@ -17,6 +17,25 @@ const openSheetComments = (sheetKey) => {
     }
     commentTarget.value = sheetKey
     commentSidebarVisible.value = true
+}
+
+// 評論數量
+const commentCounts = ref({})
+
+const loadCommentCounts = async () => {
+    const keys = results.value.map(r => r['鍵']).filter(Boolean)
+    if (keys.length === 0) return
+
+    try {
+        const res = await commentsApi.getCounts('sheet', keys)
+        commentCounts.value = res.data.counts || {}
+    } catch (e) {
+        console.error('Failed to load comment counts', e)
+    }
+}
+
+const getCommentCount = (key) => {
+    return commentCounts.value[key] || 0
 }
 
 const router = useRouter();
@@ -158,6 +177,9 @@ const performSearch = async () => {
 
             results.value = rows;
 
+            // 加载评论数量
+            loadCommentCounts();
+
             if (rows.length === 0) error.value = "未找到結果。";
         }
     } catch (e) {
@@ -213,12 +235,12 @@ watch(() => route.query, (newQ) => {
 
         <!-- Search Box -->
         <div
-            class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 mb-8 transition-colors duration-300">
+            class="bg-white dark:bg-slate-800 p-4 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] border border-gray-100 dark:border-slate-700 mb-8 transition-all duration-300">
             <div class="flex flex-col gap-3">
-                <div class="flex flex-col md:flex-row gap-2 md:gap-3">
+                <div class="flex flex-col md:flex-row gap-2">
                     <div class="flex-1 relative">
                         <input v-model="query" @keypress.enter="performSearch" type="text" placeholder="輸入字或音... (留空隨機)"
-                            class="w-full p-2 pl-4 text-sm md:text-base leading-relaxed bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none transition-all dark:text-slate-100 placeholder-gray-400">
+                            class="w-full p-2 pl-3 text-sm bg-gray-50 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-none focus:border-accent outline-none transition-all dark:text-slate-100 placeholder-gray-400">
                         <button @click="query = ''" v-if="query"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
@@ -232,7 +254,7 @@ watch(() => route.query, (newQ) => {
 
                     <div class="flex gap-2">
                         <select v-model="location"
-                            class="flex-1 md:flex-none p-2 text-sm bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none dark:text-slate-100 min-w-[100px]">
+                            class="flex-1 md:flex-none p-2 text-sm bg-gray-50 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-none focus:border-accent outline-none dark:text-slate-100 min-w-[100px]">
                             <option value="">綜合音/字</option>
                             <option value="檢">檢索音/字</option>
                             <option v-for="loc in locations" :key="loc.value" :value="loc.value">
@@ -241,18 +263,18 @@ watch(() => route.query, (newQ) => {
                         </select>
 
                         <button @click="performSearch"
-                            class="bg-accent hover:bg-red-700 text-white px-4 py-2 text-sm rounded-lg font-bold shadow-md active:translate-y-0 transition-all duration-200 whitespace-nowrap">
+                            class="bg-accent hover:bg-red-700 text-white px-5 py-2 text-sm rounded-none font-bold shadow-[4px_4px_0_rgba(183,41,20,0.3)] hover:shadow-[6px_6px_0_rgba(183,41,20,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all duration-200 whitespace-nowrap">
                             揾
                         </button>
                     </div>
                 </div>
 
-                <div class="flex flex-wrap justify-between md:justify-center gap-y-2 gap-x-4 pt-1 text-sm">
+                <div class="flex flex-wrap justify-between md:justify-center gap-y-2 gap-x-4 pt-2 text-sm border-t border-gray-100 dark:border-slate-700 mt-1">
                     <label
                         class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isFuzzy"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-transparent transition-all">
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
                             <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -266,7 +288,7 @@ watch(() => route.query, (newQ) => {
                         class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isTrim"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-transparent transition-all">
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
                             <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -280,7 +302,7 @@ watch(() => route.query, (newQ) => {
                         class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isRegex"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-transparent transition-all">
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
                             <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -294,7 +316,7 @@ watch(() => route.query, (newQ) => {
                         class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isDef"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-transparent transition-all">
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
                             <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -315,7 +337,7 @@ watch(() => route.query, (newQ) => {
         </div>
 
         <div v-else-if="error"
-            class="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 p-6 rounded-lg text-center border border-red-100 dark:border-red-900/30">
+            class="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 p-6 rounded-none text-center border-l-4 border-red-500 dark:border-red-400">
             {{ error }}
         </div>
 
@@ -324,15 +346,17 @@ watch(() => route.query, (newQ) => {
                 <ResultCard :row-data="row" :header-info="headerInfo" />
                 <!-- 評論按鈕（僅當行有鍵值時顯示） -->
                 <button v-if="row['鍵']" @click="openSheetComments(row['鍵'])"
-                    class="absolute top-2 right-2 text-slate-400 hover:text-accent transition-colors p-1"
+                    class="absolute top-3 right-3 flex items-center gap-1 text-xs px-2 py-1 rounded-none transition-colors"
+                    :class="getCommentCount(row['鍵']) > 0 ? 'bg-accent text-white hover:bg-red-700' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-accent'"
                     title="查看評論">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                     </svg>
+                    <span>{{ getCommentCount(row['鍵']) || '' }}</span>
                 </button>
             </div>
-            <div v-if="results.length > 0" class="text-center text-slate-400 text-sm py-8">
-                —— 到底了 End ——
+            <div v-if="results.length > 0" class="text-center text-slate-400 text-sm py-8 border-t border-slate-100 dark:border-slate-700 mt-6">
+                <span class="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-none border border-slate-200 dark:border-slate-700">—— 到底了 End ——</span>
             </div>
         </div>
 

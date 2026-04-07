@@ -15,12 +15,12 @@ const currentArticle = computed(() => {
     <div class="flex flex-col md:flex-row min-h-screen pt-16 container mx-auto px-4 gap-8">
         <!-- Sidebar -->
         <aside class="w-full md:w-64 flex-shrink-0">
-            <nav class="space-y-2 sticky top-20">
-                <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">紀文</h2>
+            <nav class="space-y-1 sticky top-20">
+                <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200 border-b-2 border-slate-200 dark:border-slate-700 pb-2">紀文</h2>
                 <template v-for="article in articlesData" :key="article.id">
                     <router-link :to="{ name: 'article', params: { id: article.id } }"
-                        class="block px-4 py-2 rounded-md transition-colors hover:bg-[#E8E8DD]"
-                        :class="{ 'bg-[#E8E8DD] text-[#d32913]': currentArticleId === article.id, 'text-gray-600 dark:text-gray-400 dark:hover:text-gray-900': currentArticleId !== article.id }">
+                        class="block px-4 py-2.5 rounded-none transition-all border-l-4 hover:translate-x-1 hover:shadow-sm"
+                        :class="currentArticleId === article.id ? 'border-l-accent bg-accent/5 text-accent' : 'border-l-transparent text-gray-600 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-l-slate-300 dark:hover:border-l-slate-600'">
                         {{ article.title }}
                     </router-link>
                 </template>
@@ -29,8 +29,8 @@ const currentArticle = computed(() => {
 
         <!-- Main Content -->
         <main class="flex-1 pb-12 article-content">
-            <div v-if="currentArticle" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 md:p-8">
-                <h1 class="text-3xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-6">{{ currentArticle.title
+            <div v-if="currentArticle" class="bg-white dark:bg-gray-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-6 md:p-8 border border-slate-100 dark:border-slate-700">
+                <h1 class="text-3xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-6 border-b-2 border-slate-200 dark:border-slate-700 pb-3">{{ currentArticle.title
                     }}</h1>
 
                 <template v-for="(block, index) in currentArticle.blocks" :key="index">

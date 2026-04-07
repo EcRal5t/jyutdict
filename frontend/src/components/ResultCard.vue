@@ -20,10 +20,19 @@ const unicodeInfo = computed(() => formatUnicode(props.rowData));
 const pronInfo = computed(() => formatPronunciation(props.rowData));
 const meaningInfo = computed(() => formatMeanings(props.rowData));
 
-const activeNote = ref(null);
+// 改用 Set 支持同时显示多个备注
+const activeNotes = ref(new Set());
 
 const toggleNote = (key) => {
-  activeNote.value = activeNote.value === key ? null : key;
+  if (activeNotes.value.has(key)) {
+    activeNotes.value.delete(key);
+  } else {
+    activeNotes.value.add(key);
+  }
+};
+
+const isNoteActive = (key) => {
+  return activeNotes.value.has(key);
 };
 
 // Compute the decorative strip color logic
@@ -225,8 +234,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="group relative bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-    
+  <div class="group relative bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-none overflow-hidden shadow-[4px_4px_0_rgba(0,0,0,0.06)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] transition-all duration-300">
+
     <!-- Color Strip -->
     <div class="absolute left-0 top-0 bottom-0 w-2 transition-colors duration-500" :style="{ backgroundColor: stripColor }"></div>
 
@@ -281,7 +290,7 @@ onMounted(() => {
                               :style="{ color: loc.color }"
                               :class="{
                                   'cursor-pointer underline decoration-1 underline-offset-2': hasArticle(loc.label),
-                                  'decoration-current opacity-70 hover:opacity-100': hasArticle(loc.label),
+                                  'decoration-current hover:opacity-70': hasArticle(loc.label),
                               }"
                               @click="openArticleModal(loc.label, $event)">{{ loc.label }}</span><span
                               class="font-bold" :style="{ color: loc.color }">:</span>
@@ -298,34 +307,34 @@ onMounted(() => {
                         <span v-if="loc.note" class="text-xs align-top text-accent opacity-70 cursor-pointer"
                               @click="toggleNote(loc.key)">*</span>
                     </div>
-                    
+
                     <!-- Note Popup -->
-                    <transition
-                      enter-active-class="transition-all duration-300 ease-out overflow-hidden"
-                      enter-from-class="max-h-0 opacity-0"
-                      enter-to-class="max-h-40 opacity-100"
-                      leave-active-class="transition-all duration-200 ease-in overflow-hidden"
-                      leave-from-class="max-h-40 opacity-100"
-                      leave-to-class="max-h-0 opacity-0"
-                    >
-                        <div v-if="activeNote === loc.key" class="w-full min-w-[200px] mt-1 p-2 bg-blue-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs rounded border-l-2 border-blue-400 block whitespace-pre-wrap z-10">
-                            {{ loc.note }}
-                        </div>
-                    </transition>
+                    <div v-if="isNoteActive(loc.key)" class="w-full min-w-[200px] mt-1 p-2 bg-blue-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs rounded-none border-l-4 border-blue-400 block whitespace-pre-wrap z-10 shadow-sm">
+                        {{ loc.note }}
+                    </div>
                 </div>
             </div>
 
             <!-- Foreign (Separated by Divider) -->
-            <div v-if="processedLocations.foreign.length > 0" class="pt-3 mt-2 border-t border-dashed border-gray-200 dark:border-slate-700 flex flex-wrap gap-4 text-sm/3">
+            <div v-if="processedLocations.foreign.length > 0" class="pt-3 mt-2 border-t border-dashed border-gray-200 dark:border-slate-700 flex flex-wrap gap-4 text-sm">
                 <div v-for="loc in processedLocations.foreign" :key="loc.key" class="relative text-slate-500 dark:text-slate-400">
                     <span class="font-bold [text-shadow:_0_0_1px_#FFF7]" :style="{ color: loc.color }">{{ loc.label }}</span>:
-                     <span :class="{ 'italic': loc.isItalic }" v-html="loc.value"></span>
+                    <span :class="{ 'italic': loc.isItalic, 'cursor-pointer hover:opacity-80': loc.note }"
+                          @click="loc.note && toggleNote('foreign-' + loc.key)"
+                          v-html="loc.value"></span>
+                    <span v-if="loc.note" class="text-xs align-top text-accent opacity-70 cursor-pointer"
+                          @click="toggleNote('foreign-' + loc.key)">*</span>
+
+                    <!-- Note Popup -->
+                    <div v-if="isNoteActive('foreign-' + loc.key)" class="w-full min-w-[200px] mt-1 p-2 bg-blue-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs rounded-none border-l-4 border-blue-400 block whitespace-pre-wrap z-10 shadow-sm">
+                        {{ loc.note }}
+                    </div>
                 </div>
             </div>
 
             <!-- Footer: Classification -->
             <div v-if="classification" class="mt-4 flex justify-end">
-                <span class="text-xs uppercase tracking-wider text-slate-300 dark:text-slate-600 font-bold bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded">
+                <span class="text-xs uppercase tracking-wider text-slate-300 dark:text-slate-600 font-bold bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-none border border-slate-200 dark:border-slate-700">
                     {{ classification }}
                 </span>
             </div>

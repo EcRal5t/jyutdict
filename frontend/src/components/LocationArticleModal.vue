@@ -95,12 +95,12 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 
                 <!-- 文章内容 -->
                 <div v-else-if="article && renderedContent"
-                    class="prose dark:prose-invert max-w-none text-sm"
+                    class="prose dark:prose-invert max-w-none text-sm text-slate-700 dark:text-slate-200"
                     v-html="renderedContent">
                 </div>
 
                 <!-- 无文章 -->
-                <div v-else class="text-center text-slate-400 py-8">
+                <div v-else class="text-center text-slate-400 dark:text-slate-500 py-8">
                     <p>此地點暫無介紹文章</p>
                 </div>
             </div>

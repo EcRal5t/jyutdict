@@ -144,22 +144,21 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
 <template>
     <!-- 半透明遮罩 -->
     <Transition name="fade">
-        <div v-if="visible" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden" @click="emit('close')"></div>
+        <div v-if="visible" class="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-40" @click="emit('close')"></div>
     </Transition>
 
     <!-- 側邊欄面板 -->
     <Transition name="slide">
         <aside v-if="visible"
-            class="fixed right-0 top-0 h-full w-80 sm:w-96 bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl shadow-[-10px_0_40px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_40px_rgba(0,0,0,0.5)] z-50 flex flex-col border-l border-gray-200/50 dark:border-slate-700/50">
+            class="fixed right-0 top-0 h-full w-80 sm:w-96 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-[-10px_0_40px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_40px_rgba(0,0,0,0.5)] z-50 flex flex-col border-l border-gray-200 dark:border-slate-700">
 
             <!-- 頭部 -->
-            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-slate-700">
                 <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">
-                    {{ type === 'char' ? '字評論' : '字表評論' }}
-                    <span class="text-xs text-slate-400 font-normal ml-1">{{ target }}</span>
+                    {{ target }}
                     <span class="text-xs text-slate-400 font-normal ml-1">({{ commentCount }})</span>
                 </h3>
-                <button @click="emit('close')" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
+                <button @click="emit('close')" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-none transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -167,14 +166,14 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
             </div>
 
             <!-- 評論列表（可滾動） -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="flex-1 overflow-y-auto">
                 <div v-if="isLoading" class="text-center py-8 text-slate-400 text-sm">載入中...</div>
                 <div v-else-if="error" class="text-center py-8 text-red-500 text-sm">{{ error }}</div>
                 <div v-else-if="comments.length === 0" class="text-center py-8 text-slate-400 text-sm">暫無評論</div>
 
                 <!-- 單條評論 -->
                 <div v-for="comment in comments" :key="comment.id"
-                    class="p-4 rounded-xl bg-white dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+                    class="p-4 border-b border-gray-100 dark:border-slate-700/50">
 
                     <!-- 已刪除 -->
                     <div v-if="comment.is_deleted" class="text-xs text-slate-400 italic">該評論已刪除</div>
@@ -199,11 +198,11 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
                         <!-- 內容（編輯模式） -->
                         <div v-else class="space-y-2">
                             <textarea v-model="editContent"
-                                class="w-full p-3 text-sm border border-gray-300/50 dark:border-slate-600/50 dark:bg-slate-900/50 rounded-xl resize-none focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none transition-shadow"
+                                class="w-full -mx-4 px-4 py-3 text-sm border-0 border-t border-b dark:bg-slate-800 resize-none focus:ring-0 outline-none"
                                 rows="3"></textarea>
                             <div class="flex gap-2">
                                 <button @click="saveEdit" :disabled="isEditSaving"
-                                    class="text-xs bg-accent text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50">
+                                    class="text-xs bg-accent text-white px-3 py-1.5 rounded-none hover:bg-red-700 disabled:opacity-50">
                                     {{ isEditSaving ? '...' : '儲存' }}
                                 </button>
                                 <button @click="cancelEdit" class="text-xs text-slate-400 hover:text-slate-600">取消</button>
@@ -222,13 +221,13 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
             </div>
 
             <!-- 發表新評論（底部固定） -->
-            <div v-if="authStore.isLoggedIn" class="p-4 border-t border-gray-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50">
+            <div v-if="authStore.isLoggedIn" class="border-t border-gray-200 dark:border-slate-700">
                 <textarea v-model="newComment" @keydown.ctrl.enter="submitComment"
-                    class="w-full p-3 text-sm border border-gray-300/50 dark:border-slate-600/50 dark:bg-slate-900/50 rounded-xl resize-none focus:ring-2 focus:ring-accent/50 focus:border-accent outline-none transition-shadow"
+                    class="w-full p-4 text-sm border-0 border-b dark:bg-slate-900 resize-none focus:ring-0 focus:border-accent outline-none"
                     rows="2" placeholder="發表評論... (Ctrl+Enter 發送)"></textarea>
-                <div class="flex justify-end mt-2">
+                <div class="flex justify-end p-3">
                     <button @click="submitComment" :disabled="isSubmitting || !newComment.trim()"
-                        class="bg-accent text-white px-4 py-1.5 text-xs rounded-lg hover:bg-red-700 disabled:opacity-50 font-bold">
+                        class="w-full bg-accent text-white px-4 py-2 text-sm rounded-none hover:bg-red-700 disabled:opacity-50 font-bold text-center">
                         {{ isSubmitting ? '發送中...' : '發表' }}
                     </button>
                 </div>

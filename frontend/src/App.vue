@@ -76,7 +76,7 @@ const externalLinks = [
                                 泛粵大典
                             </span>
                             <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5 text-gray-500 md:hidden transition-transform"
+                                class="h-5 w-5 text-gray-500 lg:hidden transition-transform"
                                 :class="{ 'rotate-180': showMobileMenu }" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -86,32 +86,32 @@ const externalLinks = [
 
                         <!-- Mobile Dropdown Menu -->
                         <div v-if="showMobileMenu"
-                            class="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-xl py-2 md:hidden animate-fade-in z-50">
+                            class="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-none shadow-[4px_4px_0_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] py-2 lg:hidden animate-fade-in z-50">
                             <template v-for="item in menuItems" :key="item.label">
                                 <a v-if="item.external" :href="item.path"
-                                    class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                    class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     :class="{ 'line-through opacity-60': item.strikethrough }"
                                     @click="showMobileMenu = false">
                                     {{ item.label }}
                                 </a>
                                 <RouterLink v-else :to="item.path"
-                                    class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                    class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     :class="{ 'line-through opacity-60': item.strikethrough }"
-                                    active-class="bg-gray-50 dark:bg-slate-700/50 font-bold"
+                                    active-class="bg-accent/5 border-l-accent font-bold"
                                     @click="showMobileMenu = false">
                                     {{ item.label }}
                                 </RouterLink>
                             </template>
                             <!-- 移動端下拉菜單中的用戶連結 -->
                             <template v-if="authStore.isLoggedIn">
-                                <div class="h-px bg-gray-200 dark:bg-slate-700 my-1"></div>
+                                <div class="h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
                                 <RouterLink to="/user"
-                                    class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                    class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     @click="showMobileMenu = false">
                                     用戶中心
                                 </RouterLink>
                                 <RouterLink v-if="authStore.isAdmin" to="/admin"
-                                    class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+                                    class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     @click="showMobileMenu = false">
                                     後台管理
                                 </RouterLink>
@@ -119,8 +119,8 @@ const externalLinks = [
                         </div>
                     </div>
 
-                    <!-- Always Visible Links (Mobile & Desktop) -->
-                    <div class="md:hidden flex items-center gap-3 text-sm font-medium">
+                    <!-- Always Visible Links (Mobile & Tablet) -->
+                    <div class="lg:hidden flex items-center gap-3 text-sm font-medium">
                         <a href="https://got.jyutdict.org" target="_blank"
                             class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">GoT</a>
                         <a href="https://jyutjam.org/" target="_blank"
@@ -132,36 +132,38 @@ const externalLinks = [
                     </div>
 
                     <!-- Desktop Nav -->
-                    <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                    <nav class="hidden lg:flex items-center gap-4 text-sm font-medium flex-shrink-0">
                         <template v-for="item in menuItems" :key="item.label">
-                            <a v-if="item.external" :href="item.path" class="nav-link"
+                            <a v-if="item.external" :href="item.path" class="nav-link whitespace-nowrap"
                                 :class="{ 'line-through opacity-60': item.strikethrough }">{{ item.label }}</a>
-                            <RouterLink v-else :to="item.path" class="nav-link"
+                            <RouterLink v-else :to="item.path" class="nav-link whitespace-nowrap"
                                 :class="{ 'line-through opacity-60': item.strikethrough }" active-class="active">{{
                                     item.label }}
                             </RouterLink>
                         </template>
-                        <div class="h-4 w-px bg-gray-300 dark:bg-slate-700 mx-2"></div>
+                        <div class="h-4 w-px bg-gray-300 dark:bg-slate-700 mx-1"></div>
                         <!-- Desktop External Links -->
                         <template v-for="link in externalLinks" :key="link.label">
                             <div v-if="link.hasTooltip" class="relative group/tooltip">
-                                <RouterLink v-if="link.path" :to="link.path" class="nav-link" active-class="active">{{
+                                <RouterLink v-if="link.path" :to="link.path" class="nav-link whitespace-nowrap" active-class="active">{{
                                     link.label }}</RouterLink>
-                                <a v-else :href="link.url" class="nav-link">{{ link.label }}</a>
+                                <a v-else :href="link.url" class="nav-link whitespace-nowrap">{{ link.label }}</a>
                                 <!-- Tooltip -->
                                 <div
-                                    class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-xl rounded-lg p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[60]">
+                                    class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 shadow-[4px_4px_0_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] rounded-none p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[60]">
                                     {{ tooltipContent }}
                                 </div>
                             </div>
-                            <RouterLink v-else-if="link.path" :to="link.path" class="nav-link" active-class="active">{{
+                            <RouterLink v-else-if="link.path" :to="link.path" class="nav-link whitespace-nowrap" active-class="active">{{
                                 link.label }}</RouterLink>
-                            <a v-else :href="link.url" target="_blank" class="nav-link">{{ link.label }}</a>
+                            <a v-else :href="link.url" target="_blank" class="nav-link whitespace-nowrap">{{ link.label }}</a>
                         </template>
                     </nav>
 
-                    <!-- 用戶登入/菜單 -->
-                    <LoginButton />
+                    <!-- 用戶登入/菜單 (Desktop) -->
+                    <div class="hidden lg:block">
+                        <LoginButton />
+                    </div>
 
                     <!-- Theme Toggle -->
                     <button @click="toggleTheme"

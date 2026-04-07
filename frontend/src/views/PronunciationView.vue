@@ -279,12 +279,12 @@ onMounted(() => {
 <template>
     <div class="container mx-auto px-4 pt-20 pb-12 flex flex-col items-center">
         <!-- Input Section -->
-        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-8 w-full max-w-2xl">
+        <div class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-5 w-full max-w-2xl border border-gray-100 dark:border-slate-700">
             <!-- <h1 class="text-3xl font-bold mb-6 text-center text-slate-800 dark:text-slate-100 font-serif">粵語檢音</h1> -->
 
-            <div class="flex gap-4 mb-6">
+            <div class="flex flex-col sm:flex-row gap-2 mb-4">
                 <input v-model="form.pron" @input="analyzeInput" type="text"
-                    class="flex-1 p-3 text-lg font-mono border-2 rounded-md outline-none transition-colors dark:bg-slate-900 dark:text-white"
+                    class="flex-1 p-2 text-lg font-mono border-2 rounded-none outline-none transition-colors dark:bg-slate-900 dark:text-white"
                     :class="{
                         'border-gray-200 dark:border-slate-700': parseStatus === 'neutral',
                         'border-green-500': parseStatus === 'valid',
@@ -293,8 +293,8 @@ onMounted(() => {
                 <button
                     @click="submitSearch"
                     :disabled="inputDisabled"
-                    class="px-6 py-3 font-bold text-white rounded-md transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                    :class="inputDisabled ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'"
+                    class="px-6 py-2 font-bold text-white rounded-none transition-all shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:translate-y-0 active:shadow-[2px_2px_0_rgba(0,0,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                    :class="inputDisabled ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700 hover:shadow-[6px_6px_0_rgba(0,0,0,0.25)] hover:-translate-y-0.5'"
                 >
                     耖
                 </button>
@@ -307,45 +307,45 @@ onMounted(() => {
             <!-- Color Blocks Visualization -->
             <div class="flex justify-center gap-1 font-mono text-xl h-10">
                 <div
-                    class="w-auto min-w-10 px-1 flex items-center justify-center rounded bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300">
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-l-4 border-red-500 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300">
                     {{ parsedComponents.in || '-' }}</div>
                 <div
-                    class="w-auto min-w-10 px-1 flex items-center justify-center rounded bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-l-4 border-orange-500 bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
                     {{ parsedComponents.nu || '-' }}</div>
                 <div
-                    class="w-auto min-w-10 px-1 flex items-center justify-center rounded bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-l-4 border-green-500 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
                     {{ parsedComponents.co || '-' }}</div>
                 <div
-                    class="w-auto min-w-10 px-1 flex items-center justify-center rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-l-4 border-blue-500 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
                     {{ parsedComponents.to || '-' }}</div>
             </div>
         </div>
 
         <!-- Location Selection -->
-        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 w-full max-w-4xl mt-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">選擇地點</h2>
-                <div class="flex gap-2">
-                    <button @click="selectAll" class="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">全選</button>
-                    <button @click="deselectAll" class="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">全不選</button>
-                    <button @click="invertSelection" class="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">反選</button>
+        <div class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-5 w-full max-w-4xl mt-6 border border-gray-100 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 border-l-4 border-accent pl-3">選擇地點</h2>
+                <div class="flex gap-1">
+                    <button @click="selectAll" class="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 rounded-none hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">全選</button>
+                    <button @click="deselectAll" class="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 rounded-none hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">全不選</button>
+                    <button @click="invertSelection" class="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 rounded-none hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">反選</button>
                 </div>
             </div>
 
             <div v-if="loadingLocations" class="text-center py-4 text-slate-500">載入中...</div>
 
-            <div v-else class="max-h-60 overflow-y-auto">
+            <div v-else class="max-h-60 overflow-y-auto overflow-x-hidden">
                 <!-- 韻書選項 -->
                 <div class="mb-3">
-                    <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-1">韻書</h3>
+                    <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 border-l-4 border-wood pl-2">韻書</h3>
                     <div class="flex flex-wrap gap-2">
-                        <label class="flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors text-sm"
-                            :class="selectedLocations.has('fanwan') ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'">
+                        <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-all text-sm border-l-4 hover:-translate-y-0.5 hover:shadow-sm"
+                            :class="selectedLocations.has('fanwan') ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-500' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-amber-400'">
                             <input type="checkbox" :checked="selectedLocations.has('fanwan')" @change="toggleLocation('fanwan')" class="w-3 h-3">
                             分韻
                         </label>
-                        <label class="flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors text-sm"
-                            :class="selectedLocations.has('jingwaa') ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'">
+                        <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-all text-sm border-l-4 hover:-translate-y-0.5 hover:shadow-sm"
+                            :class="selectedLocations.has('jingwaa') ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-500' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-amber-400'">
                             <input type="checkbox" :checked="selectedLocations.has('jingwaa')" @change="toggleLocation('jingwaa')" class="w-3 h-3">
                             英華
                         </label>
@@ -354,12 +354,12 @@ onMounted(() => {
 
                 <!-- 各地點 -->
                 <div v-for="(locs, division) in groupedLocations" :key="division" class="mb-3">
-                    <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-1">{{ division }}</h3>
+                    <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 pl-2 border-b border-slate-200 dark:border-slate-700 pb-1">{{ division }}</h3>
                     <div class="flex flex-wrap gap-2">
                         <label v-for="loc in locs" :key="loc.id"
-                            class="flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors text-sm border-l-2"
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-all text-sm border-l-4 hover:-translate-y-0.5 hover:shadow-sm"
                             :style="{ borderColor: loc.color || '#999' }"
-                            :class="selectedLocations.has(loc.id) ? 'bg-accent/10 text-accent' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'">
+                            :class="selectedLocations.has(loc.id) ? 'bg-accent/10 text-accent' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">
                             <input type="checkbox" :checked="selectedLocations.has(loc.id)" @change="toggleLocation(loc.id)" class="w-3 h-3">
                             {{ loc.second }}{{ loc.third ? ' ' + loc.third : '' }}
                         </label>
@@ -374,8 +374,8 @@ onMounted(() => {
         <div v-if="hasResults" class="mt-8 w-full max-w-4xl">
             <!-- 韻書結果 -->
             <div v-if="results['韻書'] && results['韻書'].length > 0" class="mb-6">
-                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">韻書</h2>
-                <div v-for="(book, idx) in results['韻書']" :key="idx" class="mb-4">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 border-l-4 border-wood pl-3">韻書</h2>
+                <div v-for="(book, idx) in results['韻書']" :key="idx" class="mb-4 p-4 bg-white dark:bg-slate-800 rounded-none shadow-[4px_4px_0_rgba(0,0,0,0.04)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.2)] border border-slate-100 dark:border-slate-700">
                     <h3 class="font-bold text-slate-700 dark:text-slate-300 mb-2">{{ book.__name }}</h3>
                     <div v-for="(tones, pron) in book" :key="pron" class="mb-2">
                         <template v-if="pron !== '__name'">
@@ -391,12 +391,12 @@ onMounted(() => {
 
             <!-- 各地結果 -->
             <div v-if="results['各地'] && results['各地'].length > 0">
-                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">各地</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 border-l-4 border-accent pl-3">各地</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div v-for="loc in results['各地']" :key="loc.__id"
-                        class="p-2 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                        <div class="flex items-center gap-2 mb-1">
-                            <div class="w-3 h-3 rounded" :style="{ backgroundColor: loc.__color || '#999' }"></div>
+                        class="p-3 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-[4px_4px_0_rgba(0,0,0,0.06)] dark:hover:shadow-[4px_4px_0_rgba(0,0,0,0.3)] hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-center gap-2 mb-1 border-b border-slate-100 dark:border-slate-700 pb-1">
+                            <div class="w-3 h-3 rounded-none" :style="{ backgroundColor: loc.__color || '#999' }"></div>
                             <span class="font-bold text-slate-800 dark:text-slate-200">{{ loc.__city }}</span>
                             <span v-if="loc.__district" class="text-sm text-slate-500">{{ loc.__district }}</span>
                         </div>
