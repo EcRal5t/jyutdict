@@ -58,7 +58,7 @@ export default {
         if (!targets || targets.length === 0) {
             return Promise.resolve({ data: { counts: {} } });
         }
-        return apiClient.get('/counts.php', {
+        return apiClient.get('/counts', {
             params: { type, targets: targets.join(',') }
         });
     },
