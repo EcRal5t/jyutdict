@@ -143,7 +143,8 @@ if ($queryInitial !== null) {
     // 對每本韻書
     foreach ($wanshyuList as $eachWanshyu) {
         // 根據選中的韻書過濾（匹配 sheetname）
-        $wanshyuKey = strtolower(preg_replace('/^Y/', '', $eachWanshyu['sheetname']));
+        // y_fanwan -> fanwan, y_jingwaa -> jingwaa
+        $wanshyuKey = preg_replace('/^[yY]_/', '', $eachWanshyu['sheetname']);
         if ($selectedWanshyu !== null && !in_array($wanshyuKey, $selectedWanshyu)) {
             continue;
         }
@@ -190,13 +191,7 @@ if ($queryInitial !== null) {
         $inCity_result = $inCity_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $allPron = [
-            "__id" => $eachCity['id'],
-            "__city" => $eachCity['second'],
-            "__district" => empty($eachCity['third']) ? "" : $eachCity['third'],
-            "__division" => $eachCity['first'],
-            "__color" => $eachCity['color'],
-            "__latitude" => $eachCity['latitude'],
-            "__longitude" => $eachCity['longitude']
+            "__id" => $eachCity['id']
         ];
 
         foreach ($inCity_result as $inCityPron) {
