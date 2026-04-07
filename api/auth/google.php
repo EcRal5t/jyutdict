@@ -15,11 +15,23 @@
  * - GET /api/auth/google?action=callback    → Google 回调处理
  */
 
-session_start();
-header('Content-Type: application/json; charset=utf-8');
-
+// 先加载配置（session_start 之前需要知道 session_lifetime）
 include_once(__DIR__ . '/../../connectDB.php');
 $config = require(__DIR__ . '/../config/oauth.php');
+
+// 设置 Session 参数（必须在 session_start 之前）
+$lifetime = $config['session_lifetime'] ?? 604800;
+ini_set('session.gc_maxlifetime', $lifetime);
+session_set_cookie_params([
+    'lifetime' => $lifetime,
+    'path'     => '/',
+    'secure'   => true,
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+
+session_start();
+header('Content-Type: application/json; charset=utf-8');
 
 $action = $_GET['action'] ?? 'login';
 
@@ -190,17 +202,6 @@ if ($action === 'callback') {
     $_SESSION['user_id'] = $userId;
     $_SESSION['user_role'] = $user['role'];
     $_SESSION['login_time'] = time();
-
-    // 设置 Session 过期时间
-    $lifetime = $config['session_lifetime'] ?? 604800;
-    ini_set('session.gc_maxlifetime', $lifetime);
-    session_set_cookie_params([
-        'lifetime' => $lifetime,
-        'path'     => '/',
-        'secure'   => true,
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
 
     // 7. 重定向回前端
     header('Location: ' . $config['frontend_url'] . '?auth_success=1');
