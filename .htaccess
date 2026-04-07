@@ -7,11 +7,28 @@
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # API Specific Rules (if needed for pretty URLs, referencing old .htaccess)
+  # API v0.9
   RewriteRule ^api/v0.9/sheet$ api/v0.9/sheet.php [L]
   RewriteRule ^api/v0.9/detail$ api/v0.9/detail.php [L]
-  # Add v1.0 rule just in case
+
+  # API v1.0
   RewriteRule ^api/v1.0/detail$ api/v1.0/detail.php [L]
+  RewriteRule ^api/v1.0/articles$ api/v1.0/articles/index.php [L]
+  RewriteRule ^api/v1.0/comments/char$ api/v1.0/comments/char.php [L]
+  RewriteRule ^api/v1.0/comments/counts$ api/v1.0/comments/counts.php [L]
+  RewriteRule ^api/v1.0/comments/sheet$ api/v1.0/comments/sheet.php [L]
+  RewriteRule ^api/v1.0/locations/available$ api/v1.0/locations/available.php [L]
+  RewriteRule ^api/v1.0/user/comments$ api/v1.0/user/comments.php [L]
+  RewriteRule ^api/v1.0/user/profile$ api/v1.0/user/profile.php [L]
+
+  # API v1.0 Admin
+  RewriteRule ^api/v1.0/admin/editors$ api/v1.0/admin/editors.php [L]
+  RewriteRule ^api/v1.0/admin/users$ api/v1.0/admin/users.php [L]
+
+  # Auth API
+  RewriteRule ^api/auth/google$ api/auth/google.php [L]
+  RewriteRule ^api/auth/me$ api/auth/me.php [L]
+  RewriteRule ^api/auth/logout$ api/auth/logout.php [L]
 
   # Vue Router (History Mode)
   RewriteRule ^index\.html$ - [L]

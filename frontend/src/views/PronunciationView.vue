@@ -40,7 +40,7 @@ const STORAGE_KEY = 'jyutdict_selected_locations';
 const loadLocations = async () => {
     loadingLocations.value = true;
     try {
-        const response = await axios.get('/api/v1.0/detail.php', {
+        const response = await axios.get('/api/v1.0/detail', {
             params: { chara: '' }
         });
         if (response.data && Array.isArray(response.data)) {
@@ -251,7 +251,7 @@ const fetchResults = async () => {
             wanshyuSelected.forEach(w => params.append('wanshyu[]', w));
         }
 
-        const response = await axios.get('/api/v1.0/detail.php', { params });
+        const response = await axios.get('/api/v1.0/detail', { params });
         results.value = response.data;
     } catch (e) {
         console.error('API 错误:', e);
