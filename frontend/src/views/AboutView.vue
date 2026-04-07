@@ -66,12 +66,12 @@ watchEffect(async () => {
     <div class="flex flex-col md:flex-row min-h-screen pt-16 container mx-auto px-4 gap-8">
         <!-- Sidebar -->
         <aside class="w-full md:w-64 flex-shrink-0">
-            <nav class="space-y-2 sticky top-20">
-                <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">説明</h2>
+            <nav class="space-y-1 sticky top-20">
+                <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200 border-b-2 border-slate-200 dark:border-slate-700 pb-2">説明</h2>
                 <template v-for="page in aboutPagesData" :key="page.id">
                     <router-link :to="{ name: 'about', params: { id: page.id } }"
-                        class="block px-4 py-2 rounded-md transition-colors hover:bg-[#E8E8DD]"
-                        :class="{ 'bg-[#E8E8DD] text-[#d32913]': currentIdentifier === page.id, 'text-gray-600 dark:text-gray-400 dark:hover:text-gray-900': currentIdentifier !== page.id }">
+                        class="block px-4 py-2.5 rounded-none transition-all border-l-4 hover:translate-x-1 hover:shadow-sm"
+                        :class="currentIdentifier === page.id ? 'border-l-accent bg-accent/5 text-accent' : 'border-l-transparent text-gray-600 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-l-slate-300 dark:hover:border-l-slate-600'">
                         {{ page.title }}
                     </router-link>
                 </template>
@@ -87,12 +87,12 @@ watchEffect(async () => {
                 </div>
             </div>
 
-            <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+            <div v-else-if="error" class="bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500 text-red-700 dark:text-red-400 px-4 py-3 rounded-none"
                 role="alert">
                 <span class="block sm:inline">{{ error }}</span>
             </div>
 
-            <div v-else-if="currentPage" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 md:p-8">
+            <div v-else-if="currentPage" class="bg-white dark:bg-gray-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-6 md:p-8 border border-slate-100 dark:border-slate-700">
                 <!-- Content -->
                 <div v-html="markdownContent"
                     class="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 init-content">

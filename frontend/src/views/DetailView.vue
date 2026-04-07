@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import DetailApi from '@/api/detail.js';
+import commentsApi from '@/api/comments.js';
 import AncientTable from '@/components/detail/AncientTable.vue';
 import AreaTable from '@/components/detail/AreaTable.vue';
 import DetailMap from '@/components/detail/DetailMap.vue';
@@ -15,6 +16,30 @@ const commentTarget = ref('')
 const openComments = (chara) => {
     commentTarget.value = chara
     commentSidebarVisible.value = true
+}
+
+// 評論數量
+const commentCounts = ref({})
+const commentCountsLoading = ref(false)
+
+const loadCommentCounts = async () => {
+    if (!resultData.value || resultData.value.length === 0) return
+    const charas = resultData.value.map(e => e.chara).filter(Boolean)
+    if (charas.length === 0) return
+
+    commentCountsLoading.value = true
+    try {
+        const res = await commentsApi.getCounts('char', charas)
+        commentCounts.value = res.data.counts || {}
+    } catch (e) {
+        console.error('Failed to load comment counts', e)
+    } finally {
+        commentCountsLoading.value = false
+    }
+}
+
+const getCommentCount = (chara) => {
+    return commentCounts.value[chara] || 0
 }
 
 const route = useRoute();
@@ -197,6 +222,7 @@ watch(resultData, () => {
     // Re-setup observer when data changes
     if (resultData.value && resultData.value.length > 0) {
         setupObserver();
+        loadCommentCounts();
     }
 });
 
@@ -213,11 +239,11 @@ watch(() => route.query.chara, (newVal) => {
     <div class="container mx-auto px-2 py-4 md:px-4 md:py-8 max-w-7xl">
 
         <!-- Search Bar -->
-        <div class="flex gap-4 mb-8 justify-center">
+        <div class="flex gap-3 mb-8 justify-center">
             <input v-model="inputChara" @keypress.enter="performSearch" type="text" placeholder="輸入查詢..."
-                class="p-2 border border-gray-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg shadow-sm focus:ring-2 focus:ring-accent outline-none w-full max-w-md text-lg transition-all">
+                class="p-2 px-3 border-2 border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-none focus:border-accent outline-none flex-1 max-w-md text-lg transition-all">
             <button @click="performSearch"
-                class="bg-accent text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors shadow-lg active:shadow-sm">
+                class="bg-accent text-white px-5 py-2 rounded-none font-bold shadow-[4px_4px_0_rgba(183,41,20,0.3)] hover:shadow-[6px_6px_0_rgba(183,41,20,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all flex-shrink-0">
                 耖
             </button>
         </div>
@@ -228,37 +254,38 @@ watch(() => route.query.chara, (newVal) => {
             </div>
         </div>
         <div v-if="error"
-            class="text-red-500 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30">
+            class="text-red-500 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-none border-l-4 border-red-500 dark:border-red-400">
             {{ error }}</div>
 
         <!-- Main Layout -->
         <div v-if="resultData" class="flex flex-col md:flex-row gap-8 relative items-start">
 
             <!-- Sticky Sidebar (Character Nav) -->
-            <!-- Increased top offset to 6rem (approx 96px) to avoid header overlap -->
             <aside
                 class="hidden md:block w-24 flex-shrink-0 sticky top-24 self-start max-h-[80vh] overflow-y-auto no-scrollbar py-2">
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col gap-2">
                     <div v-for="(entry, idx) in resultData" :key="idx" class="relative">
                         <a :href="'#char-' + idx"
-                            class="block text-center p-2 mx-1 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all group relative overflow-hidden"
-                            :class="{ 'ring-2 ring-accent dark:ring-red-500 bg-blue-50 dark:bg-slate-700': activeIndex === idx }"
+                            class="block text-center p-2 rounded-none transition-all group relative overflow-hidden"
+                            :class="activeIndex === idx ? 'bg-accent/10 dark:bg-accent/20' : 'hover:bg-slate-100 dark:hover:bg-slate-700/50'"
                             @click.prevent="scrollToChar(idx)">
                             <!-- Color Block Indicator -->
-                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-accent/0 group-hover:bg-accent transition-colors"
-                                :class="{ 'bg-accent dark:bg-red-500': activeIndex === idx }"></div>
+                            <div class="absolute left-0 top-0 bottom-0 w-1 transition-colors"
+                                :class="activeIndex === idx ? 'bg-accent' : 'bg-transparent group-hover:bg-slate-300 dark:group-hover:bg-slate-600'"></div>
 
                             <span class="text-2xl font-bold text-slate-800 dark:text-slate-100">{{ entry.chara }}</span>
-                            <span class="block text-xs text-slate-400 mt-1"
+                            <span class="block text-xs text-slate-400 mt-0.5"
                                 v-if="entry.location && entry.location.length">({{ entry.location.length }})</span>
                         </a>
                         <!-- 評論按鈕 -->
                         <button @click="openComments(entry.chara)"
-                            class="absolute top-1 right-1 text-slate-300 hover:text-accent transition-colors p-0.5"
+                            class="absolute bottom-1 right-1 flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-none transition-colors"
+                            :class="getCommentCount(entry.chara) > 0 ? 'bg-accent/10 text-accent hover:bg-accent/20' : 'text-slate-400 hover:text-accent hover:bg-slate-100 dark:hover:bg-slate-700'"
                             title="評論">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
+                            <span v-if="getCommentCount(entry.chara) > 0">{{ getCommentCount(entry.chara) }}</span>
                         </button>
                     </div>
                 </div>
@@ -271,52 +298,56 @@ watch(() => route.query.chara, (newVal) => {
                     <div class="md:hidden flex justify-center items-center mb-4 gap-2">
                         <h2 class="text-4xl font-bold text-slate-800 dark:text-slate-100 relative z-10 leading-none">{{
                             entry.chara }}</h2>
-                        <button @click="openComments(entry.chara)" class="text-slate-400 hover:text-accent" title="評論">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <button @click="openComments(entry.chara)"
+                            class="flex items-center gap-1 text-sm px-2 py-1 rounded-none transition-colors"
+                            :class="getCommentCount(entry.chara) > 0 ? 'bg-accent/10 text-accent hover:bg-accent/20' : 'text-slate-400 hover:text-accent hover:bg-slate-100 dark:hover:bg-slate-700'"
+                            title="評論">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
+                            <span v-if="getCommentCount(entry.chara) > 0">{{ getCommentCount(entry.chara) }}</span>
                         </button>
                     </div>
 
                     <!-- Per Character Card -->
-                    <div class="glass rounded-xl p-3 md:p-8">
+                    <div class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-3 md:p-8">
                         <!-- Grid Layout: Desktop 2 cols, Mobile 1 col -->
                         <!-- Mobile Order Requirement: Dialect Table FIRST, then Ancient, then Map/Links -->
-                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-8">
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
 
                             <!-- Dialect Table (Area) -->
                             <!-- On Mobile: Order 1. On Desktop: Order 2 (Right Col) -->
-                            <div class="order-1 xl:order-2 bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4 h-fit">
+                            <div class="order-1 xl:order-2 p-4 h-fit">
                                 <div class="flex justify-between items-center mb-4 border-l-4 border-accent pl-3">
                                     <h3
                                         class="text-lg font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                                         <span>方音</span>
                                     </h3>
                                     <button @click="showIPA = !showIPA"
-                                        class="text-xs font-bold px-3 py-1 rounded border transition-all hover:scale-105 active:scale-95"
-                                        :class="showIPA ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-200 dark:text-slate-800' : 'bg-white/80 text-slate-600 border-slate-300 hover:border-slate-400 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'">
+                                        class="text-xs font-bold px-3 py-1 rounded-none transition-all hover:-translate-y-0.5 active:translate-y-0"
+                                        :class="showIPA ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-800 shadow-[2px_2px_0_rgba(0,0,0,0.2)]' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:shadow-[2px_2px_0_rgba(0,0,0,0.1)]'">
                                         IPA
                                     </button>
                                 </div>
 
                                 <div v-if="entry.location && entry.location.length > 0">
-                                    <!-- Flat Map is handled in JS logic in template or separate component, 
+                                    <!-- Flat Map is handled in JS logic in template or separate component,
                                         here we assume entry.location is already an array of location objects.
                                         AreaTable expects flat array.
                                    -->
                                     <AreaTable :data="entry.location.flat()" :show-i-p-a="showIPA" />
                                 </div>
                                 <div v-else
-                                    class="text-slate-400 italic text-xs text-center py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded">
+                                    class="text-slate-400 italic text-xs text-center py-2">
                                     暫無資料
                                 </div>
                             </div>
 
                             <!-- Left Column Group: Ancient + Map + Links -->
                             <!-- On Mobile: Order 2. On Desktop: Order 1 (Left Col) -->
-                            <div class="order-2 xl:order-1 flex flex-col">
+                            <div class="order-2 xl:order-1 flex flex-col gap-4">
                                 <!-- Ancient (WanShyu) -->
-                                <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                                <div class="p-4">
                                     <h3
                                         class="text-lg font-bold mb-4 text-slate-700 dark:text-slate-300 border-l-4 border-wood pl-3 flex items-center gap-2">
                                         <span>韻書</span>
@@ -328,19 +359,18 @@ watch(() => route.query.chara, (newVal) => {
                                         </template>
                                     </div>
                                     <div v-else
-                                        class="text-slate-400 italic text-xs text-center py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded">
+                                        class="text-slate-400 italic text-xs text-center py-2">
                                         暫無資料
                                     </div>
                                 </div>
 
                                 <!-- Map (Separate container) -->
-                                <div v-if="entry.location && entry.location.length > 0"
-                                    class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                                <div v-if="entry.location && entry.location.length > 0" class="p-4">
                                     <DetailMap :locations="entry.location" />
                                 </div>
 
                                 <!-- Links -->
-                                <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-lg p-4">
+                                <div class="p-4">
                                     <RelativeLinks :chara="entry.chara" />
                                 </div>
                             </div>

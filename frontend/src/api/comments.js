@@ -52,4 +52,14 @@ export default {
     deleteSheetComment(commentId) {
         return apiClient.delete('/sheet', { data: { comment_id: commentId } });
     },
+
+    // 批量获取评论数量
+    getCounts(type, targets) {
+        if (!targets || targets.length === 0) {
+            return Promise.resolve({ data: { counts: {} } });
+        }
+        return apiClient.get('/counts.php', {
+            params: { type, targets: targets.join(',') }
+        });
+    },
 };

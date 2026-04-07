@@ -143,7 +143,7 @@ onMounted(() => {
 
                 <div class="mt-8">
                     <button @click="goHome"
-                        class="px-8 py-3 border border-[#D32913] text-[#D32913] hover:bg-[#D32913] hover:text-white dark:hover:text-white transition-all duration-300 rounded-full tracking-widest uppercase text-sm font-medium">
+                        class="px-8 py-4 border-2 border-[#D32913] text-[#D32913] hover:bg-[#D32913] hover:text-white dark:hover:text-white transition-all duration-300 rounded-none tracking-widest uppercase text-sm font-bold shadow-[4px_4px_0_rgba(211,41,19,0.3)] hover:shadow-[6px_6px_0_rgba(211,41,19,0.4)] hover:-translate-y-1 active:translate-y-0 active:shadow-[2px_2px_0_rgba(211,41,19,0.3)]">
                         返首頁
                     </button>
                 </div>
