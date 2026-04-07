@@ -94,6 +94,52 @@ const searchLocations = () => {
     loadAvailableLocations()
 }
 
+// ===== 删除文章模态框 =====
+const deleteModalVisible = ref(false)
+const deleteTargetLocation = ref('')
+const deleteCountdown = ref(0)
+const deleteLoading = ref(false)
+let deleteTimer = null
+
+const showDeleteModal = (locationName) => {
+    deleteTargetLocation.value = locationName
+    deleteModalVisible.value = true
+    deleteCountdown.value = 1
+    deleteLoading.value = false
+
+    // 1秒倒计时
+    if (deleteTimer) clearInterval(deleteTimer)
+    deleteTimer = setInterval(() => {
+        deleteCountdown.value--
+        if (deleteCountdown.value <= 0) {
+            clearInterval(deleteTimer)
+        }
+    }, 1000)
+}
+
+const closeDeleteModal = () => {
+    deleteModalVisible.value = false
+    deleteTargetLocation.value = ''
+    if (deleteTimer) {
+        clearInterval(deleteTimer)
+        deleteTimer = null
+    }
+}
+
+const confirmDelete = async () => {
+    if (deleteCountdown.value > 0) return
+    deleteLoading.value = true
+    try {
+        await articlesApi.deleteArticle(deleteTargetLocation.value)
+        closeDeleteModal()
+        loadAvailableLocations()
+    } catch (e) {
+        alert(e.response?.data?.error || '刪除失敗')
+    } finally {
+        deleteLoading.value = false
+    }
+}
+
 onMounted(() => {
     loadComments()
     if (authStore.isEditor) {
@@ -179,14 +225,21 @@ onMounted(() => {
                     <div>
                         <span class="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-accent transition-colors">{{ loc.name }}</span>
                     </div>
-                    <router-link
-                        :to="{ name: 'location-article', params: { source: loc.source, locationName: loc.name } }"
-                        class="text-[10px] px-2 py-1 flex-shrink-0 rounded-none transition-all hover:-translate-y-0.5"
-                        :class="loc.has_article
-                            ? 'border border-accent text-accent hover:bg-accent/10'
-                            : 'bg-accent text-white hover:bg-red-700 hover:shadow-[2px_2px_0_rgba(183,41,20,0.3)]'">
-                        {{ loc.has_article ? '編輯文章' : '撰寫文章' }}
-                    </router-link>
+                    <div class="flex items-center gap-1">
+                        <router-link
+                            :to="{ name: 'location-article', params: { source: loc.source, locationName: loc.name } }"
+                            class="text-[10px] px-2 py-1 flex-shrink-0 rounded-none transition-all hover:-translate-y-0.5"
+                            :class="loc.has_article
+                                ? 'border border-accent text-accent hover:bg-accent/10'
+                                : 'bg-accent text-white hover:bg-red-700 hover:shadow-[2px_2px_0_rgba(183,41,20,0.3)]'">
+                            {{ loc.has_article ? '編輯文章' : '撰寫文章' }}
+                        </router-link>
+                        <!-- 删除按钮（仅管理员/站长可见，且地点有文章） -->
+                        <button v-if="authStore.isAdmin && loc.has_article" @click="showDeleteModal(loc.name)"
+                            class="text-[10px] px-2 py-1 flex-shrink-0 rounded-none border border-red-300 dark:border-red-800 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:-translate-y-0.5 transition-all">
+                            刪除
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -234,5 +287,34 @@ onMounted(() => {
                 </button>
             </div>
         </section>
+
+        <!-- 删除确认模态框 -->
+        <Teleport to="body">
+            <div v-if="deleteModalVisible" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <!-- 遮罩层 -->
+                <div class="absolute inset-0 bg-black/40 dark:bg-black/60" @click="closeDeleteModal"></div>
+
+                <!-- 模态框内容 -->
+                <div class="relative bg-white dark:bg-slate-800 rounded-none shadow-[8px_8px_0_rgba(0,0,0,0.15)] dark:shadow-[8px_8px_0_rgba(0,0,0,0.4)] border border-gray-200 dark:border-slate-700 p-6 max-w-sm w-full">
+                    <h3 class="text-base font-bold text-slate-800 dark:text-slate-200 mb-3 border-l-4 border-red-500 pl-3">確認刪除</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-5">
+                        確定要刪除「<span class="font-bold text-slate-800 dark:text-slate-200">{{ deleteTargetLocation }}</span>」的文章嗎？此操作不可恢復。
+                    </p>
+                    <div class="flex justify-end gap-2">
+                        <button @click="closeDeleteModal"
+                            class="px-4 py-2 text-sm rounded-none border-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:-translate-y-0.5 transition-all font-medium">
+                            取消
+                        </button>
+                        <button @click="confirmDelete" :disabled="deleteCountdown > 0 || deleteLoading"
+                            class="px-4 py-2 text-sm rounded-none bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 transition-all font-bold"
+                            :class="{ 'hover:shadow-[3px_3px_0_rgba(183,41,20,0.3)]': deleteCountdown <= 0 && !deleteLoading }">
+                            <span v-if="deleteLoading">刪除中...</span>
+                            <span v-else-if="deleteCountdown > 0">請確認 ({{ deleteCountdown }}s)</span>
+                            <span v-else>確認刪除</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>

@@ -169,7 +169,7 @@ watch(locationName, () => {
                 </p>
             </div>
             <div class="flex gap-2">
-                <button v-if="article && !isEditing" @click="toggleVersions"
+                <button v-if="article && !isEditing && authStore.isLoggedIn" @click="toggleVersions"
                     class="text-xs px-3 py-1.5 rounded-none border-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:-translate-y-0.5 transition-all font-medium">
                     {{ showVersions ? '隱藏' : '版本歷史' }}
                 </button>
@@ -262,8 +262,8 @@ watch(locationName, () => {
             </div>
         </template>
 
-        <!-- ===== 版本歷史側欄 ===== -->
-        <div v-if="showVersions"
+        <!-- ===== 版本歷史側欄（僅登錄用戶可見） ===== -->
+        <div v-if="showVersions && authStore.isLoggedIn"
             class="mt-6 bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.04)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-700 p-5">
             <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 border-l-4 border-slate-500 pl-3">版本歷史</h3>
 

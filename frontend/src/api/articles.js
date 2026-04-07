@@ -54,4 +54,8 @@ export default {
         if (search) params.search = search;
         return axios.get('/api/v1.0/locations/available', { params, withCredentials: true });
     },
+    // 删除文章（管理员+）
+    deleteArticle(locationName) {
+        return apiClient.delete('/', { params: { location_name: locationName } });
+    },
 };

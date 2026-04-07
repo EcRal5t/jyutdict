@@ -82,19 +82,39 @@ if ($queryInitial !== null) {
     $entriesInAncient = [];
     $entriesInLocations = [];
 
-    // 構建查詢條件
-    // 如果參數包含 %，使用 LIKE；否則使用精確匹配
-    $buildCondition = function($field, $value) {
-        $field = "`" . $field . "`";
-        if ($value === '%') {
-            return "$field LIKE '%'";
-        } elseif (strpos($value, '%') !== false) {
-            return "$field LIKE '$value'";
-        } else {
-            // 精確匹配：空字符串匹配空，非空匹配具體值
-            return "$field = '$value'";
-        }
-    };
+    // 構建查詢條件（使用參數綁定防止 SQL 注入）
+    $whereConditions = [];
+    $whereParams = [];
+
+    if ($queryInitial === '%') {
+        $whereConditions[] = "`initial` LIKE '%'";
+    } else {
+        $whereConditions[] = "`initial` = :initial";
+        $whereParams[':initial'] = $queryInitial;
+    }
+
+    if ($queryNuclei === '%') {
+        $whereConditions[] = "`nuclei` LIKE '%'";
+    } else {
+        $whereConditions[] = "`nuclei` = :nuclei";
+        $whereParams[':nuclei'] = $queryNuclei;
+    }
+
+    if ($queryCoda === '%') {
+        $whereConditions[] = "`coda` LIKE '%'";
+    } else {
+        $whereConditions[] = "`coda` = :coda";
+        $whereParams[':coda'] = $queryCoda;
+    }
+
+    if ($queryTone === '%') {
+        $whereConditions[] = "`tone` LIKE '%'";
+    } else {
+        $whereConditions[] = "`tone` = :tone";
+        $whereParams[':tone'] = $queryTone;
+    }
+
+    $whereClause = implode(' AND ', $whereConditions);
 
     // 獲取選中的地點 ID
     $selectedLocationIds = null;
@@ -103,14 +123,11 @@ if ($queryInitial !== null) {
     }
 
     // 獲取選中的韻書
-    // 如果參數存在但為空數組或 'none'，表示不查詢任何韻書
-    // 如果參數不存在，則查詢所有韻書（向後兼容）
     $selectedWanshyu = null;
     if (isset($_REQUEST['wanshyu'])) {
         if (is_array($_REQUEST['wanshyu'])) {
             $selectedWanshyu = $_REQUEST['wanshyu'];
         } else if ($_REQUEST['wanshyu'] === 'none') {
-            // 前端明確表示不選擇任何韻書
             $selectedWanshyu = [];
         } else {
             $selectedWanshyu = [$_REQUEST['wanshyu']];
@@ -123,18 +140,9 @@ if ($queryInitial !== null) {
     $wanshyuStmt->execute();
     $wanshyuList = $wanshyuStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 構建 WHERE 條件
-    $whereConditions = [];
-    $whereConditions[] = $buildCondition('initial', $queryInitial);
-    $whereConditions[] = $buildCondition('nuclei', $queryNuclei);
-    $whereConditions[] = $buildCondition('coda', $queryCoda);
-    $whereConditions[] = $buildCondition('tone', $queryTone);
-    $whereClause = implode(' AND ', $whereConditions);
-
     // 對每本韻書
     foreach ($wanshyuList as $eachWanshyu) {
         // 根據選中的韻書過濾（匹配 sheetname）
-        // YFanwan -> fanwan, YJingwaa -> jingwaa
         $wanshyuKey = strtolower(preg_replace('/^Y/', '', $eachWanshyu['sheetname']));
         if ($selectedWanshyu !== null && !in_array($wanshyuKey, $selectedWanshyu)) {
             continue;
@@ -144,7 +152,8 @@ if ($queryInitial !== null) {
         $inWanshyu_sql = "SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
                           FROM `$tableName`
                           WHERE $whereClause";
-        $inWanshyu_stmt = $dbh->query($inWanshyu_sql);
+        $inWanshyu_stmt = $dbh->prepare($inWanshyu_sql);
+        $inWanshyu_stmt->execute($whereParams);
         $inWanshyu_result = $inWanshyu_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $allPron = ["__name" => $eachWanshyu['name']];
@@ -176,7 +185,8 @@ if ($queryInitial !== null) {
         $inCity_sql = "SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone`
                        FROM `$tableName`
                        WHERE $whereClause";
-        $inCity_stmt = $dbh->query($inCity_sql);
+        $inCity_stmt = $dbh->prepare($inCity_sql);
+        $inCity_stmt->execute($whereParams);
         $inCity_result = $inCity_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $allPron = [
