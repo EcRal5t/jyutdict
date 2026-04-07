@@ -6,11 +6,11 @@ import axios from 'axios';
 // 空格在音節中表示模糊匹配該位置
 const format = /^[a-z ]{1,10}\d{0,2}$/;
 // 聲母正則：允許後面是元音或空格（模糊匹配韻核）
-const initialFormat = /^(n[jg]?|bb?|dd?|[zcs][hrjl]?|[ptg]h?|[gk][wv]?|[hmqfvwjl]| )(?=[aeoiyu ])/;
+const initialFormat = /^^(mb?|n[jrd]?|ngg?|[bdg]{1,2}|g[hn]?|r[bdgzscrh]|[zcs][hrjl]?|[ptkvw]h?|[hqfjlrx0])([jwv]?)(?=[aeoiuymn])/;
 // 韻尾正則：匹配末尾的韻尾（不包含前面的元音）
-const codaFormat = /(n[ng]?|[mptkh])(\d{0,2})$/;
-const toneFormat = /\d{1,2}$/;
-const vowelFormat = /^(ng$|m$|ii|uu|[iu][rw]?|[aeo][aorew]?|yw|yu$|y)/;
+const codaFormat = /(?<=[aoreiwuy])(n[ng]?|[mptkh])(?=[\\d`*]|$)$/;
+const toneFormat = /[0-9]?[0-9*][0-9']?(`\\d+)?$/;
+const vowelFormat = /(^ng?$|^m$|i[rwi]?|u[rwu]?|[aeo][aeowr]?|yu$|y)$/;
 
 const form = reactive({
     pron: '',
@@ -289,7 +289,7 @@ onMounted(() => {
                         'border-gray-200 dark:border-slate-700': parseStatus === 'neutral',
                         'border-green-500': parseStatus === 'valid',
                         'border-red-500': parseStatus === 'invalid'
-                    }" placeholder="輸入粵拼 (e.g. jyut6, j t6, gwaa )...">
+                    }" placeholder="輸入擴展粵拼…">
                 <button
                     @click="submitSearch"
                     :disabled="inputDisabled"
@@ -301,22 +301,22 @@ onMounted(() => {
             </div>
 
             <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 text-center">
-                空格表示模糊匹配該位置，如 "j t6" 匹配 jyut6/jit6，"gwaa " 匹配 gwaang/gwaat
+                空格表示模糊匹配該位置，如 "j t6" 匹配 jyut6/jit6
             </p>
 
             <!-- Color Blocks Visualization -->
             <div class="flex justify-center gap-1 font-mono text-xl h-10">
                 <div
-                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-l-4 border-red-500 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300">
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300">
                     {{ parsedComponents.in || '-' }}</div>
                 <div
-                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-l-4 border-orange-500 bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
                     {{ parsedComponents.nu || '-' }}</div>
                 <div
-                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-l-4 border-green-500 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
                     {{ parsedComponents.co || '-' }}</div>
                 <div
-                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-l-4 border-blue-500 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
                     {{ parsedComponents.to || '-' }}</div>
             </div>
         </div>

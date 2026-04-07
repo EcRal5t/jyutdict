@@ -21,6 +21,9 @@
  * POST   /api/v1.0/articles/?action=rollback
  *        → 回滚到指定版本（管理员+）
  *        Body: { "article_id": 1, "version_id": 5 }
+ *
+ * DELETE /api/v1.0/articles/?location_name={name}
+ *        → 删除文章及其所有版本历史（管理员+）
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -279,6 +282,50 @@ if ($method === 'POST') {
     } catch (PDOException $e) {
         $dbh->rollBack();
         outputJson(['error' => 'Database error'], 500);
+    }
+}
+
+// ========== DELETE：删除文章（管理员+） ==========
+if ($method === 'DELETE') {
+    include_once(__DIR__ . '/../../middleware/auth.php');
+    include_once(__DIR__ . '/../../middleware/role.php');
+    include_once(__DIR__ . '/../../middleware/csrf.php');
+    validateCsrf();
+
+    requireRole('admin');
+
+    $locationName = $_GET['location_name'] ?? '';
+    if (!$locationName) {
+        outputJson(['error' => 'Missing location_name parameter'], 400);
+    }
+
+    try {
+        // 查找文章
+        $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname");
+        $stmt->execute([':lname' => $locationName]);
+        $article = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$article) {
+            outputJson(['error' => 'Article not found'], 404);
+        }
+
+        $articleId = $article['id'];
+
+        $dbh->beginTransaction();
+
+        // 删除版本历史
+        $stmt = $dbh->prepare("DELETE FROM `article_versions` WHERE `article_id` = :aid");
+        $stmt->execute([':aid' => $articleId]);
+
+        // 删除文章
+        $stmt = $dbh->prepare("DELETE FROM `articles` WHERE `id` = :aid");
+        $stmt->execute([':aid' => $articleId]);
+
+        $dbh->commit();
+        outputJson(['success' => true]);
+    } catch (PDOException $e) {
+        $dbh->rollBack();
+        outputJson(['error' => 'Database error during deletion'], 500);
     }
 }
 
