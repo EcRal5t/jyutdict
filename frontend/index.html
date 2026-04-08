@@ -8,6 +8,17 @@
     <meta name="description" content="泛粵大典旨在收集現時各地讀音與歷史韻書讀音，並提供向大眾一些基礎的查詢功能，同時通過泛粵表展示泛粵各地的特色字及其讀音">
     <meta name="keywords" content="粵語 泛粵 嶺南 Cantonese 廣州 粵語查詢 泛粵大典 粤语 粤典 Yue">
     <title>Jyutdict</title>
+    <script>
+        // Hash 模式 URL 重定向到 History 模式
+        // 例如：/#/about → /about, /#/about#anchor → /about#anchor
+        if (window.location.hash.startsWith('#/')) {
+            const newPath = window.location.hash.slice(1);
+            const anchorIndex = newPath.indexOf('#');
+            let path = anchorIndex > -1 ? newPath.slice(0, anchorIndex) : newPath;
+            let anchor = anchorIndex > -1 ? newPath.slice(anchorIndex) : '';
+            window.location.replace(path + anchor);
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cactus+Classical+Serif&display=swap" rel="stylesheet">

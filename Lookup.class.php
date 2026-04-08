@@ -16,7 +16,7 @@ class Sim2TradLookup  {
 		$charaArray = array($character);        //改的时候请好好规划
 		$sim2Trad_getCharaId_sql = "
 			SELECT chara_id
-			FROM `Character_simtrad_list`
+			FROM `character_simtrad_list`
 			WHERE`chara` = :chara";  #从字表中查询列出符合输入的字
 		$sim2Trad_getCharaId_stmt = $dbh->prepare($sim2Trad_getCharaId_sql);
 		$sim2Trad_getCharaId_stmt->execute(array(':chara'=>$character));
@@ -26,7 +26,7 @@ class Sim2TradLookup  {
 		if ($sim2Trad_getCharaId_result!=[]) {#如果结果集存在
 			$sim2Trad_SimMap_sql = "
 				SELECT `chara_id_trad`
-				FROM `Character_simtrad_map`
+				FROM `character_simtrad_map`
 				WHERE `chara_id_sim` =" . $sim2Trad_getCharaId_result[0]['chara_id'];#查找简繁映射表
 			$sim2Trad_SimMap_stmt = $dbh->prepare($sim2Trad_SimMap_sql);
 			$sim2Trad_SimMap_stmt->execute();
@@ -35,7 +35,7 @@ class Sim2TradLookup  {
 			foreach ($sim2Trad_SimMap_result as $items) {
 				$sim2Trad_getTradChara_sql = "
 					SELECT `chara`
-					FROM `Character_simtrad_list`
+					FROM `character_simtrad_list`
 					WHERE `chara_id` =" . $items['chara_id_trad'];
 				$sim2Trad_getTradChara_stmt = $dbh->prepare($sim2Trad_getTradChara_sql);
 				$sim2Trad_getTradChara_stmt->execute();
