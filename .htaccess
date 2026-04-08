@@ -4,50 +4,36 @@
 ErrorDocument 403 /index.html
 ErrorDocument 404 /index.html
 
+# ============================================
+# 錯誤頁面導向
+# ============================================
+ErrorDocument 403 /index.html
+ErrorDocument 404 /index.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
   # ============================================
-  # 安全防護：阻止敏感文件和目錄
-  # ============================================
-
-  # 阻止 .git 目錄
-  RewriteRule ^\.git - [F,L]
-  RewriteRule ^\.gitignore - [F,L]
-
-  # 阻止直接訪問 PHP 檔案（只能透過 API 路由）
-  RewriteRule \.php$ - [F,L]
-
-  # 阻止敏感目錄
-  RewriteRule ^(docs|frontend|api|node_modules)/ - [F,L]
-
-  # 阻止敏感檔案
-  RewriteRule ^(\.env|\.htaccess|\.htpasswd|composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js)$ - [F,L]
-
-  # 阻止 SQL 和設定檔
-  RewriteRule \.(sql|md)$ - [F,L]
-
-  # ============================================
-  # API 路由（不受 PHP 阻擋影響）
+  # API 路由（最高優先級）
   # ============================================
 
   # API v0.9
-  RewriteRule ^api/v0.9/sheet$ api/v0.9/sheet.php [L]
-  RewriteRule ^api/v0.9/detail$ api/v0.9/detail.php [L]
+  RewriteRule ^api/v0\.9/sheet$ api/v0.9/sheet.php [L]
+  RewriteRule ^api/v0\.9/detail$ api/v0.9/detail.php [L]
 
   # API v1.0
-  RewriteRule ^api/v1.0/detail$ api/v1.0/detail.php [L]
-  RewriteRule ^api/v1.0/articles$ api/v1.0/articles/index.php [L]
-  RewriteRule ^api/v1.0/comments/char$ api/v1.0/comments/char.php [L]
-  RewriteRule ^api/v1.0/comments/counts$ api/v1.0/comments/counts.php [L]
-  RewriteRule ^api/v1.0/comments/sheet$ api/v1.0/comments/sheet.php [L]
-  RewriteRule ^api/v1.0/locations/available$ api/v1.0/locations/available.php [L]
-  RewriteRule ^api/v1.0/user/comments$ api/v1.0/user/comments.php [L]
-  RewriteRule ^api/v1.0/user/profile$ api/v1.0/user/profile.php [L]
+  RewriteRule ^api/v1\.0/detail$ api/v1.0/detail.php [L]
+  RewriteRule ^api/v1\.0/articles$ api/v1.0/articles/index.php [L]
+  RewriteRule ^api/v1\.0/comments/char$ api/v1.0/comments/char.php [L]
+  RewriteRule ^api/v1\.0/comments/counts$ api/v1.0/comments/counts.php [L]
+  RewriteRule ^api/v1\.0/comments/sheet$ api/v1.0/comments/sheet.php [L]
+  RewriteRule ^api/v1\.0/locations/available$ api/v1.0/locations/available.php [L]
+  RewriteRule ^api/v1\.0/user/comments$ api/v1.0/user/comments.php [L]
+  RewriteRule ^api/v1\.0/user/profile$ api/v1.0/user/profile.php [L]
 
   # API v1.0 Admin
-  RewriteRule ^api/v1.0/admin/editors$ api/v1.0/admin/editors.php [L]
-  RewriteRule ^api/v1.0/admin/users$ api/v1.0/admin/users.php [L]
+  RewriteRule ^api/v1\.0/admin/editors$ api/v1.0/admin/editors.php [L]
+  RewriteRule ^api/v1\.0/admin/users$ api/v1.0/admin/users.php [L]
 
   # Auth API
   RewriteRule ^api/auth/google$ api/auth/google.php [L]
@@ -55,27 +41,49 @@ ErrorDocument 404 /index.html
   RewriteRule ^api/auth/logout$ api/auth/logout.php [L]
 
   # ============================================
-  # 公開靜態資源白名單
+  # 公開靜態資源
   # ============================================
 
   # 允許 index.html
   RewriteRule ^index\.html$ - [L]
 
-  # 允許根目錄的靜態檔案（robots.txt, sitemap.xml, favicon 等）
+  # 允許根目錄的靜態檔案
   RewriteCond %{REQUEST_FILENAME} -f
-  RewriteCond %{REQUEST_FILENAME} !^/.*/.*$
-  RewriteRule ^ - [L]
+  RewriteRule ^robots\.txt$ - [L]
+  RewriteRule ^sitemap\.xml$ - [L]
+  RewriteRule ^favicon\.ico$ - [L]
 
-  # 允許 assets 目錄（CSS, JS, 圖片等）
+  # 允許 assets 目錄
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^assets/ - [L]
 
   # 允許常見靜態檔案類型
   RewriteCond %{REQUEST_FILENAME} -f
-  RewriteRule \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|otf|webp|xml|txt)$ - [L]
+  RewriteRule \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|otf|webp)$ - [L]
+
+  # ============================================
+  # 安全防護：阻止敏感文件和目錄
+  # ============================================
+
+  # 阻止 .git 相關
+  RewriteRule ^\.git - [F,L]
+  RewriteRule ^\.gitignore - [F,L]
+
+  # 阻止直接訪問 PHP 檔案
+  RewriteRule \.php$ - [F,L]
+
+  # 阻止敏感目錄（api 已在上面處理，這裡阻止直接訪問 api 目錄內的檔案）
+  RewriteRule ^(docs|frontend|node_modules)/ - [F,L]
+  RewriteRule ^api/ - [F,L]
+
+  # 阻止敏感檔案
+  RewriteRule ^(\.env|\.htaccess|\.htpasswd|composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js)$ - [F,L]
+
+  # 阻止 SQL 和 Markdown 檔案
+  RewriteRule \.(sql|md)$ - [F,L]
 
   # ============================================
   # Vue Router - 其他所有請求轉向 index.html
   # ============================================
-  RewriteRule . /index.html [L]
+  RewriteRule ^ /index.html [L]
 </IfModule>
