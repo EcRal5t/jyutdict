@@ -48,12 +48,11 @@ watchEffect(async () => {
         loading.value = false;
     }
 
-    // 处理页内锚点滚动（hash history 模式下 URL 格式为 /#/about#fjb）
+    // 处理页内锚点滚动
     await nextTick();
     const hash = window.location.hash;
-    const anchorMatch = hash.match(/#([^/]+)$/);
-    if (anchorMatch) {
-        const anchorId = anchorMatch[1];
+    if (hash && hash.length > 1) {
+        const anchorId = hash.slice(1);
         const element = document.getElementById(anchorId);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
