@@ -1,11 +1,35 @@
+# ============================================
+# 錯誤頁面導向
+# ============================================
+ErrorDocument 403 /index.html
+ErrorDocument 404 /index.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  
-  # API / Resources bypass
-  # Allow access to existing files and directories
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
+
+  # ============================================
+  # 安全防護：阻止敏感文件和目錄
+  # ============================================
+
+  # 阻止 .git 目錄
+  RewriteRule ^\.git - [F,L]
+  RewriteRule ^\.gitignore - [F,L]
+
+  # 阻止直接訪問 PHP 檔案（只能透過 API 路由）
+  RewriteRule \.php$ - [F,L]
+
+  # 阻止敏感目錄
+  RewriteRule ^(docs|frontend|api|node_modules)/ - [F,L]
+
+  # 阻止敏感檔案
+  RewriteRule ^(\.env|\.htaccess|\.htpasswd|composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js)$ - [F,L]
+
+  # 阻止 SQL 和設定檔
+  RewriteRule \.(sql|md)$ - [F,L]
+
+  # ============================================
+  # API 路由（不受 PHP 阻擋影響）
+  # ============================================
 
   # API v0.9
   RewriteRule ^api/v0.9/sheet$ api/v0.9/sheet.php [L]
@@ -30,7 +54,28 @@
   RewriteRule ^api/auth/me$ api/auth/me.php [L]
   RewriteRule ^api/auth/logout$ api/auth/logout.php [L]
 
-  # Vue Router (History Mode)
+  # ============================================
+  # 公開靜態資源白名單
+  # ============================================
+
+  # 允許 index.html
   RewriteRule ^index\.html$ - [L]
+
+  # 允許根目錄的靜態檔案（robots.txt, sitemap.xml, favicon 等）
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteCond %{REQUEST_FILENAME} !^/.*/.*$
+  RewriteRule ^ - [L]
+
+  # 允許 assets 目錄（CSS, JS, 圖片等）
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^assets/ - [L]
+
+  # 允許常見靜態檔案類型
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|otf|webp|xml|txt)$ - [L]
+
+  # ============================================
+  # Vue Router - 其他所有請求轉向 index.html
+  # ============================================
   RewriteRule . /index.html [L]
 </IfModule>
