@@ -4,12 +4,6 @@
 ErrorDocument 403 /index.html
 ErrorDocument 404 /index.html
 
-# ============================================
-# 錯誤頁面導向
-# ============================================
-ErrorDocument 403 /index.html
-ErrorDocument 404 /index.html
-
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
@@ -69,7 +63,8 @@ ErrorDocument 404 /index.html
   RewriteRule ^\.git - [F,L]
   RewriteRule ^\.gitignore - [F,L]
 
-  # 阻止直接訪問 PHP 檔案
+  # 阻止直接訪問 PHP 檔案（允許內部重寫）
+  RewriteCond %{ENV:REDIRECT_STATUS} ^$
   RewriteRule \.php$ - [F,L]
 
   # 阻止敏感目錄（api 已在上面處理，這裡阻止直接訪問 api 目錄內的檔案）
