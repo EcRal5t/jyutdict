@@ -21,6 +21,10 @@ apiClient.interceptors.request.use((config) => {
     return config;
 });
 
+// 模块级缓存：文章地点列表（整个 session 只请求一次）
+let articleLocationSetCache = null;
+let articleLocationSetPromise = null;
+
 export default {
     // 获取单个地点的文章
     getArticle(locationName) {
@@ -42,11 +46,43 @@ export default {
     rollback(articleId, versionId) {
         return apiClient.post('/', { article_id: articleId, version_id: versionId }, { params: { action: 'rollback' } });
     },
-    // 【新增】获取所有有文章的地点列表
-    getArticleList(search = '') {
-        const params = { list: 1 };
-        if (search) params.search = search;
-        return apiClient.get('/', { params });
+    // 【新增】获取所有有文章的地点列表（带缓存）
+    async getArticleList(search = '') {
+        // 如果有搜索参数，不走缓存
+        if (search) {
+            const params = { list: 1, search };
+            return apiClient.get('/', { params });
+        }
+
+        // 如果已经有缓存，直接返回
+        if (articleLocationSetCache !== null) {
+            return { data: { articles: Array.from(articleLocationSetCache).map(name => ({ location_name: name })) } };
+        }
+
+        // 如果正在请求中，等待现有请求完成
+        if (articleLocationSetPromise) {
+            await articleLocationSetPromise;
+            return { data: { articles: Array.from(articleLocationSetCache).map(name => ({ location_name: name })) } };
+        }
+
+        // 发起新请求
+        articleLocationSetPromise = apiClient.get('/', { params: { list: 1 } });
+        const res = await articleLocationSetPromise;
+        articleLocationSetPromise = null;
+
+        // 缓存结果
+        const articles = res.data.articles || [];
+        articleLocationSetCache = new Set(articles.map(a => a.location_name));
+
+        return res;
+    },
+    // 【新增】获取缓存的地点 Set（同步方法，用于已加载后的场景）
+    getArticleLocationSet() {
+        return articleLocationSetCache || new Set();
+    },
+    // 清除缓存（用于文章更新后刷新）
+    clearArticleLocationCache() {
+        articleLocationSetCache = null;
     },
     // 【新增】获取可编辑地点列表
     getAvailableLocations(search = '') {

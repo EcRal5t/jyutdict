@@ -270,7 +270,8 @@ switch ($mode) {
         $queryString = str_ireplace("*", "\*", $queryString);
         $queryString = str_ireplace("?", "\？", $queryString);
         if (!is_numeric(substr($queryString, -1))) {
-            $queryString = $queryString . "[^a-z]";
+            // 匹配非字母字符或字符串結尾（支持缺失聲調的音節如 "bit"）
+            $queryString = $queryString . "([^a-z]|$)";
         }
         $queryString = "(^$queryString)|([!?/]$queryString)";
         $sql = "SELECT * FROM `j_faamjyut` WHERE `$col` REGEXP :str LIMIT $limit";
@@ -283,7 +284,7 @@ switch ($mode) {
             $queryString = str_ireplace("*", "\*", $queryString);
             $queryString = str_ireplace("?", "\？", $queryString);
             if (!is_numeric(substr($queryString, -1))) {
-                $queryString = $queryString . "[^a-z]";
+                $queryString = $queryString . "([^a-z]|$)";
             }
             $queryString = "(^$queryString)|([!?/]$queryString)";
             $sql = "SELECT * FROM `j_faamjyut` WHERE `$col` REGEXP :str LIMIT $limit";

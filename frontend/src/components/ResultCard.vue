@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref } from 'vue';
 import { darkenColor, formatCharacter, formatUnicode, formatPronunciation, formatMeanings } from '@/utils/formatters.js';
 import articlesApi from '@/api/articles.js';
 import LocationArticleModal from '@/components/LocationArticleModal.vue';
@@ -197,30 +197,15 @@ const classification = computed(() => {
 });
 
 // ===== 地点文章相关 =====
-const articleLocationSet = ref(new Set())
 const modalLocationName = ref('')
 const showModal = ref(false)
 
-const loadArticleLocations = async () => {
-    try {
-        const res = await articlesApi.getArticleList()
-        const articles = res.data.articles || []
-        const set = new Set()
-        articles.forEach(a => {
-            set.add(a.location_name)
-        })
-        articleLocationSet.value = set
-    } catch (e) {
-        // 静默失败
-    }
-}
-
 const hasArticle = (label) => {
-    return articleLocationSet.value.has(label)
+    return articlesApi.getArticleLocationSet().has(label)
 }
 
 const openArticleModal = (label, event) => {
-    if (!articleLocationSet.value.has(label)) return
+    if (!articlesApi.getArticleLocationSet().has(label)) return
     event.stopPropagation() // 阻止冒泡到备注 toggle
     modalLocationName.value = label
     showModal.value = true
@@ -229,10 +214,6 @@ const openArticleModal = (label, event) => {
 const closeModal = () => {
     showModal.value = false
 }
-
-onMounted(() => {
-    loadArticleLocations()
-})
 
 </script>
 
