@@ -5,6 +5,10 @@
 @layer base {
   body {
     font-family: 'Cactus Classical Serif', serif;
+    /* 移除 font-smoothing (在 Windows 上會關閉 ClearType 導致模糊) */
+    /* 搭配極輕微的描邊與文字陰影，物理加粗而不失銳利 */
+    -webkit-text-stroke: 0.15px currentColor;
+    text-shadow: 0 0 0.1px currentColor;
   }
 }
 
