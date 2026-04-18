@@ -10,10 +10,6 @@ Disallow: /api/auth/
 Disallow: /api/v1.0/user/
 Disallow: /api/v1.0/admin/
 
-# 禁止爬取管理後台相關
-Disallow: /*#user
-Disallow: /*#admin
-
 # Sitemap
 Sitemap: https://jyutdict.org/sitemap.xml
 
