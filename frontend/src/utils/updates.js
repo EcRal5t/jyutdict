@@ -66,6 +66,6 @@ export const updateLogs = [
     { city: '廣韻', date: '140930' }
 ];
 
-export const version = "β0.9.0/260119";
+export const version = "β1.0.2/260419";
 
 export const pansheetver = "2024-07-23";

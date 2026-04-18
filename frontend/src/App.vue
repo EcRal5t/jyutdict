@@ -49,7 +49,7 @@ const themeIcon = computed(() => {
 const showTooltip = ref(false)
 const tooltipContent = computed(() => {
     if (route.path === '/sheet') {
-        return `Version: ${version}\nLast Update: ${pansheetver}`; // Placeholder or simplified for home
+        return `Main Version: ${version}\nLast Update: ${pansheetver}`; // Placeholder or simplified for home
     }
     // Default / Home
     return updateLogs.map(l => `${l.city} - ${l.date}`).join('\n') + `\n\n主版本: ${version}`;
