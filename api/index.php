@@ -1,10 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: EcRalt
- * Date: 2020/05/28
- * Time: 20:16
+ * API 根目录 - 返回可用端点列表
  */
+header('Content-type: application/json');
 include("../const.php");
 
 Info::printApiJson();

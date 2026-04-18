@@ -142,7 +142,7 @@ const processedLocations = computed(() => {
         if (!value) return;
 
         const color = info.color ? darkenColor(info.color, lightness_scale) : '#000'; // Using new darken algorithm
-        const fullName = info.city + (info.sub ? info.sub : '');
+        const fullName = info.fullname + (info.sub ? info.sub : '');
         
         let displayValueHtml = value;
         if (value.includes('^')) {

@@ -32,11 +32,15 @@ ErrorDocument 404 /index.html
   # API 路由
   # ============================================
 
+  # API 根目录
+  RewriteRule ^api/$ api/index.php [L]
+
   # API v0.9
   RewriteRule ^api/v0\.9/sheet$ api/v0.9/sheet.php [L]
   RewriteRule ^api/v0\.9/detail$ api/v0.9/detail.php [L]
 
   # API v1.0
+  RewriteRule ^api/v1\.0/sheet$ api/v1.0/sheet.php [L]
   RewriteRule ^api/v1\.0/detail$ api/v1.0/detail.php [L]
   RewriteRule ^api/v1\.0/articles$ api/v1.0/articles/index.php [L]
   RewriteRule ^api/v1\.0/comments/char$ api/v1.0/comments/char.php [L]

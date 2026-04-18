@@ -20,13 +20,85 @@ function outputJson($data)
     exit;
 }
 
-// 1. If 'chara' is not set, return iarealist (Header/Location list)
+// =====================================================
+// 幫助信息
+// =====================================================
 if (isset($_REQUEST['help'])) {
     outputJson([
-        "details_of_characters" => "https://jyutdict.org/api/v1.0/detail?chara={query}",
-        "list_locations" => "https://jyutdict.org/api/v1.0/detail?chara=",
-        "chara" => "可輸入漢字字符串且將自動簡轉繁/異",
-        "description" => "新版 API，各地數據以 ID 分組，需先調用 chara= 獲取地點列表以映射 ID。"
+        "name" => "字元詳情 API",
+        "version" => "v1.0",
+        "description" => "查詢字元在各地讀音及韻書記錄",
+        "endpoints" => [
+            "GET /api/v1.0/detail" => [
+                "description" => "獲取地點列表（用於映射 id 到地名）"
+            ],
+            "GET /api/v1.0/detail?chara={query}" => [
+                "description" => "查詢字元詳情",
+                "params" => ["chara"]
+            ],
+            "GET /api/v1.0/detail?pron={jyutping}" => [
+                "description" => "按粵拼查詢（檢音）",
+                "params" => ["pron"]
+            ],
+            "GET /api/v1.0/detail?in={...}&nu={...}&co={...}&to={...}" => [
+                "description" => "按聲母/韻核/韻尾/聲調分別查詢",
+                "params" => ["in", "nu", "co", "to"]
+            ]
+        ],
+        "params" => [
+            "chara" => [
+                "type" => "string",
+                "description" => "查詢字元，可輸入多字（自動簡轉繁/異）",
+                "example" => "粵, 粤, 我们"
+            ],
+            "pron" => [
+                "type" => "string",
+                "description" => "粵拼字符串",
+                "example" => "jyut6"
+            ],
+            "in" => [
+                "type" => "string",
+                "description" => "聲母（initial）"
+            ],
+            "nu" => [
+                "type" => "string",
+                "description" => "韻核（nucleus）"
+            ],
+            "co" => [
+                "type" => "string",
+                "description" => "韻尾（coda）"
+            ],
+            "to" => [
+                "type" => "string",
+                "description" => "聲調（tone）"
+            ],
+            "locations" => [
+                "type" => "string",
+                "description" => "篩選地點，逗號分隔的 id 列表",
+                "example" => "1,2,3"
+            ],
+            "wanshyu" => [
+                "type" => "string",
+                "description" => "篩選韻書，可選 fanwan, jingwaa"
+            ]
+        ],
+        "response_structure" => [
+            "字" => "查詢的字元",
+            "韻書" => "韻書記錄數組（廣韻、分韻等）",
+            "各地" => [
+                "id" => "地點 id（需用地點列表映射）",
+                "粵拼" => "粵拼數組（可能有多音）",
+                "IPA" => "國際音標數組",
+                "注釋" => "注釋數組"
+            ]
+        ],
+        "examples" => [
+            "獲取地點列表" => "/api/v1.0/detail",
+            "查詢單字" => "/api/v1.0/detail?chara=粵",
+            "查詢多字" => "/api/v1.0/detail?chara=我們",
+            "按粵拼查詢" => "/api/v1.0/detail?pron=jyut6",
+            "按音素查詢" => "/api/v1.0/detail?in=j&nu=yu&co=t"
+        ]
     ]);
 }
 
