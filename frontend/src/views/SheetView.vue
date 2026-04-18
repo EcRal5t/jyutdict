@@ -3,6 +3,7 @@ import { ref, onMounted, reactive, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import SheetApi from '@/api/sheet.js';
 import commentsApi from '@/api/comments.js';
+import articlesApi from '@/api/articles.js';
 import ResultCard from '@/components/ResultCard.vue';
 import CommentSidebar from '@/components/CommentSidebar.vue';
 
@@ -196,6 +197,7 @@ const calculateDensityScore = (rowData) => {
 onMounted(async () => {
     initFromUrl();
     await loadHeaders();
+    articlesApi.getArticleList(); // 觸發緩存加載，整個 session 只請求一次
     // 無論是否有查詢參數，都執行搜索（空查詢會觸發隨機返回）
     performSearch();
 });
