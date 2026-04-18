@@ -82,25 +82,21 @@ const syncToUrl = () => {
 
 const loadHeaders = async () => {
     try {
-        const res = await SheetApi.getHeaderInfo();
+        const res = await SheetApi.getMeta();
         const data = res.data;
-        if (data && data.__valid_options) {
-            const headers = data.__valid_options;
-            headerInfo.all = headers;
-            headerInfo.cities = headers.filter(h => h.is_city == 1);
-            headerInfo.foreign = headers.filter(h => h.is_city == 2);
+        if (data && data.columns) {
+            const columns = data.columns;
+            headerInfo.all = columns;
+            headerInfo.cities = columns.filter(h => h.kind === 1);
+            headerInfo.foreign = columns.filter(h => h.kind === 2);
 
             locations.value = headerInfo.cities.map(h => ({
                 value: h.col,
-                label: h.city + (h.sub || '')
+                label: h.fullname + (h.sub || '')
             }));
 
-            // Default select to 2nd option if not set
-            if (!location.value && locations.value.length > 1) {
-                // Logic from user req: "Default to 2nd option '檢索音/字'"
-                // But wait, "檢索音/字" is a hardcoded option in the select, not from API?
-                // In HTML: <option value="檢">檢索音/字</option>
-                // So user probably means that option.
+            // Default select to '檢' if not set
+            if (!location.value) {
                 location.value = '檢';
             }
         }
@@ -113,71 +109,63 @@ const performSearch = async () => {
     isLoading.value = true;
     error.value = null;
     try {
-        let q = query.value.trim();
-        let finalQ = q;
-        // If query is empty, treat as random search '!'
-        // But do NOT show '!' in the UI input
-        if (!q) {
-            finalQ = '!';
-        }
+        const q = query.value.trim();
 
-        // Update URL: If it's random, maybe don't put '!' in URL to be cleaner?
-        // Or keep it to allow sharing random results? 
-        // User dislikes '!', so let's keep URL clean if empty.
-        if (finalQ === '!') {
-            router.replace({
-                query: {
-                    ...route.query, // keep other params
-                    q: undefined // remove q from url if it's random
-                }
-            });
-        } else {
-            router.replace({
-                query: {
-                    q: query.value,
-                    col: location.value || undefined,
-                    fuzzy: isFuzzy.value ? '1' : undefined,
-                    trim: isTrim.value ? '1' : undefined,
-                    regex: isRegex.value ? '1' : undefined,
-                    def: isDef.value ? '1' : undefined
-                }
-            });
-        }
-
-        const res = await SheetApi.search({
-            query: finalQ,
-            location: location.value,
-            isFuzzy: isFuzzy.value,
-            isTrim: isTrim.value,
-            isRegex: isRegex.value,
-            isDef: isDef.value
+        // 更新 URL
+        router.replace({
+            query: {
+                q: q || undefined,
+                col: location.value || undefined,
+                fuzzy: isFuzzy.value ? '1' : undefined,
+                trim: isTrim.value ? '1' : undefined,
+                regex: isRegex.value ? '1' : undefined,
+                def: isDef.value ? '1' : undefined
+            }
         });
 
-        const data = res.data;
+        let data;
+        if (!q) {
+            // 空查詢 → 隨機返回
+            const res = await SheetApi.getRandom(10);
+            data = res.data;
+        } else {
+            // 構建查詢模式
+            let mode = 'auto';
+            if (isDef.value) {
+                mode = 'meaning';
+            } else if (isRegex.value) {
+                mode = 'regex';
+            } else if (isTrim.value) {
+                mode = 'trim';
+            } else if (isFuzzy.value) {
+                mode = 'fuzzy';
+            }
+
+            const res = await SheetApi.search({
+                q: q,
+                col: location.value,
+                mode: mode,
+                limit: 50
+            });
+            data = res.data;
+        }
+
         if (data.error) {
             error.value = data.error;
         } else if (Array.isArray(data)) {
-            let rows = [];
-            if (data.length > 0) {
-                // The API includes header info as first element sometimes, 
-                // but if it's random search (data.length <= limit) it might not?
-                // Let's check structure. Legacy: array_merge(array($sheetHeaderList), $inCharaSheetArray);
-                // So always index 0 is header.
-                rows = data.slice(1);
-            }
+            // v1.0 API 直接返回數據數組，無需 slice
+            let rows = data;
 
-            // Optimization: Calculate score once
-            // Add a temporary _score property
+            // 計算覆蓋度評分
             rows.forEach(row => {
                 row._score = calculateDensityScore(row);
-                // Also pre-calculate dominant color for strip if we want to sort by that too? (optional)
             });
 
             rows.sort((a, b) => b._score - a._score);
 
             results.value = rows;
 
-            // 加载评论数量
+            // 加載評論數量
             loadCommentCounts();
 
             if (rows.length === 0) error.value = "未找到結果。";
@@ -208,16 +196,8 @@ const calculateDensityScore = (rowData) => {
 onMounted(async () => {
     initFromUrl();
     await loadHeaders();
-
-    // If we have query params (like shared link), search immediately
-    if (query.value || route.query.q !== undefined) {
-        performSearch();
-    } else {
-        // If "!" search needs to be triggered by default?
-        // Legacy: "若不指定 limit 參數則默認返回一項"
-        // Let's trigger a search if nothing is there, defaulting to random
-        performSearch();
-    }
+    // 無論是否有查詢參數，都執行搜索（空查詢會觸發隨機返回）
+    performSearch();
 });
 
 // Watch query for external changes (back button)

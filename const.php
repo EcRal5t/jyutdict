@@ -7,7 +7,7 @@
  */
 
 final class Info {
-    private static $version = "α0.9.0/250627/250629";
+    private static $version = "β1.0.2/260419";
     
     public static function showVersion() {
         echo "<span style=\"float:right;color:#444444;font-size:0.6em\">".self::$version."</span>";
@@ -55,12 +55,38 @@ SIDENAV;
 
     public static function printApiJson() {
         print_r(json_encode([
-            "app_version"=>[0,6,7],
-            "details_of_characters"=>"https://jyutdict.org/api/v1.0/detail?chara={query}{&ascii}",
-            "details_of_pronunciations"=>"https://jyutdict.org/api/v0.9/detail?pron={query}{&ascii}",
-            "details_in_characters_sheet"=>"https://jyutdict.org/api/v0.9/sheet?query={query}{&fuzzy, regex, trim, ascii, b, col={locations}}",
-            "help"=>"Apply parameter '&help' at corresponding API for detailed info."
-        ], JSON_UNESCAPED_SLASHES));
+            "name" => "泛粵大典 API",
+            "version" => [0, 6, 7],
+            "description" => "泛粵大典數據查詢接口",
+            "endpoints" => [
+                "v1.0" => [
+                    "detail" => [
+                        "url" => "/api/v1.0/detail",
+                        "description" => "字元詳情（查字、檢音）",
+                        "help" => "/api/v1.0/detail?help"
+                    ],
+                    "sheet" => [
+                        "url" => "/api/v1.0/sheet",
+                        "description" => "泛粵字表查詢",
+                        "help" => "/api/v1.0/sheet?help"
+                    ],
+                    "articles" => [
+                        "url" => "/api/v1.0/articles",
+                        "description" => "文章列表"
+                    ],
+                    "comments" => [
+                        "url" => "/api/v1.0/comments/...",
+                        "description" => "評論系統"
+                    ]
+                ],
+                "v0.9" => [
+                    "detail" => "/api/v0.9/detail",
+                    "sheet" => "/api/v0.9/sheet",
+                    "status" => "deprecated"
+                ]
+            ],
+            "help" => "各端點附加 ?help 參數獲取詳細說明"
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     }
 }
 ?>
