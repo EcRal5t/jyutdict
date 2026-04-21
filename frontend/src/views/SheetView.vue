@@ -142,9 +142,14 @@ const performSearch = async () => {
                 mode = 'fuzzy';
             }
 
+            // 如果查詢內容包含非 ASCII 字符（漢字），查「字頭」列
+            // 因為各地方言列存的都是音節，只有「字頭」列存漢字
+            const isHan = /[^\x00-\x7F]/.test(q);
+            const col = isHan ? undefined : location.value;
+
             const res = await SheetApi.search({
                 q: q,
-                col: location.value,
+                col: col,
                 mode: mode,
                 limit: 50
             });
@@ -237,8 +242,8 @@ watch(() => route.query, (newQ) => {
                     <div class="flex gap-2">
                         <select v-model="location"
                             class="flex-1 md:flex-none p-2 text-sm bg-gray-50 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-none focus:border-accent outline-none dark:text-slate-100 min-w-[100px]">
-                            <option value="">綜合音/字</option>
-                            <option value="檢">檢索音/字</option>
+                            <option value="">綜合音</option>
+                            <option value="檢">檢索音</option>
                             <option v-for="loc in locations" :key="loc.value" :value="loc.value">
                                 {{ loc.label }}
                             </option>
