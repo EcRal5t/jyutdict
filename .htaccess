@@ -42,6 +42,7 @@ ErrorDocument 404 /index.html
   # API v1.0
   RewriteRule ^api/v1\.0/sheet$ api/v1.0/sheet.php [L]
   RewriteRule ^api/v1\.0/detail$ api/v1.0/detail.php [L]
+  RewriteRule ^api/v1\.0/articles/about$ api/v1.0/articles/about.php [L]
   RewriteRule ^api/v1\.0/articles$ api/v1.0/articles/index.php [L]
   RewriteRule ^api/v1\.0/comments/char$ api/v1.0/comments/char.php [L]
   RewriteRule ^api/v1\.0/comments/counts$ api/v1.0/comments/counts.php [L]
