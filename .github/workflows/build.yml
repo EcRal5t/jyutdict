@@ -6,6 +6,7 @@ on:
       - master  # 只在 vue 分支觸發
     paths-ignore:
       - '.github/workflows/**'  # 避免修改 workflow 本身時觸發
+  workflow_dispatch:
 
 permissions:
   contents: write
