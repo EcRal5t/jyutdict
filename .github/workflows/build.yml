@@ -1,0 +1,45 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - vue  # 只在 vue 分支觸發
+    paths-ignore:
+      - 'assets/**'
+      - 'index.html'
+      - 'favicon.ico'
+      - '.github/workflows/**'  # 避免修改 workflow 本身時觸發
+
+permissions:
+  contents: write  # 需要寫入權限來提交構建產物
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Commit build artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/ index.html favicon.ico
+          git diff --cached --quiet || git commit -m "chore: build frontend [skip ci]"
+          git push
