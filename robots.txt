@@ -1,0 +1,15 @@
+# 泛粵大典 robots.txt
+# https://jyutdict.com
+
+User-agent: *
+# 允許所有公開內容
+Allow: /
+
+# 禁止爬取需要登入的頁面（透過 API 路徑限制）
+Disallow: /api/auth/
+Disallow: /api/v1.0/user/
+Disallow: /api/v1.0/admin/
+
+# Sitemap
+Sitemap: https://jyutdict.org/sitemap.xml
+

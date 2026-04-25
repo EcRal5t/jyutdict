@@ -1,0 +1,75 @@
+# ============================================
+# 錯誤頁面導向
+# ============================================
+ErrorDocument 403 /index.html
+ErrorDocument 404 /index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # ============================================
+  # 安全防護：優先阻止敏感文件
+  # ============================================
+
+  # 阻止 .git 相關
+  RewriteRule ^\.git - [F,L]
+  RewriteRule ^\.gitignore - [F,L]
+
+  # 阻止敏感檔案
+  RewriteRule ^(\.env|\.htaccess|\.htpasswd|composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js)$ - [F,L]
+
+  # 阻止敏感目錄
+  RewriteRule ^(docs|frontend|node_modules|api/core)/ - [F,L]
+
+  # 阻止 SQL 和 Markdown 檔案
+  RewriteRule \.(sql|md)$ - [F,L]
+
+  # 阻止直接訪問 PHP 檔案（通過 THE_REQUEST 檢測原始請求 URL）
+  RewriteCond %{THE_REQUEST} \.php[\s?/] [NC]
+  RewriteRule \.php$ - [F,L]
+
+  # ============================================
+  # API 路由
+  # ============================================
+
+  # API 根目录
+  RewriteRule ^api/$ api/index.php [L]
+
+  # API v0.9
+  RewriteRule ^api/v0\.9/sheet$ api/v0.9/sheet.php [L]
+  RewriteRule ^api/v0\.9/detail$ api/v0.9/detail.php [L]
+
+  # API v1.0
+  RewriteRule ^api/v1\.0/sheet$ api/v1.0/sheet.php [L]
+  RewriteRule ^api/v1\.0/detail$ api/v1.0/detail.php [L]
+  RewriteRule ^api/v1\.0/articles/about$ api/v1.0/articles/about.php [L]
+  RewriteRule ^api/v1\.0/articles$ api/v1.0/articles/index.php [L]
+  RewriteRule ^api/v1\.0/comments/char$ api/v1.0/comments/char.php [L]
+  RewriteRule ^api/v1\.0/comments/counts$ api/v1.0/comments/counts.php [L]
+  RewriteRule ^api/v1\.0/comments/sheet$ api/v1.0/comments/sheet.php [L]
+  RewriteRule ^api/v1\.0/locations/available$ api/v1.0/locations/available.php [L]
+  RewriteRule ^api/v1\.0/user/comments$ api/v1.0/user/comments.php [L]
+  RewriteRule ^api/v1\.0/user/profile$ api/v1.0/user/profile.php [L]
+
+  # API v1.0 Admin
+  RewriteRule ^api/v1\.0/admin/editors$ api/v1.0/admin/editors.php [L]
+  RewriteRule ^api/v1\.0/admin/users$ api/v1.0/admin/users.php [L]
+
+  # Auth API
+  RewriteRule ^api/auth/google$ api/auth/google.php [L]
+  RewriteRule ^api/auth/me$ api/auth/me.php [L]
+  RewriteRule ^api/auth/logout$ api/auth/logout.php [L]
+
+  # ============================================
+  # 靜態資源：允許存在的檔案和目錄
+  # ============================================
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # ============================================
+  # Vue Router - 其他所有請求轉向 index.html
+  # ============================================
+  RewriteRule ^index\.html$ - [L]
+  RewriteRule . /index.html [L]
+</IfModule>
