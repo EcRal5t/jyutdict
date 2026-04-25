@@ -6,10 +6,8 @@
  * Time: 18:52
  */
 
-include("../../const.php");
-include_once("../../connectDB.php");
-include("../../Lookup.class.php");
-include_once("../../Jyutping.class.php");
+include_once(__DIR__ . '/../core/helpers.php');
+include_once(__DIR__ . '/../core/db.php');
 
 header('Content-type: application/json');
 
@@ -28,7 +26,7 @@ if (isset($_REQUEST['help'])) {
     return;
 }
 if (!isset($_REQUEST['query'])) {
-    Info::printApiJson();
+    printApiRootJson();
     return;
 }
 

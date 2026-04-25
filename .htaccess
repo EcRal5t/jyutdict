@@ -19,7 +19,7 @@ ErrorDocument 404 /index.html
   RewriteRule ^(\.env|\.htaccess|\.htpasswd|composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js)$ - [F,L]
 
   # 阻止敏感目錄
-  RewriteRule ^(docs|frontend|node_modules)/ - [F,L]
+  RewriteRule ^(docs|frontend|node_modules|api/core)/ - [F,L]
 
   # 阻止 SQL 和 Markdown 檔案
   RewriteRule \.(sql|md)$ - [F,L]

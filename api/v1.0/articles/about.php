@@ -17,11 +17,8 @@ header('Content-Type: application/json; charset=utf-8');
 define('ABOUT_PAGES_JSON', __DIR__ . '/../../../frontend/src/data/about_pages.json');
 define('MARKDOWN_DIR', __DIR__ . '/../../../frontend/src/data/markdown/');
 
-function outputJson($data, $code = 200) {
-    http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    exit;
-}
+include_once(__DIR__ . '/../../core/helpers.php');
+
 
 // 只允許 GET
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
