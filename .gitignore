@@ -5,3 +5,24 @@ Empty.php
 /.vscode
 .gitignore
 [0-9]*
+
+node_modules
+dist
+
+# 前端構建產物（由 GitHub Actions 生成）
+assets/
+index.html
+favicon.ico
+
+.python-version
+pyproject.toml
+.venv
+*.py
+uv.lock
+
+.claude
+CLAUDE.md
+docs/
+
+# OAuth 配置
+api/config/oauth.php

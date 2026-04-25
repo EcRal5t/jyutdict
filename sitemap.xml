@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <!-- 首頁 / 檢字頁 -->
+    <url>
+        <loc>https://jyutdict.org/</loc>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <!-- 泛粵字表 -->
+    <url>
+        <loc>https://jyutdict.org/#/sheet</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- 檢音頁 -->
+    <url>
+        <loc>https://jyutdict.org/#/pronunciation</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- 粵語方言點列表 -->
+    <url>
+        <loc>https://jyutdict.org/#/locations</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <!-- 說明頁 -->
+    <url>
+        <loc>https://jyutdict.org/#/about</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <!-- 音系測試頁 -->
+    <url>
+        <loc>https://jyutdict.org/#/phonology</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.4</priority>
+    </url>
+
+    <!--
+        動態頁面（需要手動更新或自動生成）：
+        - /#/detail?chara=字  （字元詳情）
+        - /#/articles/1       （文章）
+        - /#/location-article/地名 （方言點文章）
+
+        如需完整索引，可透過後端腳本從資料庫生成。
+    -->
+</urlset>

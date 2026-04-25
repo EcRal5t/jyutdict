@@ -1,59 +1,75 @@
+# ============================================
+# 錯誤頁面導向
+# ============================================
+ErrorDocument 403 /index.html
+ErrorDocument 404 /index.html
+
 <IfModule mod_rewrite.c>
-    RewriteEngine On
-    
-    # 1. 安全设置：禁止浏览目录（比如用户访问 /js/ 时显示 Forbidden 而不是文件列表）
-    Options -Indexes
+  RewriteEngine On
 
-    # 2. 定义 404 和 403 错误页面
-    ErrorDocument 404 /404
-    ErrorDocument 403 /404
+  # ============================================
+  # 安全防護：優先阻止敏感文件
+  # ============================================
 
-    # --------------------------------------------------------
-    # 3. 处理 "probe" 子页面 (Vue/Vite 等构建项目的常见路径)
-    # --------------------------------------------------------
-    # 将 /probe 映射到 sub/probe/index.html
-    RewriteRule ^probe$ sub/probe/index.html [L]
+  # 阻止 .git 相關
+  RewriteRule ^\.git - [F,L]
+  RewriteRule ^\.gitignore - [F,L]
 
-    # 【重要】处理 probe 的资源文件
-    # 因为 sub/probe/index.html 里引用的资源通常是 ./assets/xxx
-    # 当你在 /probe 访问时，浏览器会请求 /assets/xxx，但根目录没有这个文件夹
-    # 下面这行代码的意思是：如果请求的文件在根目录找不到，尝试去 sub/probe/ 下找
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^assets/(.*)$ sub/probe/assets/$1 [L]
+  # 阻止敏感檔案
+  RewriteRule ^(\.env|\.htaccess|\.htpasswd|composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js)$ - [F,L]
 
-    # --------------------------------------------------------
-    # 4. 核心页面白名单 (URL 重写)
-    # --------------------------------------------------------
-    # 只有这里列出的页面可以访问。格式：RewriteRule ^外部显示的路径$ 实际文件 [L]
-    
-    RewriteRule ^index/?$ index.php [L]
-    RewriteRule ^about/?$ about.php [L]
-    RewriteRule ^pron/?$ pron.php [L]
-    RewriteRule ^sheet/?$ sheet.php [L]
-    RewriteRule ^404/?$ 404.php [L]
-    
-    # API 路径处理
-    RewriteRule ^api/v0.9/sheet$ api/v0.9/sheet.php [L]
-    RewriteRule ^api/v0.9/detail$ api/v0.9/detail.php [L]
+  # 阻止敏感目錄
+  RewriteRule ^(docs|frontend|node_modules|api/core)/ - [F,L]
 
-    # Articles 文章页面的通配符处理
-    # 将 /articles/xxx 映射到 articles/xxx.php
-    RewriteRule ^articles/([^/.]+)/?$ articles/$1.php [L]
+  # 阻止 SQL 和 Markdown 檔案
+  RewriteRule \.(sql|md)$ - [F,L]
 
-    # --------------------------------------------------------
-    # 5. 安全拦截：禁止直接访问 .php 文件
-    # --------------------------------------------------------
-    # 如果用户在地址栏直接输入 .php (比如 login.php, index.php)，强制跳转到 404 或拦截
-    # 原理：判断用户的原始请求(THE_REQUEST)里是否包含 .php
-    
-    RewriteCond %{THE_REQUEST} \.php[/\s?] [NC]
-    RewriteRule ^ - [R=404,L]
+  # 阻止直接訪問 PHP 檔案（通過 THE_REQUEST 檢測原始請求 URL）
+  RewriteCond %{THE_REQUEST} \.php[\s?/] [NC]
+  RewriteRule \.php$ - [F,L]
 
-    # --------------------------------------------------------
-    # 6. 其他保护
-    # --------------------------------------------------------
-    # 禁止访问 .git, .htaccess, .md 等敏感/无关文件
-    RewriteRule \.(git|md|txt|less|sql)$ - [F]
+  # ============================================
+  # API 路由
+  # ============================================
 
+  # API 根目录
+  RewriteRule ^api/$ api/index.php [L]
+
+  # API v0.9
+  RewriteRule ^api/v0\.9/sheet$ api/v0.9/sheet.php [L]
+  RewriteRule ^api/v0\.9/detail$ api/v0.9/detail.php [L]
+
+  # API v1.0
+  RewriteRule ^api/v1\.0/sheet$ api/v1.0/sheet.php [L]
+  RewriteRule ^api/v1\.0/detail$ api/v1.0/detail.php [L]
+  RewriteRule ^api/v1\.0/articles/about$ api/v1.0/articles/about.php [L]
+  RewriteRule ^api/v1\.0/articles$ api/v1.0/articles/index.php [L]
+  RewriteRule ^api/v1\.0/comments/char$ api/v1.0/comments/char.php [L]
+  RewriteRule ^api/v1\.0/comments/counts$ api/v1.0/comments/counts.php [L]
+  RewriteRule ^api/v1\.0/comments/sheet$ api/v1.0/comments/sheet.php [L]
+  RewriteRule ^api/v1\.0/locations/available$ api/v1.0/locations/available.php [L]
+  RewriteRule ^api/v1\.0/user/comments$ api/v1.0/user/comments.php [L]
+  RewriteRule ^api/v1\.0/user/profile$ api/v1.0/user/profile.php [L]
+
+  # API v1.0 Admin
+  RewriteRule ^api/v1\.0/admin/editors$ api/v1.0/admin/editors.php [L]
+  RewriteRule ^api/v1\.0/admin/users$ api/v1.0/admin/users.php [L]
+
+  # Auth API
+  RewriteRule ^api/auth/google$ api/auth/google.php [L]
+  RewriteRule ^api/auth/me$ api/auth/me.php [L]
+  RewriteRule ^api/auth/logout$ api/auth/logout.php [L]
+
+  # ============================================
+  # 靜態資源：允許存在的檔案和目錄
+  # ============================================
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # ============================================
+  # Vue Router - 其他所有請求轉向 index.html
+  # ============================================
+  RewriteRule ^index\.html$ - [L]
+  RewriteRule . /index.html [L]
 </IfModule>

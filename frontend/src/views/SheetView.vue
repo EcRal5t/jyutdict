@@ -1,0 +1,358 @@
+<script setup>
+import { ref, onMounted, reactive, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import SheetApi from '@/api/sheet.js';
+import commentsApi from '@/api/comments.js';
+import articlesApi from '@/api/articles.js';
+import ResultCard from '@/components/ResultCard.vue';
+import CommentSidebar from '@/components/CommentSidebar.vue';
+
+// 評論側邊欄
+const commentSidebarVisible = ref(false)
+const commentTarget = ref('')
+
+const openSheetComments = (sheetKey) => {
+    if (!sheetKey) {
+        alert('此條目暫無評論標識（鍵）')
+        return
+    }
+    commentTarget.value = sheetKey
+    commentSidebarVisible.value = true
+}
+
+// 評論數量
+const commentCounts = ref({})
+
+const loadCommentCounts = async () => {
+    const keys = results.value.map(r => r['鍵']).filter(Boolean)
+    if (keys.length === 0) return
+
+    try {
+        const res = await commentsApi.getCounts('sheet', keys)
+        commentCounts.value = res.data.counts || {}
+    } catch (e) {
+        console.error('Failed to load comment counts', e)
+    }
+}
+
+const getCommentCount = (key) => {
+    return commentCounts.value[key] || 0
+}
+
+const router = useRouter();
+const route = useRoute();
+
+const query = ref('');
+const location = ref('');
+const isFuzzy = ref(true);
+const isTrim = ref(true);
+const isRegex = ref(false);
+const isDef = ref(false);
+
+const results = ref([]);
+const headerInfo = reactive({ cities: [], foreign: [], all: [] });
+const isLoading = ref(false);
+const error = ref(null);
+
+const locations = ref([]);
+
+// Initialize state from URL
+const initFromUrl = () => {
+    const q = route.query;
+    if (q.q !== undefined) query.value = q.q;
+    if (q.col !== undefined) location.value = q.col;
+    if (q.fuzzy !== undefined) isFuzzy.value = q.fuzzy === '1';
+    if (q.trim !== undefined) isTrim.value = q.trim === '1';
+    if (q.regex !== undefined) isRegex.value = q.regex === '1';
+    if (q.def !== undefined) isDef.value = q.def === '1';
+};
+
+// Sync state to URL
+const syncToUrl = () => {
+    router.replace({
+        query: {
+            q: query.value,
+            col: location.value || undefined,
+            fuzzy: isFuzzy.value ? '1' : undefined,
+            trim: isTrim.value ? '1' : undefined,
+            regex: isRegex.value ? '1' : undefined,
+            def: isDef.value ? '1' : undefined
+        }
+    });
+};
+
+const loadHeaders = async () => {
+    try {
+        const res = await SheetApi.getMeta();
+        const data = res.data;
+        if (data && data.columns) {
+            const columns = data.columns;
+            headerInfo.all = columns;
+            headerInfo.cities = columns.filter(h => h.kind === 1);
+            headerInfo.foreign = columns.filter(h => h.kind === 2);
+
+            locations.value = headerInfo.cities.map(h => ({
+                value: h.col,
+                label: h.fullname + (h.sub || '')
+            }));
+
+            // Default select to '檢' if not set
+            if (!location.value) {
+                location.value = '檢';
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load headers', e);
+    }
+};
+
+const performSearch = async () => {
+    isLoading.value = true;
+    error.value = null;
+    try {
+        const q = query.value.trim();
+
+        // 更新 URL
+        router.replace({
+            query: {
+                q: q || undefined,
+                col: location.value || undefined,
+                fuzzy: isFuzzy.value ? '1' : undefined,
+                trim: isTrim.value ? '1' : undefined,
+                regex: isRegex.value ? '1' : undefined,
+                def: isDef.value ? '1' : undefined
+            }
+        });
+
+        let data;
+        if (!q) {
+            // 空查詢 → 隨機返回
+            const res = await SheetApi.getRandom(10);
+            data = res.data;
+        } else {
+            // 構建查詢模式
+            let mode = 'auto';
+            if (isDef.value) {
+                mode = 'meaning';
+            } else if (isRegex.value) {
+                mode = 'regex';
+            } else if (isTrim.value) {
+                mode = 'trim';
+            } else if (isFuzzy.value) {
+                mode = 'fuzzy';
+            }
+
+            // 如果查詢內容包含非 ASCII 字符（漢字），查「字頭」列
+            // 因為各地方言列存的都是音節，只有「字頭」列存漢字
+            const isHan = /[^\x00-\x7F]/.test(q);
+            const col = isHan ? undefined : location.value;
+
+            const res = await SheetApi.search({
+                q: q,
+                col: col,
+                mode: mode,
+                limit: 50
+            });
+            data = res.data;
+        }
+
+        if (data.error) {
+            error.value = data.error;
+        } else if (Array.isArray(data)) {
+            // v1.0 API 直接返回數據數組，無需 slice
+            let rows = data;
+
+            // 計算覆蓋度評分
+            rows.forEach(row => {
+                row._score = calculateDensityScore(row);
+            });
+
+            rows.sort((a, b) => b._score - a._score);
+
+            results.value = rows;
+
+            // 加載評論數量
+            loadCommentCounts();
+
+            if (rows.length === 0) error.value = "未找到結果。";
+        }
+    } catch (e) {
+        error.value = "查詢出錯，請檢查輸入或稍後再試。";
+        console.error(e);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const calculateDensityScore = (rowData) => {
+    let score = 0;
+    // We can use the already loaded headerInfo.cities
+    const cities = headerInfo.cities;
+    const len = cities.length;
+    for (let i = 0; i < len; i++) {
+        const key = cities[i].col;
+        const val = rowData[key];
+        if (val && val !== '_' && val !== '?') {
+            score++;
+        }
+    }
+    return score;
+};
+
+onMounted(async () => {
+    initFromUrl();
+    await loadHeaders();
+    articlesApi.getArticleList(); // 觸發緩存加載，整個 session 只請求一次
+    // 無論是否有查詢參數，都執行搜索（空查詢會觸發隨機返回）
+    performSearch();
+});
+
+// Watch query for external changes (back button)
+watch(() => route.query, (newQ) => {
+    if (newQ.q !== query.value) { // avoid loop
+        // initFromUrl();
+        // performSearch(); 
+        // We might not want to auto-search on every route change if it's internal
+    }
+});
+</script>
+
+<template>
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+
+        <!-- Search Box -->
+        <div
+            class="bg-white dark:bg-slate-800 p-4 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] border border-gray-100 dark:border-slate-700 mb-8 transition-all duration-300">
+            <div class="flex flex-col gap-3">
+                <div class="flex flex-col md:flex-row gap-2">
+                    <div class="flex-1 relative">
+                        <input v-model="query" @keypress.enter="performSearch" type="text" placeholder="輸入字或音... (留空隨機)"
+                            class="w-full p-2 pl-3 text-sm bg-gray-50 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-none focus:border-accent outline-none transition-all dark:text-slate-100 placeholder-gray-400">
+                        <button @click="query = ''" v-if="query"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <select v-model="location"
+                            class="flex-1 md:flex-none p-2 text-sm bg-gray-50 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-none focus:border-accent outline-none dark:text-slate-100 min-w-[100px]">
+                            <option value="">綜合音</option>
+                            <option value="檢">檢索音</option>
+                            <option v-for="loc in locations" :key="loc.value" :value="loc.value">
+                                {{ loc.label }}
+                            </option>
+                        </select>
+
+                        <button @click="performSearch"
+                            class="bg-accent hover:bg-red-700 text-white px-5 py-2 text-sm rounded-none font-bold shadow-[4px_4px_0_rgba(183,41,20,0.3)] hover:shadow-[6px_6px_0_rgba(183,41,20,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all duration-200 whitespace-nowrap">
+                            揾
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap justify-between md:justify-center gap-y-2 gap-x-4 pt-2 text-sm border-t border-gray-100 dark:border-slate-700 mt-1">
+                    <label
+                        class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" v-model="isFuzzy"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                viewBox="0 0 14 14" fill="none">
+                                <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <span class="group-hover:text-accent transition-colors">模糊查詢 (查字)</span>
+                    </label>
+
+                    <label
+                        class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" v-model="isTrim"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                viewBox="0 0 14 14" fill="none">
+                                <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <span class="group-hover:text-accent transition-colors">音節整體 (查音)</span>
+                    </label>
+
+                    <label
+                        class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" v-model="isRegex"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                viewBox="0 0 14 14" fill="none">
+                                <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <span class="group-hover:text-accent transition-colors">正則表達式</span>
+                    </label>
+
+                    <label
+                        class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" v-model="isDef"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                viewBox="0 0 14 14" fill="none">
+                                <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <span class="group-hover:text-accent transition-colors">反查釋義</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results List -->
+        <div v-if="isLoading" class="text-center py-16">
+            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-accent">
+            </div>
+            <p class="mt-4 text-slate-500">載入中 Loading...</p>
+        </div>
+
+        <div v-else-if="error"
+            class="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 p-6 rounded-none text-center border-l-4 border-red-500 dark:border-red-400">
+            {{ error }}
+        </div>
+
+        <div v-else class="space-y-4">
+            <div v-for="row in results" :key="row.id || Math.random()" class="relative">
+                <ResultCard :row-data="row" :header-info="headerInfo" />
+                <!-- 評論按鈕（僅當行有鍵值時顯示） -->
+                <button v-if="row['鍵']" @click="openSheetComments(row['鍵'])"
+                    class="absolute top-3 right-3 flex items-center gap-1 text-xs px-2 py-1 rounded-none transition-colors"
+                    :class="getCommentCount(row['鍵']) > 0 ? 'bg-accent text-white hover:bg-red-700' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-accent'"
+                    title="查看評論">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    <span>{{ getCommentCount(row['鍵']) || '' }}</span>
+                </button>
+            </div>
+            <div v-if="results.length > 0" class="text-center text-slate-400 text-sm py-8 border-t border-slate-100 dark:border-slate-700 mt-6">
+                <span class="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-none border border-slate-200 dark:border-slate-700">—— 到底了 End ——</span>
+            </div>
+        </div>
+
+        <!-- 評論側邊欄 -->
+        <CommentSidebar
+            type="sheet"
+            :target="commentTarget"
+            :visible="commentSidebarVisible"
+            @close="commentSidebarVisible = false"
+        />
+    </div>
+</template>
