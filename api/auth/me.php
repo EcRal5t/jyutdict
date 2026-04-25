@@ -12,14 +12,11 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
-include_once(__DIR__ . '/../../connectDB.php');
+include_once(__DIR__ . '/../core/db.php');
+include_once(__DIR__ . '/../core/helpers.php');
 include_once(__DIR__ . '/../middleware/csrf.php');
 
-function outputJson($data, $code = 200) {
-    http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
-    exit;
-}
+
 
 // 检查 Session
 if (!isset($_SESSION['user_id'])) {

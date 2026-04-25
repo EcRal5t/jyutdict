@@ -10,16 +10,12 @@
  * - 支持 key 精確查詢
  */
 
-include("../../const.php");
-include_once("../../connectDB.php");
+include_once(__DIR__ . '/../core/db.php');
+include_once(__DIR__ . '/../core/helpers.php');
 
 header('Content-type: application/json');
 
-// Helper: JSON 輸出
-function outputJson($data) {
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    exit;
-}
+
 
 // Helper: 獲取表頭信息
 function getHeaderInfo($dbh) {

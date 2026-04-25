@@ -8,14 +8,11 @@
 
 header('Content-Type: application/json; charset=utf-8');
 
-include_once(__DIR__ . '/../../../connectDB.php');
+include_once(__DIR__ . '/../../core/db.php');
+include_once(__DIR__ . '/../../core/helpers.php');
 include_once(__DIR__ . '/../../middleware/auth.php');
 
-function outputJson($data, $code = 200) {
-    http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
-    exit;
-}
+
 
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = min(100, max(1, (int)($_GET['per_page'] ?? 20)));

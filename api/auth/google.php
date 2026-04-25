@@ -16,7 +16,8 @@
  */
 
 // 先加载配置（session_start 之前需要知道 session_lifetime）
-include_once(__DIR__ . '/../../connectDB.php');
+include_once(__DIR__ . '/../core/db.php');
+include_once(__DIR__ . '/../core/helpers.php');
 $config = require(__DIR__ . '/../config/oauth.php');
 
 // 设置 Session 参数（必须在 session_start 之前）
@@ -37,11 +38,7 @@ $action = $_GET['action'] ?? 'login';
 
 // ========== 辅助函数 ==========
 
-function outputJson($data, $code = 200) {
-    http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
-    exit;
-}
+
 
 function httpPost($url, $data, $proxy = '') {
     $ch = curl_init($url);
