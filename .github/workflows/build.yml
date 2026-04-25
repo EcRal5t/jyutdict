@@ -3,9 +3,9 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - master  # 只在 vue 分支觸發
+      - master
     paths-ignore:
-      - '.github/workflows/**'  # 避免修改 workflow 本身時觸發
+      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
@@ -40,23 +40,38 @@ jobs:
           mkdir -p /tmp/build
           cp -r assets/ index.html favicon.ico /tmp/build/
 
+          # 要從 dist 分支刪除的目錄/檔案
+          TO_REMOVE="frontend .github docs .claude CLAUDE.md .python-version pyproject.toml .venv *.py uv.lock migrate_pronunciation.py 字表更新日誌.md"
+
           # 切換到 dist 分支（或創建 orphan branch）
           git fetch origin dist 2>/dev/null || true
           if git show-ref --verify --quiet refs/remotes/origin/dist; then
             git checkout dist
-            git rm -rf . 2>/dev/null || true
           else
             git checkout --orphan dist
-            git rm -rf . 2>/dev/null || true
           fi
+
+          # 刪除不需要的檔案
+          for item in $TO_REMOVE; do
+            rm -rf "$item" 2>/dev/null || true
+          done
 
           # 複製構建產物
           cp -r /tmp/build/* .
 
-          # 提交並推送（只添加構建產物，不添加其他檔案）
+          # 創建簡化的 .gitignore（只保留必要項）
+          cat > .gitignore << 'EOF'
+          # 敏感配置
+          api/config/oauth.php
+
+          # 不需要追蹤
+          .vscode/
+          EOF
+
+          # 提交並推送
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/ index.html favicon.ico
+          git add -A
           git commit -m "build: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           git push origin dist
 
