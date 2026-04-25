@@ -53,6 +53,9 @@ jobs:
             --exclude='.git' \
             . /tmp/dist/
 
+          # 確保前端源碼目錄不被帶入
+          rm -rf /tmp/dist/frontend
+
           # 覆蓋構建產物（postbuild 已部署到根目錄）
           cp -r assets/ index.html favicon.ico /tmp/dist/
 
