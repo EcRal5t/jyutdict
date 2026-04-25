@@ -53,12 +53,12 @@ jobs:
           # 複製構建產物
           cp -r /tmp/build/* .
 
-          # 提交並推送
+          # 提交並推送（只添加構建產物，不添加其他檔案）
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add assets/ index.html favicon.ico
           git commit -m "build: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           git push origin dist
 
       - name: Return to source branch
-        run: git checkout vue
+        run: git checkout master

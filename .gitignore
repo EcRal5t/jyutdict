@@ -14,6 +14,9 @@ assets/
 index.html
 favicon.ico
 
+# CI 測試日誌
+logs_*/
+
 .python-version
 pyproject.toml
 .venv
