@@ -144,6 +144,16 @@ if (isset($_REQUEST['in']) || isset($_REQUEST['nu']) || isset($_REQUEST['co']) |
         $queryNuclei = $jyutping->getNuclei();
         $queryCoda = $jyutping->getCoda();
         $queryTone = $jyutping->getTone();
+        // 將 * 轉換為 % 以實現模糊匹配（與分開參數行為一致）
+        if ($queryInitial === '*') $queryInitial = '%';
+        if ($queryNuclei === '*') $queryNuclei = '%';
+        if ($queryCoda === '*') $queryCoda = '%';
+        if ($queryTone === '*') $queryTone = '%';
+        // 空字符串表示精確匹配空值
+        if ($queryInitial === '') $queryInitial = '';
+        if ($queryNuclei === '') $queryNuclei = '';
+        if ($queryCoda === '') $queryCoda = '';
+        if ($queryTone === '') $queryTone = '';
     } else {
         outputJson(["error" => "Invalid Jyutping"]);
     }
@@ -273,7 +283,11 @@ if ($queryInitial !== null) {
                 $inCityPron['chara'] :
                 $allPron[$pron][$inCityPron['tone']] . $inCityPron['chara'];
         }
-        $entriesInLocations[] = $allPron;
+
+        // 只有當有實際數據時才加入結果（避免返回只有 __id 的空對象）
+        if (count($allPron) > 1) {
+            $entriesInLocations[] = $allPron;
+        }
     }
 
     outputJson([
