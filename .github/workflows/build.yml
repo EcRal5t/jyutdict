@@ -36,37 +36,45 @@ jobs:
 
       - name: Deploy to dist branch
         run: |
-          # 保存構建產物到臨時目錄
-          mkdir -p /tmp/build
-          cp -r assets/ index.html favicon.ico /tmp/build/
+          # 從 master 工作目錄（含後端檔案）準備 dist 內容，排除前端源碼等不需要的部分
+          mkdir -p /tmp/dist
+          rsync -a \
+            --exclude=frontend \
+            --exclude=.github \
+            --exclude=docs \
+            --exclude=.claude \
+            --exclude=CLAUDE.md \
+            --exclude=.python-version \
+            --exclude=pyproject.toml \
+            --exclude=.venv \
+            --exclude='*.py' \
+            --exclude=uv.lock \
+            --exclude='.git' \
+            . /tmp/dist/
 
-          # 要從 dist 分支刪除的目錄/檔案
-          TO_REMOVE="frontend .github docs .claude CLAUDE.md .python-version pyproject.toml .venv *.py uv.lock migrate_pronunciation.py 字表更新日誌.md"
+          # 覆蓋構建產物（postbuild 已部署到根目錄）
+          cp -r assets/ index.html favicon.ico /tmp/dist/
 
-          # 切換到 dist 分支（或創建 orphan branch）
-          git fetch origin dist 2>/dev/null || true
-          if git show-ref --verify --quiet refs/remotes/origin/dist; then
-            git checkout dist
-          else
-            git checkout --orphan dist
-          fi
-
-          # 刪除不需要的檔案
-          for item in $TO_REMOVE; do
-            rm -rf "$item" 2>/dev/null || true
-          done
-
-          # 複製構建產物
-          cp -r /tmp/build/* .
-
-          # 創建簡化的 .gitignore（只保留必要項）
-          cat > .gitignore << 'EOF'
+          # 簡化 .gitignore
+          cat > /tmp/dist/.gitignore << 'EOF'
           # 敏感配置
           api/config/oauth.php
 
           # 不需要追蹤
           .vscode/
           EOF
+
+          # 切換到 dist 分支並清空
+          git fetch origin dist 2>/dev/null || true
+          if git show-ref --verify --quiet refs/remotes/origin/dist; then
+            git checkout dist
+          else
+            git checkout --orphan dist
+          fi
+          git rm -rf . --quiet
+
+          # 複製準備好的內容
+          cp -r /tmp/dist/. .
 
           # 提交並推送
           git config user.name "github-actions[bot]"
