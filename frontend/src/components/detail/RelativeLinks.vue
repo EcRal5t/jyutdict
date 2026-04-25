@@ -26,7 +26,7 @@ const props = defineProps({
           <a :href="`https://jyut.net/query?q=${chara}`" target="_blank" class="link-tag link-tag-cantonese">粵音資料集叢</a>
           <a :href="`https://words.hk/zidin/wan/?q=${chara}`" target="_blank" class="link-tag link-tag-cantonese">粵典</a>
           <a :href="`https://kaifangcidian.com/han/yue/?${chara}`" target="_blank" class="link-tag link-tag-cantonese">開放粵語詞典</a>
-          <a :href="`https://www.jyutjyu.com/search?q=${chara}`" target="_blank" class="link-tag link-tag-jyutjyucicung">粵語辭叢</a>
+          <a :href="`https://jyutjyu.com/word/${chara}`" target="_blank" class="link-tag link-tag-jyutjyucicung">粵語辭叢</a>
           
           <!-- Others -->
           <a :href="`http://www.zdic.net/zd/yy/yy/${chara}`" target="_blank" class="link-tag">漢典-粵</a>
