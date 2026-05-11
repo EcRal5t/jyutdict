@@ -114,7 +114,7 @@ if (!$isRandomReturn) { // 常規檢索
         if (!is_numeric(substr($queryString, -1))) {
             $queryString = $queryString . "[^a-z]";
         }
-        $queryString = "(^$queryString)|([!?/]$queryString)";
+        $queryString = "(^$queryString)|([!?/; *]$queryString)";
         //    $queryString = "!?!?(\w+/)*".$queryString."\d?[?？①-⑩]*(/\w+)*";
     }
 
