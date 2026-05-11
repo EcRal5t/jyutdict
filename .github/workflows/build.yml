@@ -66,6 +66,8 @@ jobs:
 
           # 不需要追蹤
           .vscode/
+          frontend/
+          node_modules/
           EOF
 
           # 切換到 dist 分支並清空
@@ -75,7 +77,8 @@ jobs:
           else
             git checkout --orphan dist
           fi
-          git rm -rf . --quiet
+          git rm -rf . --quiet || true
+          git clean -fdx
 
           # 複製準備好的內容
           cp -r /tmp/dist/. .
