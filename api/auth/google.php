@@ -20,13 +20,50 @@ include_once(__DIR__ . '/../core/db.php');
 include_once(__DIR__ . '/../core/helpers.php');
 $config = require(__DIR__ . '/../config/oauth.php');
 
+function getRequestScheme() {
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        return strtolower(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]);
+    }
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        return 'https';
+    }
+    if (($_SERVER['SERVER_PORT'] ?? '') === '443') {
+        return 'https';
+    }
+    return 'http';
+}
+
+function getRequestOrigin() {
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    return getRequestScheme() . '://' . $host;
+}
+
+function redirectToCanonicalOAuthOrigin($config) {
+    $redirectOrigin = parse_url($config['redirect_uri'], PHP_URL_SCHEME) . '://' . parse_url($config['redirect_uri'], PHP_URL_HOST);
+    $redirectPort = parse_url($config['redirect_uri'], PHP_URL_PORT);
+    if ($redirectPort) {
+        $redirectOrigin .= ':' . $redirectPort;
+    }
+
+    if (strcasecmp(getRequestOrigin(), $redirectOrigin) === 0) {
+        return;
+    }
+
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/api/auth/google';
+    header('Location: ' . $redirectOrigin . $requestUri, true, 302);
+    exit;
+}
+
+redirectToCanonicalOAuthOrigin($config);
+
 // 设置 Session 参数（必须在 session_start 之前）
 $lifetime = $config['session_lifetime'] ?? 604800;
+$sessionSecure = parse_url($config['redirect_uri'], PHP_URL_SCHEME) === 'https';
 ini_set('session.gc_maxlifetime', $lifetime);
 session_set_cookie_params([
     'lifetime' => $lifetime,
     'path'     => '/',
-    'secure'   => true,
+    'secure'   => $sessionSecure,
     'httponly' => true,
     'samesite' => 'Lax',
 ]);
