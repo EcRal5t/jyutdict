@@ -18,8 +18,32 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect frontend changes
+        id: changes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "frontend_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          before="${{ github.event.before }}"
+          if [[ "$before" =~ ^0+$ ]]; then
+            echo "frontend_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --name-only "$before" "${{ github.sha }}" | grep -q '^frontend/'; then
+            echo "frontend_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend_changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup Node.js
+        if: steps.changes.outputs.frontend_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -27,16 +51,17 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        if: steps.changes.outputs.frontend_changed == 'true'
         working-directory: frontend
         run: npm ci
 
       - name: Build
+        if: steps.changes.outputs.frontend_changed == 'true'
         working-directory: frontend
         run: npm run build
 
       - name: Deploy to dist branch
         run: |
-          # 從 master 工作目錄（含後端檔案）準備 dist 內容，排除前端源碼等不需要的部分
           mkdir -p /tmp/dist
           rsync -a \
             --exclude=frontend \
@@ -53,24 +78,25 @@ jobs:
             --exclude='.git' \
             . /tmp/dist/
 
-          # 確保前端源碼目錄不被帶入
           rm -rf /tmp/dist/frontend
 
-          # 覆蓋構建產物（postbuild 已部署到根目錄）
-          cp -r assets/ index.html favicon.ico /tmp/dist/
+          if [ "${{ steps.changes.outputs.frontend_changed }}" = "true" ]; then
+            cp -r assets/ index.html favicon.ico /tmp/dist/
+          else
+            git fetch origin dist
+            git archive origin/dist assets index.html favicon.ico | tar -x -C /tmp/dist
+          fi
 
-          # 簡化 .gitignore
           cat > /tmp/dist/.gitignore << 'EOF'
-          # 敏感配置
+          # Sensitive config
           api/config/oauth.php
 
-          # 不需要追蹤
+          # Not tracked in deployment
           .vscode/
           frontend/
           node_modules/
           EOF
 
-          # 切換到 dist 分支並清空
           git fetch origin dist 2>/dev/null || true
           if git show-ref --verify --quiet refs/remotes/origin/dist; then
             git checkout dist
@@ -80,15 +106,17 @@ jobs:
           git rm -rf . --quiet || true
           git clean -fdx
 
-          # 複製準備好的內容
           cp -r /tmp/dist/. .
 
-          # 提交並推送
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "build: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          git push origin dist
+          if git diff --cached --quiet; then
+            echo "No changes to deploy"
+          else
+            git commit -m "build: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            git push origin dist
+          fi
 
       - name: Return to source branch
         run: git checkout master
