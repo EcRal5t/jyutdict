@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { updateLogs, version, pansheetver } from './utils/updates.js'
 import { useAuthStore } from './stores/auth.js'
 import LoginButton from './components/LoginButton.vue'
@@ -11,6 +11,25 @@ const authStore = useAuthStore()
 // 主题状态: 'light' | 'dark' | 'system'
 const themeMode = ref('system')
 const showMobileMenu = ref(false)
+const mobileMenuRef = ref(null)
+
+const handleClickOutside = (event) => {
+    if (showMobileMenu.value && mobileMenuRef.value && !mobileMenuRef.value.contains(event.target)) {
+        showMobileMenu.value = false
+    }
+}
+
+const handleBrandClick = (event, navigate) => {
+    if (window.innerWidth < 1024) {
+        event.preventDefault()
+        showMobileMenu.value = !showMobileMenu.value
+    } else {
+        showMobileMenu.value = false
+        if (navigate) {
+            navigate(event)
+        }
+    }
+}
 
 // 计算当前是否为深色模式
 const isDarkMode = computed(() => {
@@ -72,6 +91,13 @@ onMounted(() => {
 
     // 初始化登入狀態
     authStore.init()
+
+    // 监听点击外部关闭菜单
+    document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
 })
 
 const menuItems = [
@@ -94,29 +120,37 @@ const externalLinks = [
         class="min-h-screen flex flex-col bg-background dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 font-serif">
 
         <header
-            class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
+            class="border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300 relative">
+            <!-- Header Background (to prevent nested backdrop-filter bug on dropdowns) -->
+            <div class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 -z-10 pointer-events-none glass-header"></div>
             <div class="container mx-auto px-4 py-3">
                 <div class="flex justify-between items-center gap-2">
                     <!-- Brand container with Dropdown -->
-                    <div class="relative group flex-shrink-0">
-                        <button @click="showMobileMenu = !showMobileMenu"
-                            class="flex items-center gap-2 group/btn flex-shrink-0 focus:outline-none">
-                            <span
-                                class="text-xl sm:text-2xl font-bold text-accent dark:text-red-500 tracking-tight transition-opacity whitespace-nowrap">
-                                泛粵大典
-                            </span>
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5 text-gray-500 lg:hidden transition-transform flex-shrink-0"
-                                :class="{ 'rotate-180': showMobileMenu }" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                    <div ref="mobileMenuRef" class="relative group flex-shrink-0">
+                        <div class="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+                            <RouterLink to="/" custom v-slot="{ navigate, href }">
+                                <a :href="href" @click="handleBrandClick($event, navigate)"
+                                    class="text-xl sm:text-2xl font-bold text-accent dark:text-red-500 tracking-tight transition-opacity whitespace-nowrap">
+                                    泛粵大典
+                                </a>
+                            </RouterLink>
+                            <button @click="showMobileMenu = !showMobileMenu"
+                                class="lg:hidden p-1 text-gray-500 hover:text-accent dark:hover:text-red-400 focus:outline-none flex items-center justify-center flex-shrink-0"
+                                aria-label="Toggle Menu">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5 transition-transform"
+                                    :class="{ 'rotate-180': showMobileMenu }" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                        </div>
 
                         <!-- Mobile Dropdown Menu -->
-                        <div v-if="showMobileMenu"
-                            class="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-none shadow-[4px_4px_0_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] py-2 lg:hidden animate-fade-in z-50">
+                        <Transition name="dropdown">
+                            <div v-if="showMobileMenu"
+                                class="absolute left-0 top-full mt-2 w-56 bg-white/70 dark:bg-slate-800/70 border border-gray-200/50 dark:border-slate-700/50 rounded-none shadow-[4px_4px_0_rgba(0,0,0,0.05)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] py-2 lg:hidden z-50 glass-dropdown">
                             <template v-for="item in menuItems" :key="item.label">
                                 <a v-if="item.external" :href="item.path"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
@@ -148,23 +182,26 @@ const externalLinks = [
                                 </a>
                                 <RouterLink to="/about"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
+                                    active-class="bg-accent/5 border-l-accent font-bold"
                                     @click="showMobileMenu = false">
                                     說明
                                 </RouterLink>
                             </div>
                         </div>
-                    </div>
+                    </Transition>
+                </div>
 
                     <!-- Right side navigation and actions -->
                     <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                         <!-- Tablet Nav Links (visible on tablet, hidden on mobile phone/desktop) -->
                         <div class="hidden sm:flex lg:hidden items-center gap-3 text-sm font-medium flex-shrink-0">
                             <a href="https://got.jyutdict.org" target="_blank"
-                                class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs whitespace-nowrap">GoT</a>
+                                class="nav-link text-xs whitespace-nowrap">GoT</a>
                             <a href="https://jyutjam.org/" target="_blank"
-                                class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs whitespace-nowrap">關於</a>
+                                class="nav-link text-xs whitespace-nowrap">關於</a>
                             <RouterLink to="/about"
-                                class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs whitespace-nowrap">說明</RouterLink>
+                                class="nav-link text-xs whitespace-nowrap"
+                                active-class="active">說明</RouterLink>
                         </div>
 
                         <!-- Mobile/Tablet User Entry -->
@@ -283,5 +320,28 @@ const externalLinks = [
 .nav-link:hover::after,
 .nav-link.active::after {
     @apply transform scale-x-100 origin-left;
+}
+
+/* Dropdown transition (fade + slide + scale) */
+.dropdown-enter-active,
+.dropdown-leave-active {
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    transform-origin: top;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.glass-header {
+    -webkit-backdrop-filter: blur(12px) !important;
+    backdrop-filter: blur(12px) !important;
+}
+
+.glass-dropdown {
+    -webkit-backdrop-filter: blur(16px) !important;
+    backdrop-filter: blur(16px) !important;
 }
 </style>
