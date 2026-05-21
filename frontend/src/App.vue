@@ -98,15 +98,15 @@ const externalLinks = [
             <div class="container mx-auto px-4 py-3">
                 <div class="flex justify-between items-center gap-2">
                     <!-- Brand container with Dropdown -->
-                    <div class="relative group">
+                    <div class="relative group flex-shrink-0">
                         <button @click="showMobileMenu = !showMobileMenu"
                             class="flex items-center gap-2 group/btn flex-shrink-0 focus:outline-none">
                             <span
-                                class="text-2xl font-bold text-accent dark:text-red-500 tracking-tight transition-opacity">
+                                class="text-xl sm:text-2xl font-bold text-accent dark:text-red-500 tracking-tight transition-opacity whitespace-nowrap">
                                 泛粵大典
                             </span>
                             <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5 text-gray-500 lg:hidden transition-transform"
+                                class="h-5 w-5 text-gray-500 lg:hidden transition-transform flex-shrink-0"
                                 :class="{ 'rotate-180': showMobileMenu }" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -132,92 +132,104 @@ const externalLinks = [
                                     {{ item.label }}
                                 </RouterLink>
                             </template>
-                            <!-- 移動端下拉菜單中的用戶連結 -->
-                            <template v-if="authStore.isLoggedIn">
+
+                            <!-- Mobile Only Links (shown inside menu when screen is small) -->
+                            <div class="sm:hidden">
                                 <div class="h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
-                                <RouterLink to="/user"
+                                <a href="https://got.jyutdict.org" target="_blank"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     @click="showMobileMenu = false">
-                                    用戶中心
-                                </RouterLink>
-                                <RouterLink v-if="authStore.isAdmin" to="/admin"
+                                    GoT
+                                </a>
+                                <a href="https://jyutjam.org/" target="_blank"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     @click="showMobileMenu = false">
-                                    後台管理
+                                    關於
+                                </a>
+                                <RouterLink to="/about"
+                                    class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
+                                    @click="showMobileMenu = false">
+                                    說明
                                 </RouterLink>
-                            </template>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Always Visible Links (Mobile & Tablet) -->
-                    <div class="lg:hidden flex items-center gap-3 text-sm font-medium">
-                        <a href="https://got.jyutdict.org" target="_blank"
-                            class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">GoT</a>
-                        <a href="https://jyutjam.org/" target="_blank"
-                            class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">關於</a>
-                        <RouterLink to="/about"
-                            class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs">說明</RouterLink>
-                        <!-- 移動端用戶入口 -->
-                        <LoginButton />
-                    </div>
+                    <!-- Right side navigation and actions -->
+                    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <!-- Tablet Nav Links (visible on tablet, hidden on mobile phone/desktop) -->
+                        <div class="hidden sm:flex lg:hidden items-center gap-3 text-sm font-medium flex-shrink-0">
+                            <a href="https://got.jyutdict.org" target="_blank"
+                                class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs whitespace-nowrap">GoT</a>
+                            <a href="https://jyutjam.org/" target="_blank"
+                                class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs whitespace-nowrap">關於</a>
+                            <RouterLink to="/about"
+                                class="text-slate-600 dark:text-slate-400 hover:text-accent text-xs whitespace-nowrap">說明</RouterLink>
+                        </div>
 
-                    <!-- Desktop Nav -->
-                    <nav class="hidden lg:flex items-center gap-4 text-sm font-medium flex-shrink-0">
-                        <template v-for="item in menuItems" :key="item.label">
-                            <a v-if="item.external" :href="item.path" class="nav-link whitespace-nowrap"
-                                :class="{ 'line-through opacity-60': item.strikethrough }">{{ item.label }}</a>
-                            <RouterLink v-else :to="item.path" class="nav-link whitespace-nowrap"
-                                :class="{ 'line-through opacity-60': item.strikethrough }" active-class="active">{{
-                                    item.label }}
-                            </RouterLink>
-                        </template>
-                        <div class="h-4 w-px bg-gray-300 dark:bg-slate-700 mx-1"></div>
-                        <!-- Desktop External Links -->
-                        <template v-for="link in externalLinks" :key="link.label">
-                            <div v-if="link.hasTooltip" class="relative group/tooltip">
-                                <RouterLink v-if="link.path" :to="link.path" class="nav-link whitespace-nowrap" active-class="active">{{
-                                    link.label }}</RouterLink>
-                                <a v-else :href="link.url" class="nav-link whitespace-nowrap">{{ link.label }}</a>
-                                <!-- Tooltip -->
-                                <div
-                                    class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 shadow-[4px_4px_0_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] rounded-none p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[60]">
-                                    {{ tooltipContent }}
+                        <!-- Mobile/Tablet User Entry -->
+                        <div class="lg:hidden flex items-center flex-shrink-0">
+                            <LoginButton />
+                        </div>
+
+                        <!-- Desktop Nav -->
+                        <nav class="hidden lg:flex items-center gap-4 text-sm font-medium flex-shrink-0">
+                            <template v-for="item in menuItems" :key="item.label">
+                                <a v-if="item.external" :href="item.path" class="nav-link whitespace-nowrap"
+                                    :class="{ 'line-through opacity-60': item.strikethrough }">{{ item.label }}</a>
+                                <RouterLink v-else :to="item.path" class="nav-link whitespace-nowrap"
+                                    :class="{ 'line-through opacity-60': item.strikethrough }" active-class="active">{{
+                                        item.label }}
+                                </RouterLink>
+                            </template>
+                            <div class="h-4 w-px bg-gray-300 dark:bg-slate-700 mx-1"></div>
+                            <!-- Desktop External Links -->
+                            <template v-for="link in externalLinks" :key="link.label">
+                                <div v-if="link.hasTooltip" class="relative group/tooltip">
+                                    <RouterLink v-if="link.path" :to="link.path" class="nav-link whitespace-nowrap" active-class="active">{{
+                                        link.label }}</RouterLink>
+                                    <a v-else :href="link.url" class="nav-link whitespace-nowrap">{{ link.label }}</a>
+                                    <!-- Tooltip -->
+                                    <div
+                                        class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 shadow-[4px_4px_0_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] rounded-none p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[60]">
+                                        {{ tooltipContent }}
+                                    </div>
                                 </div>
-                            </div>
-                            <RouterLink v-else-if="link.path" :to="link.path" class="nav-link whitespace-nowrap" active-class="active">{{
-                                link.label }}</RouterLink>
-                            <a v-else :href="link.url" target="_blank" class="nav-link whitespace-nowrap">{{ link.label }}</a>
-                        </template>
-                    </nav>
+                                <RouterLink v-else-if="link.path" :to="link.path" class="nav-link whitespace-nowrap" active-class="active">{{
+                                    link.label }}</RouterLink>
+                                <a v-else :href="link.url" target="_blank" class="nav-link whitespace-nowrap">{{ link.label }}</a>
+                            </template>
+                        </nav>
 
-                    <!-- 用戶登入/菜單 (Desktop) -->
-                    <div class="hidden lg:block">
-                        <LoginButton />
+                        <!-- 用戶登入/菜單 (Desktop) -->
+                        <div class="hidden lg:block flex-shrink-0">
+                            <LoginButton />
+                        </div>
+
+                        <!-- Theme Toggle -->
+                        <button @click="toggleTheme"
+                            class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 flex-shrink-0"
+                            :title="themeMode === 'light' ? '亮色模式' : themeMode === 'dark' ? '深色模式' : '跟隨系統'">
+                            <!-- Sun Icon (light mode) -->
+                            <svg v-if="themeIcon === 'sun'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <!-- Moon Icon (dark mode) -->
+                            <svg v-else-if="themeIcon === 'moon'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                            <!-- System Icon -->
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </button>
                     </div>
-
-                    <!-- Theme Toggle -->
-                    <button @click="toggleTheme"
-                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-                        :title="themeMode === 'light' ? '亮色模式' : themeMode === 'dark' ? '深色模式' : '跟隨系統'">
-                        <!-- Sun Icon (light mode) -->
-                        <svg v-if="themeIcon === 'sun'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        <!-- Moon Icon (dark mode) -->
-                        <svg v-else-if="themeIcon === 'moon'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                        <!-- System Icon -->
-                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </button>
                 </div>
             </div>
         </header>

@@ -12,10 +12,10 @@ const authStore = useAuthStore()
     </div>
 
     <!-- 已登入：顯示用戶菜單 -->
-    <div v-else-if="authStore.isLoggedIn" class="relative group/user">
-        <button class="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-accent dark:hover:text-red-400 transition-colors py-1.5 px-2 rounded-none hover:bg-black/5 dark:hover:bg-white/5">
-            <span>{{ authStore.displayName }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover/user:rotate-180 duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div v-else-if="authStore.isLoggedIn" class="relative group/user flex-shrink-0">
+        <button class="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-accent dark:hover:text-red-400 transition-colors py-1.5 px-2 rounded-none hover:bg-black/5 dark:hover:bg-white/5 whitespace-nowrap flex-shrink-0">
+            <span class="truncate max-w-[70px] sm:max-w-none">{{ authStore.displayName }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover/user:rotate-180 duration-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
         </button>
@@ -44,7 +44,7 @@ const authStore = useAuthStore()
 
     <!-- 未登入：顯示登入按鈕 -->
     <button v-else @click="authStore.login()"
-        class="text-sm font-bold text-white bg-accent dark:bg-[#B72914] shadow-[4px_4px_0_rgba(183,41,20,0.2)] dark:shadow-[4px_4px_0_rgba(183,41,20,0.4)] hover:shadow-[6px_6px_0_rgba(183,41,20,0.3)] dark:hover:shadow-[6px_6px_0_rgba(183,41,20,0.5)] hover:-translate-y-0.5 hover:-translate-x-0.5 transition-all duration-300 py-1.5 px-4 rounded-none">
+        class="text-sm font-bold text-white bg-accent dark:bg-[#B72914] shadow-[4px_4px_0_rgba(183,41,20,0.2)] dark:shadow-[4px_4px_0_rgba(183,41,20,0.4)] hover:shadow-[6px_6px_0_rgba(183,41,20,0.3)] dark:hover:shadow-[6px_6px_0_rgba(183,41,20,0.5)] hover:-translate-y-0.5 hover:-translate-x-0.5 transition-all duration-300 py-1.5 px-3 sm:px-4 rounded-none whitespace-nowrap flex-shrink-0">
         登入
     </button>
 </template>
