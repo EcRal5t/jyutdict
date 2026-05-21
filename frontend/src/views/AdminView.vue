@@ -112,7 +112,7 @@ onMounted(() => {
 
 <template>
     <div class="container mx-auto px-4 py-6 max-w-6xl">
-        <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-5">後台管理</h1>
+        <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-5">後臺管理</h1>
 
         <!-- Tab 切換 -->
         <div class="flex gap-1 mb-6 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-none w-fit border border-slate-200 dark:border-slate-700">
@@ -153,12 +153,12 @@ onMounted(() => {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-gray-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
-                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400">ID</th>
-                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400">暱稱</th>
-                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400">郵箱</th>
-                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400">角色</th>
-                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400">註冊時間</th>
-                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400">操作</th>
+                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">ID</th>
+                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">暱稱</th>
+                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">郵箱</th>
+                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">角色</th>
+                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">註冊時間</th>
+                                <th class="text-left p-3 font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -166,43 +166,43 @@ onMounted(() => {
                                 <td colspan="6" class="text-center py-6 text-slate-400">載入中...</td>
                             </tr>
                             <tr v-for="u in users" :key="u.id" class="border-b border-gray-100 dark:border-slate-700/30 hover:bg-slate-50/80 dark:hover:bg-slate-800/80 transition-colors">
-                            <td class="p-2 text-slate-500">{{ u.id }}</td>
-                            <td class="p-2">{{ u.nickname || '-' }}</td>
-                            <td class="p-2 text-slate-500 text-xs">{{ u.email }}</td>
-                            <td class="p-2">
-                                <span class="text-xs px-1.5 py-0.5 rounded-none border-l-2"
-                                      :class="{
-                                          'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-500': u.role === 'owner',
-                                          'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-500': u.role === 'admin',
-                                          'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-500': u.role === 'editor',
-                                          'bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-400': u.role === 'user',
-                                      }">
-                                    {{ { owner: '站長', admin: '管理員', editor: '編纂者', user: '普通用戶' }[u.role] }}
-                                </span>
-                            </td>
-                            <td class="p-2 text-xs text-slate-400">{{ u.created_at }}</td>
-                            <td class="p-2">
-                                <!-- 角色操作按钮 -->
-                                <div v-if="u.id !== authStore.user?.id && u.role !== 'owner'" class="flex gap-1 flex-wrap">
-                                    <button v-if="u.role !== 'editor'" @click="changeRole(u.id, 'editor')"
-                                        :disabled="changingRoleUserId === u.id"
-                                        class="text-xs px-2 py-1 rounded-none border border-green-300 dark:border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50 transition-all">
-                                        設為編纂者
-                                    </button>
-                                    <button v-if="u.role !== 'user'" @click="changeRole(u.id, 'user')"
-                                        :disabled="changingRoleUserId === u.id"
-                                        class="text-xs px-2 py-1 rounded-none border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-all">
-                                        降為普通用戶
-                                    </button>
-                                    <button v-if="authStore.isOwner && u.role !== 'admin'" @click="changeRole(u.id, 'admin')"
-                                        :disabled="changingRoleUserId === u.id"
-                                        class="text-xs px-2 py-1 rounded-none border border-blue-300 dark:border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 transition-all">
-                                        設為管理員
-                                    </button>
-                                </div>
-                                <span v-else class="text-xs text-slate-300">-</span>
-                            </td>
-                                </tr>
+                                <td class="p-2 text-slate-500 whitespace-nowrap">{{ u.id }}</td>
+                                <td class="p-2 whitespace-nowrap">{{ u.nickname || '-' }}</td>
+                                <td class="p-2 text-slate-500 text-xs whitespace-nowrap">{{ u.email }}</td>
+                                <td class="p-2 whitespace-nowrap">
+                                    <span class="text-xs px-1.5 py-0.5 rounded-none border-l-2"
+                                          :class="{
+                                              'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-500': u.role === 'owner',
+                                              'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-500': u.role === 'admin',
+                                              'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-500': u.role === 'editor',
+                                              'bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-400': u.role === 'user',
+                                          }">
+                                        {{ { owner: '站長', admin: '管理員', editor: '編纂者', user: '普通用戶' }[u.role] }}
+                                    </span>
+                                </td>
+                                <td class="p-2 text-xs text-slate-400 whitespace-nowrap">{{ u.created_at }}</td>
+                                <td class="p-2">
+                                    <!-- 角色操作按钮 -->
+                                    <div v-if="u.id !== authStore.user?.id && u.role !== 'owner'" class="flex gap-1 flex-wrap">
+                                        <button v-if="u.role !== 'editor'" @click="changeRole(u.id, 'editor')"
+                                            :disabled="changingRoleUserId === u.id"
+                                            class="text-xs px-2 py-1 rounded-none border border-green-300 dark:border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50 transition-all whitespace-nowrap">
+                                            設為編纂者
+                                        </button>
+                                        <button v-if="u.role !== 'user'" @click="changeRole(u.id, 'user')"
+                                            :disabled="changingRoleUserId === u.id"
+                                            class="text-xs px-2 py-1 rounded-none border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-all whitespace-nowrap">
+                                            降為普通用戶
+                                        </button>
+                                        <button v-if="authStore.isOwner && u.role !== 'admin'" @click="changeRole(u.id, 'admin')"
+                                            :disabled="changingRoleUserId === u.id"
+                                            class="text-xs px-2 py-1 rounded-none border border-blue-300 dark:border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 transition-all whitespace-nowrap">
+                                            設為管理員
+                                        </button>
+                                    </div>
+                                    <span v-else class="text-xs text-slate-300">-</span>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

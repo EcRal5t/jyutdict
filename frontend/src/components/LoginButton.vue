@@ -60,7 +60,7 @@ onUnmounted(() => {
             </router-link>
 
             <router-link v-if="authStore.isAdmin" to="/admin" @click="showDropdown = false" class="block px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-accent/10 hover:text-accent transition-colors">
-                後台管理
+                後臺管理
             </router-link>
 
             <button @click="authStore.logout(); showDropdown = false" class="w-full text-left px-4 py-2 mt-1 border-t border-gray-100/50 dark:border-slate-700/50 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">

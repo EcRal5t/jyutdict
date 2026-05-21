@@ -68,7 +68,7 @@
 | **LocationArticleView** | `/location/:locationName` | 地點文章頁，顯示/編輯特定地點的介紹文章（Markdown），支援版本歷史            |
 | **PhonologyView**       | `/phonology`              | 音系探針小玩具，根據用戶選擇的音韻特徵計算與各方言點的相似度                 |
 | **UserCenterView**      | `/user`                   | 用戶中心，管理個人資料、查看評論記錄、管理地點文章（編纂者）                 |
-| **AdminView**           | `/admin`                  | 後台管理頁，用戶角色管理及編纂者地點分配（管理員/站長）                      |
+| **AdminView**           | `/admin`                  | 後臺管理頁，用戶角色管理及編纂者地點分配（管理員/站長）                      |
 | **AboutView**           | `/about/:id`              | 說明頁，展示網站說明文檔（Markdown 格式）                                    |
 | **NotFoundView**        | `*`                       | 404 頁面                                                                     |
 
