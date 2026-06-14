@@ -4,10 +4,15 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const router = useRouter()
 const inputChara = ref('')
+const jyutpingFormat = /^[a-z]{1,10}\d?[0-9*][0-9']?(`\d+)?$/
 
 const goToDetail = () => {
   const char = inputChara.value.trim();
   if (char) {
+    if (jyutpingFormat.test(char)) {
+      router.push({ path: '/pronunciation', query: { pron: char } })
+      return
+    }
     router.push({ path: '/detail', query: { chara: char } })
   }
 }

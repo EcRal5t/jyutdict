@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 // 粵拼解析正則
@@ -9,7 +10,7 @@ const format = /^[a-z ]{1,10}\d{0,2}$/;
 const initialFormat = /^^(mb?|n[jrd]?|ngg?|[bdg]{1,2}|g[hn]?|r[bdgzscrh]|[zcs][hrjl]?|[ptkvw]h?|[hqfjlrx0])([jwv]?)(?=[aeoiuymn])/;
 // 韻尾正則：匹配末尾的韻尾（不包含前面的元音）
 const codaFormat = /(?<=[aoreiwuy])(n[ng]?|[mptkh])(?=[\\d`*]|$)$/;
-const toneFormat = /[0-9]?[0-9*][0-9']?(`\\d+)?$/;
+const toneFormat = /[0-9]?[0-9*][0-9']?(`\d+)?$/;
 const vowelFormat = /(^ng?$|^m$|i[rwi]?|u[rwu]?|[aeo][aeowr]?|yu$|y)$/;
 
 const form = reactive({
@@ -19,6 +20,7 @@ const form = reactive({
     co: '',
     to: ''
 });
+const route = useRoute();
 
 const parseStatus = ref('neutral'); // neutral, valid, invalid
 const inputDisabled = ref(true);
@@ -260,6 +262,11 @@ const fetchResults = async () => {
     }
 };
 
+const getQueryString = (value) => {
+    if (Array.isArray(value)) return value[0] || '';
+    return value || '';
+};
+
 // 處理結果顯示
 const hasResults = computed(() => {
     if (!results.value) return false;
@@ -292,8 +299,15 @@ const getSelectedStyle = (color) => {
     };
 };
 
-onMounted(() => {
-    loadLocations();
+onMounted(async () => {
+    await loadLocations();
+
+    const initialPron = getQueryString(route.query.pron);
+    if (initialPron) {
+        form.pron = initialPron;
+        analyzeInput();
+        await submitSearch();
+    }
 });
 </script>
 
