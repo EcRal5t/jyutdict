@@ -4,7 +4,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const router = useRouter()
 const inputChara = ref('')
-const jyutpingFormat = /^[a-z]{1,10}\d?[0-9*][0-9']?(`\d+)?$/
+const jyutpingFormat = /^[a-z]{1,10}(?:\d?[0-9*][0-9']?(?:`\d+)?)?$/
 
 const goToDetail = () => {
   const char = inputChara.value.trim();
