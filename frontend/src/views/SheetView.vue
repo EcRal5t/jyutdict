@@ -130,22 +130,22 @@ const performSearch = async () => {
             const res = await SheetApi.getRandom(10);
             data = res.data;
         } else {
+            // 如果查詢內容包含非 ASCII 字符（漢字），查「字頭」列
+            // 因為各地方言列存的都是音節，只有「字頭」列存漢字
+            const isHan = /[^\x00-\x7F]/.test(q);
+            const col = isHan ? undefined : location.value;
+
             // 構建查詢模式
             let mode = 'auto';
             if (isDef.value) {
                 mode = 'meaning';
             } else if (isRegex.value) {
                 mode = 'regex';
-            } else if (isTrim.value) {
+            } else if (isTrim.value && !isHan) {
                 mode = 'trim';
             } else if (isFuzzy.value) {
                 mode = 'fuzzy';
             }
-
-            // 如果查詢內容包含非 ASCII 字符（漢字），查「字頭」列
-            // 因為各地方言列存的都是音節，只有「字頭」列存漢字
-            const isHan = /[^\x00-\x7F]/.test(q);
-            const col = isHan ? undefined : location.value;
 
             const res = await SheetApi.search({
                 q: q,
