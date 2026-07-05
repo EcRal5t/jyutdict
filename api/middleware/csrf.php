@@ -14,7 +14,8 @@
 
 function generateCsrfToken() {
     if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+        include_once(__DIR__ . '/../core/session.php');
+        startAppSession();
     }
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -31,7 +32,8 @@ function validateCsrf() {
     }
 
     if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+        include_once(__DIR__ . '/../core/session.php');
+        startAppSession();
     }
 
     $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';

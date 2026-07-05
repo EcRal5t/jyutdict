@@ -18,25 +18,8 @@
 // 先加载配置（session_start 之前需要知道 session_lifetime）
 include_once(__DIR__ . '/../core/db.php');
 include_once(__DIR__ . '/../core/helpers.php');
+include_once(__DIR__ . '/../core/session.php');
 $config = require(__DIR__ . '/../config/oauth.php');
-
-function getRequestScheme() {
-    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-        return strtolower(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]);
-    }
-    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
-        return 'https';
-    }
-    if (($_SERVER['SERVER_PORT'] ?? '') === '443') {
-        return 'https';
-    }
-    return 'http';
-}
-
-function getRequestOrigin() {
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    return getRequestScheme() . '://' . $host;
-}
 
 function redirectToCanonicalOAuthOrigin($config) {
     $redirectOrigin = parse_url($config['redirect_uri'], PHP_URL_SCHEME) . '://' . parse_url($config['redirect_uri'], PHP_URL_HOST);
@@ -45,7 +28,7 @@ function redirectToCanonicalOAuthOrigin($config) {
         $redirectOrigin .= ':' . $redirectPort;
     }
 
-    if (strcasecmp(getRequestOrigin(), $redirectOrigin) === 0) {
+    if (strcasecmp(jyutdictRequestOrigin(), $redirectOrigin) === 0) {
         return;
     }
 
@@ -56,19 +39,7 @@ function redirectToCanonicalOAuthOrigin($config) {
 
 redirectToCanonicalOAuthOrigin($config);
 
-// 设置 Session 参数（必须在 session_start 之前）
-$lifetime = $config['session_lifetime'] ?? 604800;
-$sessionSecure = parse_url($config['redirect_uri'], PHP_URL_SCHEME) === 'https';
-ini_set('session.gc_maxlifetime', $lifetime);
-session_set_cookie_params([
-    'lifetime' => $lifetime,
-    'path'     => '/',
-    'secure'   => $sessionSecure,
-    'httponly' => true,
-    'samesite' => 'Lax',
-]);
-
-session_start();
+startAppSession($config);
 header('Content-Type: application/json; charset=utf-8');
 
 $action = $_GET['action'] ?? 'login';
@@ -135,7 +106,8 @@ function httpGet($url, $headers = [], $proxy = '') {
 if ($action === 'login') {
     // 生成 CSRF state token
     $state = bin2hex(random_bytes(32));
-    $_SESSION['oauth_state'] = $state;
+    rememberOAuthState($state, $config);
+    logOAuthStateEvent('login_state_created', oauthStateDebugContext($state, $config), $config);
 
     $params = http_build_query([
         'client_id'     => $config['client_id'],
@@ -155,10 +127,23 @@ if ($action === 'login') {
 
 if ($action === 'callback') {
     // 1. 验证 state 防 CSRF
-    if (!isset($_GET['state']) || !isset($_SESSION['oauth_state']) || $_GET['state'] !== $_SESSION['oauth_state']) {
+    $state = $_GET['state'] ?? '';
+    $stateReason = '';
+    if (!validateOAuthState($state, $config, $stateReason)) {
+        logOAuthStateEvent(
+            'callback_state_failed',
+            array_merge(['reason' => $stateReason], oauthStateDebugContext($state, $config)),
+            $config,
+            true
+        );
         outputJson(['error' => 'Invalid state parameter (CSRF check failed)'], 403);
     }
-    unset($_SESSION['oauth_state']);
+    consumeOAuthState($state, $config);
+    logOAuthStateEvent(
+        'callback_state_valid',
+        array_merge(['reason' => $stateReason], oauthStateDebugContext($state, $config)),
+        $config
+    );
 
     // 2. 检查错误
     if (isset($_GET['error'])) {
