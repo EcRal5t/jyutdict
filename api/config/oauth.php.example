@@ -29,6 +29,8 @@ if ($isLocal) {
         'redirect_uri'     => 'http://localhost:8888/api/auth/google?action=callback',
         'frontend_url'     => 'http://localhost:5173/#/',
         'session_lifetime' => 604800,
+        'oauth_state_lifetime' => 600,
+        'oauth_debug'      => false,
     ];
 } else {
     // 生产环境
@@ -38,5 +40,7 @@ if ($isLocal) {
         'redirect_uri'     => 'https://jyutdict.org/api/auth/google?action=callback',
         'frontend_url'     => 'https://jyutdict.org/#/',
         'session_lifetime' => 604800,
+        'oauth_state_lifetime' => 600,
+        'oauth_debug'      => false,
     ];
 }

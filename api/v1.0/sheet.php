@@ -269,7 +269,7 @@ switch ($mode) {
             // 匹配非字母字符或字符串結尾（支持缺失聲調的音節如 "bit"）
             $queryString = $queryString . "([^a-z]|$)";
         }
-        $queryString = "(^$queryString)|([!?/]$queryString)";
+        $queryString = "(^$queryString)|([!?/; *]$queryString)";
         $sql = "SELECT * FROM `j_faamjyut` WHERE `$col` REGEXP :str LIMIT $limit";
         break;
 
@@ -282,7 +282,7 @@ switch ($mode) {
             if (!is_numeric(substr($queryString, -1))) {
                 $queryString = $queryString . "([^a-z]|$)";
             }
-            $queryString = "(^$queryString)|([!?/]$queryString)";
+            $queryString = "(^$queryString)|([!?/; *]$queryString)";
             $sql = "SELECT * FROM `j_faamjyut` WHERE `$col` REGEXP :str LIMIT $limit";
         } else {
             // 漢字使用模糊查詢

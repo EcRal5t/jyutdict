@@ -13,9 +13,8 @@
  *   // 到达这里说明已登录，可使用 $currentUserId 和 $currentUserRole
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+include_once(__DIR__ . '/../core/session.php');
+startAppSession();
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);

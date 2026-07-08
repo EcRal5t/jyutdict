@@ -1,5 +1,8 @@
-# 敏感配置
+# Sensitive config
 api/config/oauth.php
+api/config/db.php
 
-# 不需要追蹤
+# Not tracked in deployment
 .vscode/
+frontend/
+node_modules/
