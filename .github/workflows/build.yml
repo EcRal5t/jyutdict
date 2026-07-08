@@ -90,6 +90,7 @@ jobs:
           cat > /tmp/dist/.gitignore << 'EOF'
           # Sensitive config
           api/config/oauth.php
+          api/config/db.php
 
           # Not tracked in deployment
           .vscode/
