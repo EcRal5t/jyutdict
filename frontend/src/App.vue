@@ -277,8 +277,14 @@ const externalLinks = [
 
         <footer v-if="route.path !== '/phonology'"
             class="mt-20 py-8 border-t border-gray-200 dark:border-slate-800 text-center text-sm text-gray-500 dark:text-slate-500 flex-shrink-0 relative z-10">
-            <p>© 2019-2026 <a href="https://jyutjam.org" class="hover:text-accent transition-colors">嶺南粵音</a> <a
-                    href="https://jyutdict.org" class="hover:text-accent transition-colors">泛粵大典</a> 開發組 版權所有</p>
+            <p>
+                © 2019-2026
+                <a href="https://jyutjam.org" class="hover:text-accent transition-colors">嶺南粵音</a>
+                <a href="https://jyutdict.org" class="hover:text-accent transition-colors">泛粵大典</a>
+                開發組 |
+                <a href="https://github.com/EcRal5t/jyutdict" class="hover:text-accent transition-colors">網站依 MIT 開放</a>
+                ，數據保留所有權
+            </p>
         </footer>
     </div>
 </template>

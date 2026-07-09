@@ -220,11 +220,14 @@ const loadDialectData = (index, name) => {
                         <div
                             class="pt-2 border-t border-slate-100 dark:border-slate-700 text-center mt-2 hidden sm:block">
                             <p class="text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed">
-                                © 2019-2026 <a href="https://jyutjam.org" target="_blank"
-                                    class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">嶺南粵音</a> <a
-                                    href="https://jyutdict.org" target="_blank"
-                                    class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">泛粵大典</a>
-                                開發組 版權所有
+                                © 2019-2026 
+                                <a href="https://jyutjam.org" target="_blank" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">嶺南粵音</a>
+                                <a
+                                href="https://jyutdict.org" target="_blank"
+                                class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">泛粵大典</a>
+                                開發組 |
+                                <a href="https://github.com/EcRal5t/jyutdict" class="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">網站依 MIT 開放</a>
+                                ，數據保留所有權
                             </p>
                         </div>
                     </div>

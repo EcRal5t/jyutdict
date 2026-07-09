@@ -23,9 +23,11 @@ pyproject.toml
 *.py
 uv.lock
 
+# AI Assist
 .claude
 CLAUDE.md
 docs/
+.agents
 
 # OAuth 配置
 api/config/oauth.php
