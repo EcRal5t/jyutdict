@@ -11,7 +11,7 @@
 ## 專案結構
 
 ```
-├── frontend/                  # Vue 3 前端專案
+├── frontend/                  # Vue 3 前端
 │   ├── src/
 │   │   ├── api/              # API 模組
 │   │   ├── components/       # 共用元件
@@ -72,11 +72,27 @@
 | **AboutView**           | `/about/:id`              | 說明頁，展示網站說明文檔（Markdown 格式）                                    |
 | **NotFoundView**        | `*`                       | 404 頁面                                                                     |
 
-## 開發
+## 部署與開發
 
+### 前端開發
 ```bash
 cd frontend
 npm install
 npm run dev      # 啟動開發伺服器
 npm run build    # 構建生產版本
 ```
+
+### 後端 API 部署配置
+資料庫密碼與 OAuth 憑證未包含在程式碼倉庫中。
+如需在本地或伺服器運行，請依照以下步驟配置：
+1. 進入 `api/config/` 目錄
+2. 複製 `db.php.example` 並重新命名為 `db.php`
+3. 編輯 `db.php`，填寫真實的資料庫連線資訊
+4. （可選）複製 `oauth.php.example` 為 `oauth.php`，填寫 Google OAuth 密鑰
+
+## 開源協議與版權聲明
+
+本項目遵循「代碼與資料分離」的版權原則：
+
+本 GitHub 倉庫中包含的前端與後端代碼，均採用 [MIT License](LICENSE) 授權。通過 API 或網頁提供查詢的字表、拼音、釋義等核心數據則保留所有權
+

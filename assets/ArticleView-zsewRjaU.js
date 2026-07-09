@@ -1,4 +1,4 @@
-import{c as r,x as _,b as s,d as e,F as c,i as l,G as x,f as m,t as N,B as f,o as n,e as b,C as w,h as v,g as u,n as q,H as z}from"./index-4VpDQziN.js";const o=[{id:"n-l",title:"聲母 “n” 與 “l”",blocks:[{type:"html",content:`<p>本文用於記錄主流粵語聲母“n”和“l”對立時各所轄者，但不包括容易寫出漢字的，如「你」「能」等，此類字聲母大多可由普通話簡單推出。因此，本文主要關注一般不出現在書面語的詞彙。</p>
+import{c as r,x as _,b as s,d as e,F as c,i as l,G as x,f as m,t as N,B as f,o as n,e as b,C as w,h as v,g as u,n as q,H as z}from"./index-CqdNEsNC.js";const o=[{id:"n-l",title:"聲母 “n” 與 “l”",blocks:[{type:"html",content:`<p>本文用於記錄主流粵語聲母“n”和“l”對立時各所轄者，但不包括容易寫出漢字的，如「你」「能」等，此類字聲母大多可由普通話簡單推出。因此，本文主要關注一般不出現在書面語的詞彙。</p>
             <p>下表中，<b>記音</b>列可能有兩列，此時前一列是綜合音，可忽略；<br>
             有些詞可能二聲母皆可，本文不置可否。</p>
             <p><b>字頭</b>列高亮者<b>不</b>代表本字或正字，而只是基於音、義來選出的相對較爲合理的字；併隨後的小號漢字可分別理解爲「優先字形」及「候選字形」；<br>
