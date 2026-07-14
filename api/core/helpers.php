@@ -12,6 +12,23 @@ function outputJson($data, $code = 200) {
     exit;
 }
 
+/** Mark a successful, anonymous GET response as briefly cacheable. */
+function setPublicCacheHeaders($maxAge = 300) {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+        return;
+    }
+    $maxAge = max(0, (int)$maxAge);
+    header("Cache-Control: public, max-age={$maxAge}, stale-while-revalidate=60");
+}
+
+/** Output cacheable public JSON without making error responses cacheable. */
+function outputPublicJson($data, $code = 200, $maxAge = 300) {
+    if ($code >= 200 && $code < 300) {
+        setPublicCacheHeaders($maxAge);
+    }
+    outputJson($data, $code);
+}
+
 /**
  * API 根目錄信息
  */

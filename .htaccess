@@ -4,6 +4,11 @@
 ErrorDocument 403 /index.html
 ErrorDocument 404 /index.html
 
+# Compress JSON at the web-server layer; PHP should not buffer/compress it.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
 

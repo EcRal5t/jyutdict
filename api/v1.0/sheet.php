@@ -143,7 +143,7 @@ if (isset($_REQUEST['key'])) {
         ]);
     }
 
-    $sql = "SELECT * FROM `j_faamjyut` WHERE `鍵` = :key LIMIT 1";
+    $sql = "SELECT * FROM `j_faamjyut` WHERE `鍵` = :key ORDER BY `id` ASC LIMIT 1";
     $stmt = $dbh->prepare($sql);
     $stmt->execute([':key' => $key]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -151,9 +151,9 @@ if (isset($_REQUEST['key'])) {
     if ($row) {
         // 移除 null 和空字符串，保持數據整潔
         $result = array_filter($row, function($v) { return $v !== null && $v !== ''; });
-        outputJson([$result]);
+        outputPublicJson([$result]);
     } else {
-        outputJson([]);
+        outputPublicJson([]);
     }
 }
 
@@ -183,6 +183,7 @@ if (isset($_REQUEST['random'])) {
         return array_filter($row, function($v) { return $v !== null && $v !== ''; });
     }, $results);
 
+    header('Cache-Control: no-store');
     outputJson($results);
 }
 
@@ -191,14 +192,13 @@ if (isset($_REQUEST['random'])) {
 // =====================================================
 if (!isset($_REQUEST['q']) && !isset($_REQUEST['query'])) {
     $columns = getHeaderInfo($dbh);
-    outputJson(["columns" => $columns]);
+    outputPublicJson(["columns" => $columns]);
 }
 
 // =====================================================
 // 搜索
 // =====================================================
 $queryString = isset($_REQUEST['q']) ? $_REQUEST['q'] : (isset($_REQUEST['query']) ? $_REQUEST['query'] : null);
-$validColumns = getValidColumns($dbh);
 
 // 查詢列
 $col = isset($_REQUEST['col']) ? $_REQUEST['col'] : null;
@@ -223,7 +223,7 @@ if (ctype_digit($queryString) && $col === null) {
         return array_filter($row, function($v) { return $v !== null && $v !== ''; });
     }, $results);
 
-    outputJson($results);
+    outputPublicJson($results);
 }
 
 // 自動判斷查詢列和模式
@@ -236,6 +236,7 @@ if ($col === null) {
     }
 } else {
     // 驗證列名
+    $validColumns = getValidColumns($dbh);
     if (!in_array($col, $validColumns)) {
         outputJson([
             "error" => "Invalid column: $col",
@@ -308,4 +309,4 @@ if (count($results) >= 150) {
     ]);
 }
 
-outputJson($results);
+outputPublicJson($results);
