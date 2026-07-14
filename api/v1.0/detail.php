@@ -8,6 +8,7 @@ include_once(__DIR__ . '/../core/db.php');
 include_once(__DIR__ . '/../core/helpers.php');
 include_once(__DIR__ . '/../core/Sim2Trad.php');
 include_once(__DIR__ . '/../core/Jyutping.php');
+include_once(__DIR__ . '/../core/LocationLookup.php');
 
 header('Content-type: application/json');
 
@@ -84,9 +85,19 @@ if (isset($_REQUEST['help'])) {
 // 1. If 'chara' is set but empty, return area list (Header/Location list)
 if (isset($_REQUEST['chara']) && $_REQUEST['chara'] === "") {
     try {
-        $stmt = $dbh->prepare("SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `color` FROM `i_area_list`");
-        $stmt->execute();
-        outputJson($stmt->fetchAll(PDO::FETCH_ASSOC));
+        $areas = jyutdictLoadAreas($dbh);
+        $result = array_map(function ($area) {
+            return [
+                'id' => $area['id'],
+                'longitude' => $area['longitude'],
+                'latitude' => $area['latitude'],
+                'first' => $area['first'],
+                'second' => $area['second'],
+                'third' => $area['third'],
+                'color' => $area['color'],
+            ];
+        }, $areas);
+        outputPublicJson($result);
     } catch (PDOException $e) {
         outputJson(["error" => "Database error: " . $e->getMessage()]);
     }
@@ -130,41 +141,17 @@ if ($queryInitial !== null) {
     $entriesInAncient = [];
     $entriesInLocations = [];
 
-    // 構建查詢條件（參數綁定）
-    $whereConditions = [];
-    $whereParams = [];
-
-    if ($queryInitial === '%') {
-        $whereConditions[] = "`initial` LIKE '%'";
-    } else {
-        $whereConditions[] = "`initial` = :initial";
-        $whereParams[':initial'] = $queryInitial;
-    }
-    if ($queryNuclei === '%') {
-        $whereConditions[] = "`nuclei` LIKE '%'";
-    } else {
-        $whereConditions[] = "`nuclei` = :nuclei";
-        $whereParams[':nuclei'] = $queryNuclei;
-    }
-    if ($queryCoda === '%') {
-        $whereConditions[] = "`coda` LIKE '%'";
-    } else {
-        $whereConditions[] = "`coda` = :coda";
-        $whereParams[':coda'] = $queryCoda;
-    }
-    if ($queryTone === '%') {
-        $whereConditions[] = "`tone` LIKE '%'";
-    } else {
-        $whereConditions[] = "`tone` = :tone";
-        $whereParams[':tone'] = $queryTone;
-    }
-
-    $whereClause = implode(' AND ', $whereConditions);
+    $pronunciationParts = [
+        'initial' => $queryInitial,
+        'nuclei' => $queryNuclei,
+        'coda' => $queryCoda,
+        'tone' => $queryTone,
+    ];
 
     // 篩選地點
     $selectedLocationIds = null;
     if (isset($_REQUEST['locations']) && $_REQUEST['locations'] !== '') {
-        $selectedLocationIds = array_map('intval', explode(',', $_REQUEST['locations']));
+        $selectedLocationIds = array_values(array_unique(array_map('intval', explode(',', $_REQUEST['locations']))));
     }
 
     // 篩選韻書
@@ -180,23 +167,20 @@ if ($queryInitial !== null) {
     }
 
     // 韻書
-    $wanshyuStmt = $dbh->prepare("SELECT `name`, `sheetname` FROM `i_wanshyu_list`");
-    $wanshyuStmt->execute();
-    $wanshyuList = $wanshyuStmt->fetchAll(PDO::FETCH_ASSOC);
-
+    $wanshyuList = jyutdictLoadWanshyu($dbh);
+    $selectedBooks = [];
     foreach ($wanshyuList as $eachWanshyu) {
         $wanshyuKey = preg_replace('/^[yY]_/', '', $eachWanshyu['sheetname']);
         if ($selectedWanshyu !== null && !in_array($wanshyuKey, $selectedWanshyu)) {
             continue;
         }
-        $tableName = $eachWanshyu['sheetname'];
-        $sql = "SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone` FROM `$tableName` WHERE $whereClause";
-        $stmt = $dbh->prepare($sql);
-        $stmt->execute($whereParams);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $selectedBooks[] = $eachWanshyu;
+    }
+    $bookRows = jyutdictLookupSourcePronunciations($dbh, $selectedBooks, $pronunciationParts);
 
+    foreach ($selectedBooks as $eachWanshyu) {
         $allPron = ["__name" => $eachWanshyu['name']];
-        foreach ($rows as $row) {
+        foreach ($bookRows[$eachWanshyu['id']] ?? [] as $row) {
             $pron = $row['initial'] . $row['nuclei'] . $row['coda'];
             $allPron[$pron][$row['tone']] =
                 empty($allPron[$pron][$row['tone']]) ?
@@ -207,22 +191,19 @@ if ($queryInitial !== null) {
     }
 
     // 地方
-    $cityStmt = $dbh->prepare("SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`, `color` FROM `i_area_list`");
-    $cityStmt->execute();
-    $cityList = $cityStmt->fetchAll(PDO::FETCH_ASSOC);
-
+    $cityList = jyutdictLoadAreas($dbh);
+    $selectedCities = [];
     foreach ($cityList as $eachCity) {
-        if ($selectedLocationIds !== null && !in_array($eachCity['id'], $selectedLocationIds)) {
+        if ($selectedLocationIds !== null && !in_array($eachCity['id'], $selectedLocationIds, true)) {
             continue;
         }
-        $tableName = $eachCity['sheetname'];
-        $sql = "SELECT `id`, `chara`, `initial`, `nuclei`, `coda`, `tone` FROM `$tableName` WHERE $whereClause";
-        $stmt = $dbh->prepare($sql);
-        $stmt->execute($whereParams);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $selectedCities[] = $eachCity;
+    }
+    $cityRows = jyutdictLookupSourcePronunciations($dbh, $selectedCities, $pronunciationParts);
 
+    foreach ($selectedCities as $eachCity) {
         $allPron = ["__id" => $eachCity['id']];
-        foreach ($rows as $row) {
+        foreach ($cityRows[$eachCity['id']] ?? [] as $row) {
             $pron = $row['initial'] . $row['nuclei'] . $row['coda'];
             $allPron[$pron][$row['tone']] =
                 empty($allPron[$pron][$row['tone']]) ?
@@ -234,7 +215,7 @@ if ($queryInitial !== null) {
         }
     }
 
-    outputJson([
+    outputPublicJson([
         "韻書" => $entriesInAncient,
         "各地" => $entriesInLocations
     ]);
@@ -249,19 +230,36 @@ $submitCharaString = $_REQUEST['chara'];
 $submitCharaArray = preg_split("//u", $submitCharaString, -1, PREG_SPLIT_NO_EMPTY);
 $submitCharaArray = array_slice($submitCharaArray, 0, 10);
 
-$charaTransArray = [];
-foreach ($submitCharaArray as $charaForS2T) {
-    $charaS2TResult = querySim2Trad($charaForS2T, $dbh);
-    foreach ($charaS2TResult as $chara) {
-        $charaTransArray[] = $chara;
-    }
-}
+$charaTransArray = querySim2TradBatch($submitCharaArray, $dbh);
 
-// 緩存表列表
 try {
-    $areaStmt = $dbh->prepare("SELECT `id`, `sheetname` FROM `i_area_list`");
-    $areaStmt->execute();
-    $areaList = $areaStmt->fetchAll(PDO::FETCH_ASSOC);
+    $areaList = jyutdictLoadAreas($dbh);
+    $wanshyuList = jyutdictLoadWanshyu($dbh);
+    $locationRows = jyutdictLookupLocationCharacters($dbh, $areaList, $charaTransArray);
+    $kuangyonRows = jyutdictLookupTableCharacters(
+        $dbh,
+        'y_kuangyon',
+        $charaTransArray,
+        ['initial', 'rimeclass', 'rime', 'division', 'rounding', 'tone', 'transliteration']
+    );
+    $bookRowsByTable = [];
+    foreach ($wanshyuList as $book) {
+        if ($book['name'] === '分韻') {
+            $bookRowsByTable[$book['sheetname']] = jyutdictLookupTableCharacters(
+                $dbh,
+                $book['sheetname'],
+                $charaTransArray,
+                ['initial', 'nuclei', 'coda', 'tone', 'siuwan', 'meaning', 'initial_ch', 'final_ch', 'yunbu', 'tone_ch']
+            );
+        } elseif ($book['name'] === '英華') {
+            $bookRowsByTable[$book['sheetname']] = jyutdictLookupTableCharacters(
+                $dbh,
+                $book['sheetname'],
+                $charaTransArray,
+                ['initial', 'nuclei', 'coda', 'tone', 'pron', 'radical', 'radical_stroke', 'extra_stroke', 'page', 'state', 'order']
+            );
+        }
+    }
 } catch (PDOException $e) {
     outputJson(["error" => "Database initialization error"]);
 }
@@ -279,12 +277,8 @@ foreach ($charaTransArray as $chara) {
     $entriesInAncient = [];
 
     // 1. 廣韻
-    $kyStmt = $dbh->prepare("SELECT `initial`,`rimeclass`,`rime`,`division`,`rounding`,`tone`,`transliteration` FROM `y_kuangyon` WHERE `chara` = :chara");
-    $kyStmt->execute([':chara' => $chara]);
-    $kyRows = $kyStmt->fetchAll(PDO::FETCH_ASSOC);
-
     $kyEntries = [];
-    foreach ($kyRows as $row) {
+    foreach ($kuangyonRows[$chara] ?? [] as $row) {
         $kyEntries[] = [
             "書名" => "廣韻",
             "聲母" => $row['initial'],
@@ -301,19 +295,13 @@ foreach ($charaTransArray as $chara) {
     }
 
     // 2. 其他韻書（分韻、英華等）
-    $wsStmt = $dbh->prepare("SELECT `name`,`sheetname` FROM `i_wanshyu_list`");
-    $wsStmt->execute();
-    $wanshyuList = $wsStmt->fetchAll(PDO::FETCH_ASSOC);
-
     foreach ($wanshyuList as $book) {
         $bkEntries = [];
         $bkName = $book['name'];
-        $tableName = $book['sheetname'];
+        $rows = $bookRowsByTable[$book['sheetname']][$chara] ?? [];
 
         if ($bkName === '分韻') {
-            $stmt = $dbh->prepare("SELECT `initial`,`nuclei`,`coda`,`tone`,`siuwan`,`meaning`,`initial_ch`,`final_ch`,`yunbu`,`tone_ch` FROM `$tableName` WHERE `chara` = :chara");
-            $stmt->execute([':chara' => $chara]);
-            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            foreach ($rows as $row) {
                 $bkEntries[] = [
                     "書名" => $bkName, "聲母" => $row['initial'],
                     "韻核" => $row['nuclei'], "韻尾" => $row['coda'], "聲調" => $row['tone'],
@@ -322,9 +310,7 @@ foreach ($charaTransArray as $chara) {
                 ];
             }
         } elseif ($bkName === '英華') {
-            $stmt = $dbh->prepare("SELECT `initial`,`nuclei`,`coda`,`tone`,`pron`,`radical`,`radical_stroke`,`extra_stroke`,`page`,`state`,`order` FROM `$tableName` WHERE `chara` = :chara");
-            $stmt->execute([':chara' => $chara]);
-            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            foreach ($rows as $row) {
                 $bkEntries[] = [
                     "書名" => $bkName, "聲母" => $row['initial'],
                     "韻核" => $row['nuclei'], "韻尾" => $row['coda'], "聲調" => $row['tone'],
@@ -344,13 +330,8 @@ foreach ($charaTransArray as $chara) {
     // --- 各地 (Locations) ---
     $entriesLocations = [];
     foreach ($areaList as $area) {
-        $table = $area['sheetname'];
         $id = $area['id'];
-
-        $sql = "SELECT `initial` AS `聲母`, `nuclei` AS `韻核`, `coda` AS `韻尾`, `tone` AS `聲調`, `ipa` AS `IPA`, `note` AS `注釋`, `alt_group` FROM `$table` WHERE `chara` = :chara";
-        $stmt = $dbh->prepare($sql);
-        $stmt->execute([':chara' => $chara]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $locationRows[$id][$chara] ?? [];
 
         if (count($rows) > 0) {
             $locObj = [
@@ -361,9 +342,9 @@ foreach ($charaTransArray as $chara) {
                 "又音組" => []
             ];
             foreach ($rows as $row) {
-                $locObj["粵拼"][] = $row['聲母'] . $row['韻核'] . $row['韻尾'] . $row['聲調'];
-                $locObj["IPA"][] = $row['IPA'];
-                $locObj["注釋"][] = $row['注釋'];
+                $locObj["粵拼"][] = $row['initial'] . $row['nuclei'] . $row['coda'] . $row['tone'];
+                $locObj["IPA"][] = $row['ipa'];
+                $locObj["注釋"][] = $row['note'];
                 $locObj["又音組"][] = $row['alt_group'];
             }
             $entriesLocations[] = $locObj;
@@ -374,5 +355,5 @@ foreach ($charaTransArray as $chara) {
     $entriesConcat[] = $entry;
 }
 
-outputJson($entriesConcat);
+outputPublicJson($entriesConcat);
 ?>

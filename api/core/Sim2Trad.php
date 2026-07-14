@@ -36,3 +36,54 @@ function querySim2Trad($character, $dbh) {
 
     return $result;
 }
+
+/**
+ * Batch version of querySim2Trad. The flattened result keeps input order and
+ * preserves repeated input characters, matching the legacy per-character loop.
+ */
+function querySim2TradBatch(array $characters, PDO $dbh) {
+    if (!$characters) {
+        return [];
+    }
+
+    $unique = [];
+    $seen = [];
+    foreach ($characters as $character) {
+        if (!isset($seen[$character])) {
+            $seen[$character] = true;
+            $unique[] = $character;
+        }
+    }
+
+    $mapped = [];
+    try {
+        $placeholders = implode(',', array_fill(0, count($unique), '?'));
+        $stmt = $dbh->prepare("
+            SELECT l1.`chara` AS `source_chara`, l2.`chara` AS `trad_chara`
+            FROM `character_simtrad_list` l1
+            JOIN `character_simtrad_map` m ON l1.`chara_id` = m.`chara_id_sim`
+            JOIN `character_simtrad_list` l2 ON m.`chara_id_trad` = l2.`chara_id`
+            WHERE l1.`chara` IN ($placeholders)
+            ORDER BY l1.`chara_id`, m.`chara_id_trad`
+        ");
+        $stmt->execute($unique);
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $mapped[$row['source_chara']][] = $row['trad_chara'];
+        }
+    } catch (Exception $e) {
+        $mapped = [];
+    }
+
+    $result = [];
+    foreach ($characters as $character) {
+        $result[] = $character;
+        $localSeen = [$character => true];
+        foreach ($mapped[$character] ?? [] as $tradCharacter) {
+            if (!isset($localSeen[$tradCharacter])) {
+                $result[] = $tradCharacter;
+                $localSeen[$tradCharacter] = true;
+            }
+        }
+    }
+    return $result;
+}
