@@ -24,7 +24,8 @@ function setPublicCacheHeaders($maxAge = 300) {
 /** Output cacheable public JSON without making error responses cacheable. */
 function outputPublicJson($data, $code = 200, $maxAge = 300) {
     if ($code >= 200 && $code < 300) {
-        setPublicCacheHeaders($maxAge);
+        // setPublicCacheHeaders($maxAge);
+        setPublicCacheHeaders(1); /** For Debugging Only */
     }
     outputJson($data, $code);
 }

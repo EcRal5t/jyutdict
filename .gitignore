@@ -32,3 +32,4 @@ docs/
 # OAuth 配置
 api/config/oauth.php
 api/config/db.php
+api/config/common.php

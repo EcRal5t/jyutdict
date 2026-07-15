@@ -9,6 +9,7 @@ include_once(__DIR__ . '/../core/helpers.php');
 include_once(__DIR__ . '/../core/Sim2Trad.php');
 include_once(__DIR__ . '/../core/Jyutping.php');
 include_once(__DIR__ . '/../core/LocationLookup.php');
+include_once(__DIR__ . '/../core/CommonEntries.php');
 
 header('Content-type: application/json');
 
@@ -199,7 +200,7 @@ if ($queryInitial !== null) {
         }
         $selectedCities[] = $eachCity;
     }
-    $cityRows = jyutdictLookupSourcePronunciations($dbh, $selectedCities, $pronunciationParts);
+    $cityRows = jyutdictLookupConfiguredLocationPronunciations($dbh, $selectedCities, $pronunciationParts);
 
     foreach ($selectedCities as $eachCity) {
         $allPron = ["__id" => $eachCity['id']];
@@ -235,7 +236,7 @@ $charaTransArray = querySim2TradBatch($submitCharaArray, $dbh);
 try {
     $areaList = jyutdictLoadAreas($dbh);
     $wanshyuList = jyutdictLoadWanshyu($dbh);
-    $locationRows = jyutdictLookupLocationCharacters($dbh, $areaList, $charaTransArray);
+    $locationRows = jyutdictLookupConfiguredLocationCharacters($dbh, $areaList, $charaTransArray);
     $kuangyonRows = jyutdictLookupTableCharacters(
         $dbh,
         'y_kuangyon',
