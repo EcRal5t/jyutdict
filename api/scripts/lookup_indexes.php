@@ -84,7 +84,7 @@ function migrationColumn($name, $prefix = null) {
 }
 
 $definitions = [];
-$areas = jyutdictLoadAreas($dbh);
+$areas = jyutdictLoadAllAreas($dbh);
 foreach ($areas as $area) {
     $definitions[$area['sheetname']] = [
         migrationDefinition('idx_chara_lookup', [migrationColumn('chara', 2)]),

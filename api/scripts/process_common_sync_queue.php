@@ -160,24 +160,24 @@ function queueComplete(PDO $dbh, array $job, array $result) {
             $stmt = $dbh->prepare(
                 "UPDATE `common_sync_queue`
                  SET `processed_generation` = GREATEST(`processed_generation`, ?),
-                     `status` = ?, `completed_at` = ?, `last_error` = NULL
+                     `status` = ?, `completed_at` = IF(? = 1, NULL, NOW()), `last_error` = NULL
                  WHERE `area_id` = ?"
             );
             $stmt->execute([
                 $job['requested_generation'],
                 $newerRequestExists ? 'pending' : 'done',
-                $newerRequestExists ? null : date('Y-m-d H:i:s'),
+                $newerRequestExists ? 1 : 0,
                 $job['area_id'],
             ]);
         } else {
             $stmt = $dbh->prepare(
                 "UPDATE `common_sync_queue`
-                 SET `status` = ?, `completed_at` = ?, `last_error` = ?
+                 SET `status` = ?, `completed_at` = IF(? = 1, NULL, NOW()), `last_error` = ?
                  WHERE `area_id` = ?"
             );
             $stmt->execute([
                 $newerRequestExists ? 'pending' : 'failed',
-                $newerRequestExists ? null : date('Y-m-d H:i:s'),
+                $newerRequestExists ? 1 : 0,
                 $newerRequestExists ? null : $errorText,
                 $job['area_id'],
             ]);

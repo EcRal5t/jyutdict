@@ -44,7 +44,7 @@ try {
         }
 
         // 2. i_area_list 地点
-        $stmt = $dbh->prepare("SELECT `second`, `third` FROM `i_area_list` ORDER BY `id`");
+        $stmt = $dbh->prepare("SELECT `second`, `third` FROM `i_area_list` WHERE `is_visible` = 1 ORDER BY `sort_order`, `id`");
         $stmt->execute();
         $areaRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

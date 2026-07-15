@@ -17,12 +17,33 @@ function jyutdictAssertTableName($tableName) {
 function jyutdictLoadAreas(PDO $dbh) {
     $stmt = $dbh->query(
         "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`, `color`
-         FROM `i_area_list` ORDER BY `id`"
+         FROM `i_area_list`
+         WHERE `is_visible` = 1 AND `current_release_id` IS NOT NULL
+         ORDER BY `sort_order`, `id`"
     );
     $areas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($areas as &$area) {
         jyutdictAssertTableName($area['sheetname']);
         $area['id'] = (int)$area['id'];
+    }
+    unset($area);
+    return $areas;
+}
+
+/** Load hidden and visible areas for maintenance scripts. */
+function jyutdictLoadAllAreas(PDO $dbh) {
+    $stmt = $dbh->query(
+        "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`, `color`,
+                `is_visible`, `sort_order`
+         FROM `i_area_list`
+         ORDER BY `sort_order`, `id`"
+    );
+    $areas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($areas as &$area) {
+        jyutdictAssertTableName($area['sheetname']);
+        $area['id'] = (int)$area['id'];
+        $area['is_visible'] = (int)$area['is_visible'];
+        $area['sort_order'] = (int)$area['sort_order'];
     }
     unset($area);
     return $areas;

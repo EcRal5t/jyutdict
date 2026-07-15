@@ -15,7 +15,7 @@ if (PHP_SAPI !== 'cli') {
 
 require_once __DIR__ . '/../core/db.php';
 
-const COMMON_SCHEMA_VERSION = '20260715_common_entries_v2_sync_queue';
+const COMMON_SCHEMA_VERSION = '20260716_common_entries_v3_area_catalog';
 
 $apply = in_array('--apply', $argv, true);
 
@@ -44,6 +44,25 @@ function commonSchemaConstraintExists(PDO $dbh, $constraintName) {
     );
     $stmt->execute([$constraintName]);
     return (int)$stmt->fetchColumn() > 0;
+}
+
+function commonSchemaIndexExists(PDO $dbh, $tableName, $indexName) {
+    $stmt = $dbh->prepare(
+        "SELECT COUNT(*) FROM information_schema.STATISTICS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?"
+    );
+    $stmt->execute([$tableName, $indexName]);
+    return (int)$stmt->fetchColumn() > 0;
+}
+
+function commonSchemaColumnType(PDO $dbh, $tableName, $columnName) {
+    $stmt = $dbh->prepare(
+        "SELECT `COLUMN_TYPE` FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?"
+    );
+    $stmt->execute([$tableName, $columnName]);
+    $value = $stmt->fetchColumn();
+    return $value === false ? null : strtolower((string)$value);
 }
 
 function commonSchemaRun(PDO $dbh, $sql, $apply) {
@@ -170,6 +189,54 @@ if (!commonSchemaColumnExists($dbh, 'i_area_list', 'current_release_id')) {
     commonSchemaRun(
         $dbh,
         "ALTER TABLE `i_area_list` ADD COLUMN `current_release_id` BIGINT UNSIGNED NULL AFTER `sheetname`, ADD KEY `idx_ial_current_release_area` (`current_release_id`, `id`)",
+        $apply
+    );
+    $changes++;
+}
+
+if (!commonSchemaColumnExists($dbh, 'i_area_list', 'is_visible')) {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` ADD COLUMN `is_visible` TINYINT(1) NOT NULL DEFAULT 1 AFTER `color`",
+        $apply
+    );
+    $changes++;
+}
+
+if (!commonSchemaColumnExists($dbh, 'i_area_list', 'sort_order')) {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` ADD COLUMN `sort_order` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `is_visible`",
+        $apply
+    );
+    $changes++;
+    if ($apply) {
+        $dbh->exec("UPDATE `i_area_list` SET `sort_order` = `id` * 10 WHERE `sort_order` = 0");
+    }
+}
+
+if (commonSchemaColumnType($dbh, 'i_area_list', 'sheetname') !== 'varchar(64)') {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` MODIFY COLUMN `sheetname` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL",
+        $apply
+    );
+    $changes++;
+}
+
+if (!commonSchemaIndexExists($dbh, 'i_area_list', 'uq_ial_sheetname')) {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` ADD UNIQUE KEY `uq_ial_sheetname` (`sheetname`)",
+        $apply
+    );
+    $changes++;
+}
+
+if (!commonSchemaIndexExists($dbh, 'i_area_list', 'idx_ial_visible_order')) {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` ADD KEY `idx_ial_visible_order` (`is_visible`, `sort_order`, `id`)",
         $apply
     );
     $changes++;

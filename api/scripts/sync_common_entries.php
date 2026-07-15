@@ -425,7 +425,7 @@ if (!commonSyncTableExists($dbh, 'common_releases') || !commonSyncTableExists($d
     throw new RuntimeException('Common schema is not installed; run common_entries_schema.php --apply first');
 }
 
-$areas = jyutdictLoadAreas($dbh);
+$areas = jyutdictLoadAllAreas($dbh);
 if (!$all) {
     $areas = array_values(array_filter($areas, function ($area) use ($areaIdOption, $tableOption) {
         if ($areaIdOption !== null) {
