@@ -1,0 +1,10 @@
+<?php
+/**
+ * Public location lookup source.
+ *
+ * Keep "legacy" while the common tables are being populated or verified.
+ * Switch to "common" only after sync_common_entries.php and
+ * verify_common_queries.php both succeed.
+ */
+define('COMMON_ENTRIES_READ_MODE', 'legacy');
+
