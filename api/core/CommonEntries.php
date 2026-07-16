@@ -80,6 +80,18 @@ function jyutdictCommonAreaIds(array $areas) {
     return $ids;
 }
 
+/** Restore the caller's area order after a set-based database query. */
+function jyutdictCommonOrderAreaGroups(array $grouped, array $areaIds) {
+    $ordered = [];
+    foreach ($areaIds as $areaId) {
+        $areaId = (int)$areaId;
+        if (array_key_exists($areaId, $grouped)) {
+            $ordered[$areaId] = $grouped[$areaId];
+        }
+    }
+    return $ordered;
+}
+
 /** Return shape: [area_id => [character => [row, ...]]]. */
 function jyutdictLookupCommonLocationCharacters(PDO $dbh, array $areas, array $characters) {
     $areaIds = jyutdictCommonAreaIds($areas);
@@ -106,7 +118,7 @@ function jyutdictLookupCommonLocationCharacters(PDO $dbh, array $areas, array $c
         unset($row['area_id'], $row['chara']);
         $grouped[$areaId][$character][] = $row;
     }
-    return $grouped;
+    return jyutdictCommonOrderAreaGroups($grouped, $areaIds);
 }
 
 /** Return shape: [area_id => [row, ...]]. */
@@ -143,7 +155,7 @@ function jyutdictLookupCommonPronunciations(PDO $dbh, array $areas, array $parts
         unset($row['area_id']);
         $grouped[$areaId][] = $row;
     }
-    return $grouped;
+    return jyutdictCommonOrderAreaGroups($grouped, $areaIds);
 }
 
 function jyutdictLookupConfiguredLocationCharacters(PDO $dbh, array $areas, array $characters) {

@@ -53,5 +53,14 @@ commonTestAssert(
     'Content hash must preserve duplicate multiplicity'
 );
 
-echo "CommonEntries tests passed.\n";
+$groupedByDatabaseOrder = [
+    6 => ['first'],
+    13 => ['third'],
+    71 => ['second'],
+];
+commonTestAssert(
+    array_keys(jyutdictCommonOrderAreaGroups($groupedByDatabaseOrder, [6, 71, 13])) === [6, 71, 13],
+    'Common lookup groups must preserve the caller area order'
+);
 
+echo "CommonEntries tests passed.\n";
