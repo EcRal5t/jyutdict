@@ -36,6 +36,63 @@ function queueTableExists(PDO $dbh) {
     return (int)$stmt->fetchColumn() > 0;
 }
 
+function queueWorkerStateExists(PDO $dbh) {
+    $stmt = $dbh->query(
+        "SELECT COUNT(*) FROM information_schema.TABLES
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'maintenance_worker_state'"
+    );
+    return (int)$stmt->fetchColumn() === 1;
+}
+
+function queueWorkerStart(PDO $dbh) {
+    if (!queueWorkerStateExists($dbh)) {
+        return;
+    }
+    $dbh->exec(
+        "INSERT INTO `maintenance_worker_state`
+         (`worker_name`, `last_seen_at`, `last_started_at`, `last_status`)
+         VALUES ('common_sync_queue', NOW(), NOW(), 'running')
+         ON DUPLICATE KEY UPDATE
+           `last_started_at` = IF(`last_seen_at` IS NULL OR `last_seen_at` < DATE_SUB(NOW(), INTERVAL 5 MINUTE), NOW(), `last_started_at`),
+           `last_status` = IF(`last_seen_at` IS NULL OR `last_seen_at` < DATE_SUB(NOW(), INTERVAL 5 MINUTE), 'running', `last_status`),
+           `last_error` = IF(`last_seen_at` IS NULL OR `last_seen_at` < DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, `last_error`),
+           `last_seen_at` = IF(`last_seen_at` IS NULL OR `last_seen_at` < DATE_SUB(NOW(), INTERVAL 5 MINUTE), NOW(), `last_seen_at`)"
+    );
+}
+
+function queueWorkerFinish(PDO $dbh, $processed, $failures, $errorMessage = null) {
+    if (!queueWorkerStateExists($dbh)) {
+        return;
+    }
+    if ((int)$processed === 0 && (int)$failures === 0 && $errorMessage === null) {
+        $dbh->exec(
+            "UPDATE `maintenance_worker_state`
+             SET `last_seen_at` = NOW(), `last_finished_at` = NOW(), `last_status` = 'success',
+                 `last_processed` = 0, `last_failures` = 0, `last_error` = NULL
+             WHERE `worker_name` = 'common_sync_queue'
+               AND (`last_status` = 'running' OR `last_seen_at` IS NULL
+                    OR `last_seen_at` < DATE_SUB(NOW(), INTERVAL 5 MINUTE))"
+        );
+        return;
+    }
+    $stmt = $dbh->prepare(
+        "INSERT INTO `maintenance_worker_state`
+         (`worker_name`, `last_seen_at`, `last_started_at`, `last_finished_at`, `last_status`,
+          `last_processed`, `last_failures`, `last_error`)
+         VALUES ('common_sync_queue', NOW(), NOW(), NOW(), ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+           `last_seen_at` = NOW(), `last_finished_at` = NOW(), `last_status` = VALUES(`last_status`),
+           `last_processed` = VALUES(`last_processed`), `last_failures` = VALUES(`last_failures`),
+           `last_error` = VALUES(`last_error`)"
+    );
+    $stmt->execute([
+        $failures > 0 || $errorMessage !== null ? 'failed' : 'success',
+        (int)$processed,
+        (int)$failures,
+        $errorMessage === null ? null : mb_substr((string)$errorMessage, 0, 4000, 'UTF-8'),
+    ]);
+}
+
 function queuePrintStatus(PDO $dbh) {
     $rows = $dbh->query(
         "SELECT `status`, COUNT(*) AS `count`,
@@ -210,6 +267,8 @@ if ((int)$lockStmt->fetchColumn() !== 1) {
 $processed = 0;
 $failures = 0;
 $attemptedAreaIds = [];
+$workerError = null;
+queueWorkerStart($dbh);
 try {
     while ($processed < $max) {
         $job = queueClaim($dbh, $retryFailed, $attemptedAreaIds);
@@ -238,7 +297,11 @@ try {
             'error' => $result['stderr'],
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;
     }
+} catch (Throwable $error) {
+    $workerError = $error->getMessage();
+    throw $error;
 } finally {
+    queueWorkerFinish($dbh, $processed, $failures, $workerError);
     $dbh->query("SELECT RELEASE_LOCK('jyutdict_common_sync_queue_worker')");
 }
 

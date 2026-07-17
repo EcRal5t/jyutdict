@@ -2,11 +2,14 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import adminApi from '@/api/admin.js'
+import AdminLocations from '@/components/admin/AdminLocations.vue'
+import AdminMaintenance from '@/components/admin/AdminMaintenance.vue'
+import AdminAudit from '@/components/admin/AdminAudit.vue'
 
 const authStore = useAuthStore()
 
 // ===== Tab 切换 =====
-const activeTab = ref('users') // 'users' | 'editors'
+const activeTab = ref('users')
 
 // ===== 用户管理 =====
 const users = ref([])
@@ -115,7 +118,7 @@ onMounted(() => {
         <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-5">後臺管理</h1>
 
         <!-- Tab 切換 -->
-        <div class="flex gap-1 mb-6 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-none w-fit border border-slate-200 dark:border-slate-700">
+        <div class="flex flex-wrap gap-1 mb-6 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-none w-fit border border-slate-200 dark:border-slate-700">
             <button @click="activeTab = 'users'"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'users' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)] dark:shadow-[2px_2px_0_rgba(211,41,19,0.4)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
@@ -125,6 +128,21 @@ onMounted(() => {
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'editors' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)] dark:shadow-[2px_2px_0_rgba(211,41,19,0.4)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
                 編纂者地點分配
+            </button>
+            <button @click="activeTab = 'locations'"
+                class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
+                :class="activeTab === 'locations' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
+                地點目錄
+            </button>
+            <button @click="activeTab = 'maintenance'"
+                class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
+                :class="activeTab === 'maintenance' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
+                同步隊列
+            </button>
+            <button @click="activeTab = 'audit'"
+                class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
+                :class="activeTab === 'audit' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
+                操作記錄
             </button>
         </div>
 
@@ -276,5 +294,9 @@ onMounted(() => {
                 </template>
             </div>
         </div>
+
+        <AdminLocations v-if="activeTab === 'locations'" />
+        <AdminMaintenance v-if="activeTab === 'maintenance'" />
+        <AdminAudit v-if="activeTab === 'audit'" />
     </div>
 </template>

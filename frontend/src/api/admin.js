@@ -46,4 +46,31 @@ export default {
     removeLocation(editorId, locationName) {
         return apiClient.delete('/editors', { data: { editor_id: editorId, location_name: locationName } });
     },
+    getCatalogLocations() {
+        return apiClient.get('/locations');
+    },
+    createCatalogLocation(data) {
+        return apiClient.post('/locations', data);
+    },
+    updateCatalogLocation(data) {
+        return apiClient.patch('/locations', data);
+    },
+    reorderCatalogLocations(orderedIds) {
+        return apiClient.put('/locations', { ordered_ids: orderedIds });
+    },
+    deleteEmptyCatalogLocation(id, confirmSheetname) {
+        return apiClient.delete('/locations', { data: { id, confirm_sheetname: confirmSheetname } });
+    },
+    locationAction(action, data) {
+        return apiClient.post('/location-actions', { action, ...data });
+    },
+    getMaintenance() {
+        return apiClient.get('/maintenance');
+    },
+    maintenanceAction(action, data = {}) {
+        return apiClient.post('/maintenance', { action, ...data });
+    },
+    getMaintenanceAudit(params = {}) {
+        return apiClient.get('/audit', { params });
+    },
 };

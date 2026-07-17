@@ -15,7 +15,7 @@ if (PHP_SAPI !== 'cli') {
 
 require_once __DIR__ . '/../core/db.php';
 
-const COMMON_SCHEMA_VERSION = '20260716_common_entries_v3_area_catalog';
+const COMMON_SCHEMA_VERSION = '20260717_common_entries_v4_admin_maintenance';
 
 $apply = in_array('--apply', $argv, true);
 
@@ -185,6 +185,44 @@ if (!commonSchemaTableExists($dbh, 'common_sync_queue')) {
     $changes++;
 }
 
+if (!commonSchemaTableExists($dbh, 'admin_maintenance_events')) {
+    commonSchemaRun($dbh, "CREATE TABLE `admin_maintenance_events` (
+      `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `user_id` INT UNSIGNED NULL,
+      `request_id` CHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+      `action` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+      `area_id` INT NULL,
+      `sheetname` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL,
+      `status` ENUM('success','failed') CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+      `before_json` MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
+      `after_json` MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
+      `error_message` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
+      `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`),
+      KEY `idx_ame_created` (`created_at`),
+      KEY `idx_ame_area_created` (`area_id`, `created_at`),
+      KEY `idx_ame_user_created` (`user_id`, `created_at`),
+      CONSTRAINT `fk_ame_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+        ON UPDATE RESTRICT ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC", $apply);
+    $changes++;
+}
+
+if (!commonSchemaTableExists($dbh, 'maintenance_worker_state')) {
+    commonSchemaRun($dbh, "CREATE TABLE `maintenance_worker_state` (
+      `worker_name` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+      `last_seen_at` DATETIME NULL,
+      `last_started_at` DATETIME NULL,
+      `last_finished_at` DATETIME NULL,
+      `last_status` ENUM('idle','running','success','failed') CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'idle',
+      `last_processed` INT UNSIGNED NOT NULL DEFAULT 0,
+      `last_failures` INT UNSIGNED NOT NULL DEFAULT 0,
+      `last_error` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
+      PRIMARY KEY (`worker_name`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC", $apply);
+    $changes++;
+}
+
 if (!commonSchemaColumnExists($dbh, 'i_area_list', 'current_release_id')) {
     commonSchemaRun(
         $dbh,
@@ -215,6 +253,24 @@ if (!commonSchemaColumnExists($dbh, 'i_area_list', 'sort_order')) {
     }
 }
 
+if (!commonSchemaColumnExists($dbh, 'i_area_list', 'archived_at')) {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` ADD COLUMN `archived_at` DATETIME NULL AFTER `sort_order`",
+        $apply
+    );
+    $changes++;
+}
+
+if (!commonSchemaColumnExists($dbh, 'i_area_list', 'archived_by')) {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` ADD COLUMN `archived_by` INT UNSIGNED NULL AFTER `archived_at`",
+        $apply
+    );
+    $changes++;
+}
+
 if (commonSchemaColumnType($dbh, 'i_area_list', 'sheetname') !== 'varchar(64)') {
     commonSchemaRun(
         $dbh,
@@ -237,6 +293,24 @@ if (!commonSchemaIndexExists($dbh, 'i_area_list', 'idx_ial_visible_order')) {
     commonSchemaRun(
         $dbh,
         "ALTER TABLE `i_area_list` ADD KEY `idx_ial_visible_order` (`is_visible`, `sort_order`, `id`)",
+        $apply
+    );
+    $changes++;
+}
+
+if (!commonSchemaIndexExists($dbh, 'i_area_list', 'idx_ial_archive_order')) {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` ADD KEY `idx_ial_archive_order` (`archived_at`, `sort_order`, `id`)",
+        $apply
+    );
+    $changes++;
+}
+
+if (!commonSchemaConstraintExists($dbh, 'fk_ial_archived_by')) {
+    commonSchemaRun(
+        $dbh,
+        "ALTER TABLE `i_area_list` ADD CONSTRAINT `fk_ial_archived_by` FOREIGN KEY (`archived_by`) REFERENCES `users` (`id`) ON UPDATE RESTRICT ON DELETE SET NULL",
         $apply
     );
     $changes++;

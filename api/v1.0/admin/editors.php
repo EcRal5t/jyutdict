@@ -34,7 +34,7 @@ if ($method === 'GET') {
             $locationSet = []; // name => { name, sources: [] }
 
             // i_area_list 地点
-            $stmt = $dbh->prepare("SELECT `first`, `second`, `third` FROM `i_area_list` WHERE `is_visible` = 1 ORDER BY `sort_order`, `id`");
+            $stmt = $dbh->prepare("SELECT `first`, `second`, `third` FROM `i_area_list` WHERE `is_visible` = 1 AND `archived_at` IS NULL ORDER BY `sort_order`, `id`");
             $stmt->execute();
             $areaRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
