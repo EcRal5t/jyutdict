@@ -2,15 +2,15 @@
 /**
  * 文章 API
  *
- * GET    /api/v1.0/articles/?list=1[&search={keyword}]
+ * GET    /api/v1.0/articles/?list=1[&search={keyword}][&type=location|phonology]
  *        → 获取所有有文章的地点列表（公开，无需登录）
  *
- * GET    /api/v1.0/articles/?location_name={name}
+ * GET    /api/v1.0/articles/?location_name={name}[&type=location|phonology][&exists=1]
  *        → 获取某地点的文章（公开，无需登录）
  *
  * POST   /api/v1.0/articles/
  *        → 创建或更新文章（编纂者：限已分配地点；管理员+：任意地点）
- *        Body: { "location_name": "廣州", "content": "# 标题...", "edit_summary": "初稿" }
+ *        Body: { "location_name": "廣州", "type": "location", "content": "# 标题...", "edit_summary": "初稿" }
  *
  * GET    /api/v1.0/articles/?location_name={}&versions=1
  *        → 获取文章版本历史列表
@@ -35,6 +35,11 @@ include_once(__DIR__ . '/../../core/helpers.php');
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
+$articleType = $_GET['type'] ?? 'location';
+
+if (!in_array($articleType, ['location', 'phonology'], true)) {
+    outputJson(['error' => 'Invalid article type'], 400);
+}
 
 // ========== GET：公开读取 ==========
 if ($method === 'GET') {
@@ -49,11 +54,12 @@ if ($method === 'GET') {
                        LEFT(a.`content`, 200) AS excerpt
                 FROM `articles` a
                 JOIN `users` u ON a.`author_id` = u.`id`
+                WHERE a.`article_type` = :article_type
             ";
-            $params = [];
+            $params = [':article_type' => $articleType];
 
             if ($search) {
-                $sql .= " WHERE a.`location_name` LIKE :search";
+                $sql .= " AND a.`location_name` LIKE :search";
                 $params[':search'] = '%' . $search . '%';
             }
 
@@ -111,8 +117,8 @@ if ($method === 'GET') {
     if (isset($_GET['versions'])) {
         try {
             // 先找文章
-            $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname");
-            $stmt->execute([':lname' => $locationName]);
+            $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname AND `article_type` = :type");
+            $stmt->execute([':lname' => $locationName, ':type' => $articleType]);
             $article = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$article) {
@@ -136,6 +142,17 @@ if ($method === 'GET') {
         }
     }
 
+    // --- 仅检查文章是否存在（悬浮卡片使用，不传输正文） ---
+    if (isset($_GET['exists'])) {
+        try {
+            $stmt = $dbh->prepare("SELECT 1 FROM `articles` WHERE `location_name` = :lname AND `article_type` = :type LIMIT 1");
+            $stmt->execute([':lname' => $locationName, ':type' => $articleType]);
+            outputJson(['exists' => (bool)$stmt->fetchColumn()]);
+        } catch (PDOException $e) {
+            outputJson(['error' => 'Database error'], 500);
+        }
+    }
+
     // --- 获取文章内容 ---
     try {
         $stmt = $dbh->prepare("
@@ -143,9 +160,9 @@ if ($method === 'GET') {
                    u.`nickname`, u.`email`, u.`role`
             FROM `articles` a
             JOIN `users` u ON a.`author_id` = u.`id`
-            WHERE a.`location_name` = :lname
+            WHERE a.`location_name` = :lname AND a.`article_type` = :type
         ");
-        $stmt->execute([':lname' => $locationName]);
+        $stmt->execute([':lname' => $locationName, ':type' => $articleType]);
         $article = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$article) {
@@ -218,11 +235,15 @@ if ($method === 'POST') {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $locName = $input['location_name'] ?? '';
+    $articleType = $input['type'] ?? $articleType;
     $content = $input['content'] ?? '';
     $editSummary = $input['edit_summary'] ?? null;
 
     if (!$locName) {
         outputJson(['error' => 'Missing location_name'], 400);
+    }
+    if (!in_array($articleType, ['location', 'phonology'], true)) {
+        outputJson(['error' => 'Invalid article type'], 400);
     }
 
     // 权限检查：编纂者只能编辑已分配地点，管理员+可以编辑任意地点
@@ -243,8 +264,8 @@ if ($method === 'POST') {
         $dbh->beginTransaction();
 
         // 查找已有文章
-        $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname");
-        $stmt->execute([':lname' => $locName]);
+        $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname AND `article_type` = :type");
+        $stmt->execute([':lname' => $locName, ':type' => $articleType]);
         $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($existing) {
@@ -255,10 +276,10 @@ if ($method === 'POST') {
         } else {
             // 新建
             $stmt = $dbh->prepare("
-                INSERT INTO `articles` (`location_name`, `content`, `author_id`)
-                VALUES (:lname, :content, :uid)
+                INSERT INTO `articles` (`location_name`, `article_type`, `content`, `author_id`)
+                VALUES (:lname, :type, :content, :uid)
             ");
-            $stmt->execute([':lname' => $locName, ':content' => $content, ':uid' => $currentUserId]);
+            $stmt->execute([':lname' => $locName, ':type' => $articleType, ':content' => $content, ':uid' => $currentUserId]);
             $articleId = $dbh->lastInsertId();
         }
 
@@ -298,8 +319,8 @@ if ($method === 'DELETE') {
 
     try {
         // 查找文章
-        $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname");
-        $stmt->execute([':lname' => $locationName]);
+        $stmt = $dbh->prepare("SELECT `id` FROM `articles` WHERE `location_name` = :lname AND `article_type` = :type");
+        $stmt->execute([':lname' => $locationName, ':type' => $articleType]);
         $article = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$article) {

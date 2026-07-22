@@ -11,7 +11,7 @@ include_once(__DIR__ . '/../core/Jyutping.php');
 include_once(__DIR__ . '/../core/LocationLookup.php');
 include_once(__DIR__ . '/../core/CommonEntries.php');
 
-header('Content-type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 // =====================================================
 // 幫助信息
@@ -22,12 +22,12 @@ if (isset($_REQUEST['help'])) {
         "version" => "v1.0",
         "description" => "查詢字元在各地讀音及韻書記錄",
         "endpoints" => [
-            "GET /api/v1.0/detail" => [
-                "description" => "獲取地點列表（用於映射 id 到地名）"
+            "GET /api/v1.0/detail?chara=" => [
+                "description" => "獲取地點列表及地點元信息（chara 參數必須存在且為空）"
             ],
             "GET /api/v1.0/detail?chara={query}" => [
                 "description" => "查詢字元詳情",
-                "params" => ["chara"]
+                "params" => ["chara", "areas（可選，多個 id 以逗號分隔）"]
             ],
             "GET /api/v1.0/detail?pron={jyutping}" => [
                 "description" => "按粵拼查詢（檢音）",
@@ -58,6 +58,11 @@ if (isset($_REQUEST['help'])) {
                 "description" => "篩選地點，逗號分隔的 id 列表",
                 "example" => "1,2,3"
             ],
+            "areas" => [
+                "type" => "string",
+                "description" => "查字時只返回指定 i_area_list.id 的方音；多個 id 以逗號分隔，同時省略韻書資料",
+                "example" => "10,11"
+            ],
             "wanshyu" => [
                 "type" => "string",
                 "description" => "篩選韻書，可選 fanwan, jingwaa"
@@ -74,8 +79,9 @@ if (isset($_REQUEST['help'])) {
             ]
         ],
         "examples" => [
-            "獲取地點列表" => "/api/v1.0/detail",
+            "獲取地點列表" => "/api/v1.0/detail?chara=",
             "查詢單字" => "/api/v1.0/detail?chara=粵",
+            "查詢指定地點" => "/api/v1.0/detail?chara=粵&areas=10,11",
             "查詢多字" => "/api/v1.0/detail?chara=我們",
             "按粵拼查詢" => "/api/v1.0/detail?pron=jyut6",
             "按音素查詢" => "/api/v1.0/detail?in=j&nu=yu&co=t"
@@ -95,6 +101,8 @@ if (isset($_REQUEST['chara']) && $_REQUEST['chara'] === "") {
                 'first' => $area['first'],
                 'second' => $area['second'],
                 'third' => $area['third'],
+                'detailed_name' => $area['detailed_name'],
+                'sheet_info' => $area['sheet_info'],
                 'color' => $area['color'],
             ];
         }, $areas);
@@ -235,14 +243,40 @@ $charaTransArray = querySim2TradBatch($submitCharaArray, $dbh);
 
 try {
     $areaList = jyutdictLoadAreas($dbh);
-    $wanshyuList = jyutdictLoadWanshyu($dbh);
+    $selectedAreaIds = null;
+    $rawAreas = $_REQUEST['areas'] ?? ($_REQUEST['area'] ?? null); // area 保留為單選舊連結兼容
+    if ($rawAreas !== null && $rawAreas !== '') {
+        if (is_array($rawAreas)) {
+            $rawAreas = implode(',', $rawAreas);
+        }
+        $areaParts = explode(',', (string)$rawAreas);
+        $selectedAreaIds = [];
+        foreach ($areaParts as $areaPart) {
+            $areaId = filter_var(trim($areaPart), FILTER_VALIDATE_INT, [
+                'options' => ['min_range' => 1]
+            ]);
+            if ($areaId === false) {
+                outputJson(["error" => "Invalid area id list"], 400);
+            }
+            if (!in_array($areaId, $selectedAreaIds, true)) {
+                $selectedAreaIds[] = $areaId;
+            }
+        }
+        $areaList = array_values(array_filter($areaList, function ($area) use ($selectedAreaIds) {
+            return in_array($area['id'], $selectedAreaIds, true);
+        }));
+        if (count($areaList) !== count($selectedAreaIds)) {
+            outputJson(["error" => "One or more areas were not found or unavailable"], 404);
+        }
+    }
+    $wanshyuList = $selectedAreaIds === null ? jyutdictLoadWanshyu($dbh) : [];
     $locationRows = jyutdictLookupConfiguredLocationCharacters($dbh, $areaList, $charaTransArray);
-    $kuangyonRows = jyutdictLookupTableCharacters(
+    $kuangyonRows = $selectedAreaIds === null ? jyutdictLookupTableCharacters(
         $dbh,
         'y_kuangyon',
         $charaTransArray,
         ['initial', 'rimeclass', 'rime', 'division', 'rounding', 'tone', 'transliteration']
-    );
+    ) : [];
     $bookRowsByTable = [];
     foreach ($wanshyuList as $book) {
         if ($book['name'] === '分韻') {

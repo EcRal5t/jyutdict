@@ -25,9 +25,10 @@ uv.lock
 
 # AI Assist
 .claude
-CLAUDE.md
-docs/
 .agents
+CLAUDE.md
+AGENTS.md
+docs/
 
 # OAuth 配置
 api/config/oauth.php

@@ -2,16 +2,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
-
-// 粵拼解析正則
-// 空格在音節中表示模糊匹配該位置
-const format = /^[a-z ]{1,10}\d{0,2}$/;
-// 聲母正則：允許後面是元音或空格（模糊匹配韻核）
-const initialFormat = /^^(mb?|n[jrd]?|ngg?|[bdg]{1,2}|g[hn]?|r[bdgzscrh]|[zcs][hrjl]?|[ptkvw]h?|[hqfjlrx0])([jwv]?)(?=[aeoiuymn])/;
-// 韻尾正則：匹配末尾的韻尾（不包含前面的元音）
-const codaFormat = /(?<=[aoreiwuy])(n[ng]?|[mptkh])(?=[\\d`*]|$)$/;
-const toneFormat = /[0-9]?[0-9*][0-9']?(`\d+)?$/;
-const vowelFormat = /(^ng?$|^m$|i[rwi]?|u[rwu]?|[aeo][aeowr]?|yu$|y)$/;
+import { parsePronunciationQuery } from '@/utils/pronunciationQuery.js';
 
 const form = reactive({
     pron: '',
@@ -129,87 +120,11 @@ const groupedLocations = computed(() => {
 // - 例如 "gwaa " -> 模糊匹配韻尾
 // - 例如 "j t6" -> 模糊匹配韻核
 const analyzeInput = () => {
-    const pron = form.pron.trim();
-    // Reset parsed components
-    parsedComponents.in = '';
-    parsedComponents.nu = '';
-    parsedComponents.co = '';
-    parsedComponents.to = '';
-
-    if (!pron) {
-        parseStatus.value = 'neutral';
-        inputDisabled.value = true;
-        return;
-    }
-
-    // 提取聲調（末尾數字）
-    const toneMatch = pron.match(toneFormat);
-    const tone = toneMatch ? toneMatch[0] : "";
-    const withoutTone = tone ? pron.slice(0, -tone.length) : pron;
-
-    // 提取聲母
-    const initialMatch = withoutTone.match(initialFormat);
-    const initial = initialMatch ? initialMatch[1] : "";
-    const afterInitial = initial ? withoutTone.slice(initial.length) : withoutTone;
-
-    // 提取韻尾
-    let coda = "";
-    let nuclei = afterInitial;
-    const codaMatch = afterInitial.match(codaFormat);
-    if (codaMatch) {
-        coda = codaMatch[1];
-        nuclei = afterInitial.slice(0, -coda.length);
-    }
-
-    // 驗證韻核
-    if (nuclei === '' && initial === '' && coda === '') {
-        parseStatus.value = 'invalid';
-        inputDisabled.value = true;
-        return;
-    }
-
-    // 檢查韻核是否有效（可能包含空格表示模糊匹配）
-    const nucleiWithoutSpace = nuclei.replace(/ /g, '');
-    if (nucleiWithoutSpace) {
-        // 驗證非空格部分是否是有效的元音組合
-        let pos = 0;
-        let validVowels = true;
-        while (pos < nucleiWithoutSpace.length) {
-            const sub = nucleiWithoutSpace.substr(pos);
-            const match = sub.match(vowelFormat);
-            if (match) {
-                pos += match[0].length;
-            } else {
-                validVowels = false;
-                break;
-            }
-        }
-        if (!validVowels) {
-            parseStatus.value = 'invalid';
-            inputDisabled.value = true;
-            return;
-        }
-    }
-
-    // 設置解析結果
-    parsedComponents.in = initial;
-    parsedComponents.nu = nuclei;
-    parsedComponents.co = coda;
-    parsedComponents.to = tone;
-
-    // 轉換為查詢參數
-    // 規則：
-    // - 空格表示模糊匹配該位置
-    // - 未輸入的組件（聲調）使用 % 模糊匹配
-    // - 已輸入的組件使用精確匹配
-    form.in = initial === ' ' ? '%' : (initial || '');
-    form.nu = nuclei.includes(' ') ? nuclei.replace(/ /g, '%') : (nuclei || '');
-    form.co = coda === ' ' ? '%' : (coda || '');
-    // 聲調：未輸入時使用 % 模糊匹配所有聲調
-    form.to = tone || '%';
-
-    parseStatus.value = 'valid';
-    inputDisabled.value = false;
+    const parsed = parsePronunciationQuery(form.pron);
+    Object.assign(parsedComponents, parsed.components);
+    Object.assign(form, parsed.query, { pron: form.pron });
+    parseStatus.value = parsed.status;
+    inputDisabled.value = !parsed.valid;
 };
 
 // 結果相關

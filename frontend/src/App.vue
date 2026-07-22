@@ -11,12 +11,33 @@ const authStore = useAuthStore()
 // 主题状态: 'light' | 'dark' | 'system'
 const themeMode = ref('system')
 const showMobileMenu = ref(false)
-const mobileMenuRef = ref(null)
+const navRootRef = ref(null)
+const openDesktopMenu = ref(null)
+const openMobileSubmenu = ref(null)
 
 const handleClickOutside = (event) => {
-    if (showMobileMenu.value && mobileMenuRef.value && !mobileMenuRef.value.contains(event.target)) {
+    if (navRootRef.value && !navRootRef.value.contains(event.target)) {
         showMobileMenu.value = false
+        openDesktopMenu.value = null
+        openMobileSubmenu.value = null
     }
+}
+
+const handleEscape = (event) => {
+    if (event.key !== 'Escape') return
+    showMobileMenu.value = false
+    openDesktopMenu.value = null
+    openMobileSubmenu.value = null
+}
+
+const closeNavigation = () => {
+    showMobileMenu.value = false
+    openDesktopMenu.value = null
+    openMobileSubmenu.value = null
+}
+
+const toggleDesktopMenu = (name) => {
+    openDesktopMenu.value = openDesktopMenu.value === name ? null : name
 }
 
 const handleBrandClick = (event, navigate) => {
@@ -94,20 +115,27 @@ onMounted(() => {
 
     // 监听点击外部关闭菜单
     document.addEventListener('click', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
 })
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside)
+    document.removeEventListener('keydown', handleEscape)
 })
 
 const menuItems = [
     { label: '檢字', path: '/' }, // Originally index.php, now Home
     { label: '檢音', path: '/pronunciation' },
     { label: '泛粵字表', path: '/sheet' },
+]
+const articleMenuItems = [
     { label: '紀文', path: '/articles' },
     { label: '地點介紹', path: '/locations' },
+]
+const toolMenuItems = [
     { label: '相似音系測試', path: '/phonology' },
 ]
+const isGroupActive = (items) => items.some(item => route.path === item.path || route.path.startsWith(`${item.path}/`))
 const externalLinks = [
     { label: 'GoT', url: 'https://got.jyutdict.org' },
     { label: '關於', url: 'https://jyutjam.org/' },
@@ -123,10 +151,10 @@ const externalLinks = [
             class="border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300 relative">
             <!-- Header Background (to prevent nested backdrop-filter bug on dropdowns) -->
             <div class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 -z-10 pointer-events-none glass-header"></div>
-            <div class="container mx-auto px-4 py-3">
+            <div ref="navRootRef" class="container mx-auto px-4 py-3">
                 <div class="flex justify-between items-center gap-2">
                     <!-- Brand container with Dropdown -->
-                    <div ref="mobileMenuRef" class="relative group flex-shrink-0">
+                    <div class="relative group flex-shrink-0">
                         <div class="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
                             <RouterLink to="/" custom v-slot="{ navigate, href }">
                                 <a :href="href" @click="handleBrandClick($event, navigate)"
@@ -155,16 +183,41 @@ const externalLinks = [
                                 <a v-if="item.external" :href="item.path"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     :class="{ 'line-through opacity-60': item.strikethrough }"
-                                    @click="showMobileMenu = false">
+                                    @click="closeNavigation">
                                     {{ item.label }}
                                 </a>
                                 <RouterLink v-else :to="item.path"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     :class="{ 'line-through opacity-60': item.strikethrough }"
                                     active-class="bg-accent/5 border-l-accent font-bold"
-                                    @click="showMobileMenu = false">
+                                    @click="closeNavigation">
                                     {{ item.label }}
                                 </RouterLink>
+                            </template>
+
+                            <div class="h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
+                            <template v-for="group in [
+                                { key: 'articles', label: '文章', items: articleMenuItems },
+                                { key: 'tools', label: '工具', items: toolMenuItems }
+                            ]" :key="group.key">
+                                <button type="button" @click="openMobileSubmenu = openMobileSubmenu === group.key ? null : group.key"
+                                    class="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 transition-colors"
+                                    :class="isGroupActive(group.items) ? 'border-accent text-accent' : 'border-transparent'"
+                                    :aria-expanded="openMobileSubmenu === group.key">
+                                    <span>{{ group.label }}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform"
+                                        :class="{ 'rotate-180': openMobileSubmenu === group.key }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div v-if="openMobileSubmenu === group.key" class="bg-slate-50/80 dark:bg-slate-900/40 py-1">
+                                    <RouterLink v-for="child in group.items" :key="child.path" :to="child.path"
+                                        class="block pl-8 pr-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-accent border-l-4 border-transparent hover:border-accent transition-colors"
+                                        active-class="text-accent border-l-accent font-bold"
+                                        @click="closeNavigation">
+                                        {{ child.label }}
+                                    </RouterLink>
+                                </div>
                             </template>
 
                             <!-- Mobile Only Links (shown inside menu when screen is small) -->
@@ -172,18 +225,18 @@ const externalLinks = [
                                 <div class="h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
                                 <a href="https://got.jyutdict.org" target="_blank"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
-                                    @click="showMobileMenu = false">
+                                    @click="closeNavigation">
                                     GoT
                                 </a>
                                 <a href="https://jyutjam.org/" target="_blank"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
-                                    @click="showMobileMenu = false">
+                                    @click="closeNavigation">
                                     關於
                                 </a>
                                 <RouterLink to="/about"
                                     class="block px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent hover:translate-x-1 transition-all"
                                     active-class="bg-accent/5 border-l-accent font-bold"
-                                    @click="showMobileMenu = false">
+                                    @click="closeNavigation">
                                     說明
                                 </RouterLink>
                             </div>
@@ -219,6 +272,32 @@ const externalLinks = [
                                         item.label }}
                                 </RouterLink>
                             </template>
+                            <div v-for="group in [
+                                    { key: 'articles', label: '文章', items: articleMenuItems },
+                                    { key: 'tools', label: '工具', items: toolMenuItems }
+                                ]" :key="group.key" class="relative" data-nav-dropdown>
+                                <button type="button" @click="toggleDesktopMenu(group.key)"
+                                    class="nav-link whitespace-nowrap flex items-center gap-1"
+                                    :class="{ active: isGroupActive(group.items) }"
+                                    :aria-expanded="openDesktopMenu === group.key">
+                                    <span>{{ group.label }}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 transition-transform"
+                                        :class="{ 'rotate-180': openDesktopMenu === group.key }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <Transition name="dropdown">
+                                    <div v-if="openDesktopMenu === group.key"
+                                        class="absolute left-0 top-full mt-2 min-w-44 bg-white/95 dark:bg-slate-800/95 border border-slate-200 dark:border-slate-700 py-2 shadow-[4px_4px_0_rgba(0,0,0,0.08)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] glass-dropdown z-[60]">
+                                        <RouterLink v-for="child in group.items" :key="child.path" :to="child.path"
+                                            class="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border-l-4 border-transparent hover:border-accent whitespace-nowrap transition-colors"
+                                            active-class="text-accent border-l-accent font-bold bg-accent/5"
+                                            @click="closeNavigation">
+                                            {{ child.label }}
+                                        </RouterLink>
+                                    </div>
+                                </Transition>
+                            </div>
                             <div class="h-4 w-px bg-gray-300 dark:bg-slate-700 mx-1"></div>
                             <!-- Desktop External Links -->
                             <template v-for="link in externalLinks" :key="link.label">

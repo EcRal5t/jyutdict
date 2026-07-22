@@ -24,11 +24,31 @@ apiClient.interceptors.request.use((config) => {
 // 模块级缓存：文章地点列表（整个 session 只请求一次）
 let articleLocationSetCache = null;
 let articleLocationSetPromise = null;
+const articleExistsCache = new Map();
+const articleExistsPromises = new Map();
 
 export default {
     // 获取单个地点的文章
-    getArticle(locationName) {
-        return apiClient.get('/', { params: { location_name: locationName } });
+    getArticle(locationName, type = 'location') {
+        return apiClient.get('/', { params: { location_name: locationName, type } });
+    },
+    // 只查询存在性，不下载正文；同一地点及类型在本次会话内只请求一次。
+    async checkArticle(locationName, type = 'location') {
+        const key = `${type}:${locationName}`;
+        if (articleExistsCache.has(key)) return articleExistsCache.get(key);
+        if (articleExistsPromises.has(key)) return articleExistsPromises.get(key);
+
+        const request = apiClient.get('/', {
+            params: { location_name: locationName, type, exists: 1 }
+        }).then((res) => {
+            const exists = Boolean(res.data?.exists);
+            articleExistsCache.set(key, exists);
+            return exists;
+        }).finally(() => {
+            articleExistsPromises.delete(key);
+        });
+        articleExistsPromises.set(key, request);
+        return request;
     },
     // 保存文章（创建或更新）
     saveArticle(data) {
@@ -83,6 +103,7 @@ export default {
     // 清除缓存（用于文章更新后刷新）
     clearArticleLocationCache() {
         articleLocationSetCache = null;
+        articleExistsCache.clear();
     },
     // 【新增】获取可编辑地点列表
     getAvailableLocations(search = '') {

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, reactive, onMounted } from 'vue';
+import { computed, onBeforeUnmount, reactive, ref } from 'vue';
 import { Jyutping } from '@/utils/jyutping.js';
 import articlesApi from '@/api/articles.js';
 import LocationArticleModal from '@/components/LocationArticleModal.vue';
@@ -12,40 +12,68 @@ const props = defineProps({
   showIPA: {
     type: Boolean,
     default: false
+  },
+  compact: {
+    type: Boolean,
+    default: false
   }
 });
 
-// ===== 地点文章相关 =====
-const articleLocationSet = ref(new Set()) // 存储有文章的地点名称
 const modalLocationName = ref('')
 const showModal = ref(false)
+const hoveredLocationKey = ref(null)
+const popoverPlacement = ref('left')
+const articleState = reactive({})
+let hideTimer = null
 
-// 加载有文章的地点列表
-const loadArticleLocations = async () => {
-    try {
-        const res = await articlesApi.getArticleList()
-        const articles = res.data.articles || []
-        const set = new Set()
-        articles.forEach(a => {
-            set.add(a.location_name)
-        })
-        articleLocationSet.value = set
-    } catch (e) {
-        // 静默失败，不影响主功能
+const getArticleKey = (location) => `location:${location.articleName}`
+
+const updatePopoverPlacement = (trigger) => {
+    const anchor = trigger?.parentElement
+    if (!anchor) return
+
+    const rect = anchor.getBoundingClientRect()
+    const requiredSpace = 348
+    const viewportPadding = 16
+    const leftSpace = rect.left - viewportPadding
+    const rightSpace = window.innerWidth - rect.right - viewportPadding
+
+    if (leftSpace >= requiredSpace) {
+        popoverPlacement.value = 'left'
+    } else if (rightSpace >= requiredSpace) {
+        popoverPlacement.value = 'right'
+    } else {
+        popoverPlacement.value = 'below'
     }
 }
 
-// 检查某地点是否有文章
-const hasArticle = (cityName, districtName) => {
-    const name = cityName + (districtName || '')
-    return articleLocationSet.value.has(name)
+const showLocationDetails = async (location, event = null) => {
+    if (hideTimer) clearTimeout(hideTimer)
+    if (event?.currentTarget) updatePopoverPlacement(event.currentTarget)
+    hoveredLocationKey.value = location.key
+
+    const articleKey = getArticleKey(location)
+    if (articleState[articleKey]) return
+    articleState[articleKey] = 'loading'
+    try {
+        articleState[articleKey] = await articlesApi.checkArticle(location.articleName)
+            ? 'available'
+            : 'missing'
+    } catch (e) {
+        articleState[articleKey] = 'missing'
+    }
 }
 
-// 点击地点名称
-const openArticleModal = (cityName, districtName) => {
-    const name = cityName + (districtName || '')
-    if (!articleLocationSet.value.has(name)) return
-    modalLocationName.value = name
+const scheduleHideLocationDetails = () => {
+    if (hideTimer) clearTimeout(hideTimer)
+    hideTimer = setTimeout(() => {
+        hoveredLocationKey.value = null
+    }, 500)
+}
+
+const openArticleModal = (location) => {
+    if (articleState[getArticleKey(location)] !== 'available') return
+    modalLocationName.value = location.articleName
     showModal.value = true
 }
 
@@ -53,39 +81,10 @@ const closeModal = () => {
     showModal.value = false
 }
 
-onMounted(() => {
-    loadArticleLocations()
-})
-
-// State for expanding long notes (using Set for ID tracking)
-// We use CSS hover for visual expansion, but maybe user wants it to stick?
-// "Mouse hover ... mutations". The user wants gradient/animation.
-// We will use CSS transitions on max-height.
-
-
-// Groups Logic
 const tableRows = computed(() => {
-    const groups = [];
-    let lastGroupKey = null;
-    let currentGroup = null;
-
-    props.data.forEach(loc => {
-        const city = loc.city || '';
-        const district = loc.district || '';
-        const groupKey = city + '|' + district;
-
-        if (groupKey !== lastGroupKey) {
-            currentGroup = {
-                cityName: city,
-                districtName: district,
-                division: loc.division,
-                locations: [],
-                totalSenses: 0
-            };
-            groups.push(currentGroup);
-            lastGroupKey = groupKey;
-        }
-
+    const rows = [];
+    let globalRowIndex = 0;
+    props.data.forEach((loc, locIndex) => {
         const jpps = loc['粵拼'] || [];
         const ipas = loc['IPA'] || [];
         const notes = loc['注釋'] || [];
@@ -149,42 +148,22 @@ const tableRows = computed(() => {
             });
         });
 
-        currentGroup.locations.push({
-            name: loc.division || '地點',
-            color: loc.color || '#999999',
-            senses: senses,
-            totalSenses: senses.length
-        });
-
-        currentGroup.totalSenses += senses.length;
-    });
-
-    const rows = [];
-    let globalRowIndex = 0;
-
-    groups.forEach(group => {
-        group.locations.forEach((loc, locIdx) => {
-            loc.senses.forEach((sense, senseIdx) => {
-                const row = {
-                    id: globalRowIndex++,
-                    
-                    // City Column
-                    cityData: (locIdx === 0 && senseIdx === 0) ? {
-                        cityName: group.cityName,
-                        districtName: group.districtName,
-                        span: group.totalSenses
-                    } : null,
-
-                    // Location Column
-                    locData: (senseIdx === 0) ? {
-                        name: loc.name,
-                        color: getColors(loc.color),
-                        span: loc.totalSenses
-                    } : null,
-                    prons: sense.prons,
-                    note: sense.note,
-                };
-                rows.push(row);
+        const articleName = `${loc.city || ''}${loc.district || ''}`;
+        senses.forEach((sense, senseIndex) => {
+            rows.push({
+                id: globalRowIndex++,
+                locData: senseIndex === 0 ? {
+                    key: loc.id ?? `${articleName}-${locIndex}`,
+                    articleName,
+                    cityName: loc.city || '',
+                    districtName: loc.district || '',
+                    detailedName: loc.detailedName || '',
+                    sheetInfo: loc.sheetInfo || '',
+                    color: getColors(loc.color || '#999999'),
+                    span: senses.length
+                } : null,
+                prons: sense.prons,
+                note: sense.note,
             });
         });
     });
@@ -201,31 +180,43 @@ const getColors = (colorStr) => {
         .filter(c => c && c !== '#000000');
 };
 
+onBeforeUnmount(() => {
+    if (hideTimer) clearTimeout(hideTimer)
+})
+
 </script>
 
 <template>
-  <div v-if="tableRows.length > 0" class="mb-4 bg-white/50 dark:bg-slate-800/50 rounded lg:rounded-lg overflow-hidden text-md border border-slate-200 dark:border-slate-700">
+  <div v-if="tableRows.length > 0"
+      class="bg-white/50 dark:bg-slate-800/50 rounded lg:rounded-lg overflow-visible text-md border border-slate-200 dark:border-slate-700"
+      :class="compact ? 'mb-0' : 'mb-4'">
       <table class="w-full text-left border-collapse text-sm">
           <thead class="bg-gray-100/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-slate-700 backdrop-blur-sm">
               <tr>
-                  <th class="py-1 px-2 font-bold text-slate-700 dark:text-slate-300 w-[35%] border-r border-slate-200 dark:border-slate-700 whitespace-nowrap text-center">
+                  <th class="py-1 px-2 font-bold text-slate-700 dark:text-slate-300 w-[34%] md:w-[22%] xl:w-[18%] border-r border-slate-200 dark:border-slate-700 whitespace-nowrap text-center">
                       地點
                   </th>
-                  <th class="py-1 px-2 w-[30%] border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center">
+                  <th class="py-1 px-2 w-[32%] md:w-[28%] border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center">
                       讀音
                   </th>
-                  <th class="py-1 px-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center">
+                  <th class="relative py-1 px-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center">
                       備註
+                      <span class="absolute right-1 top-1/2 -translate-y-1/2">
+                          <slot name="actions"></slot>
+                      </span>
                   </th>
               </tr>
           </thead>
           <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-              <tr v-for="row in tableRows" :key="row.id" class="hover:bg-white/60 dark:hover:bg-slate-700/40 transition-colors group">
+              <tr v-for="row in tableRows" :key="row.id"
+                  class="hover:bg-white/60 dark:hover:bg-slate-700/40 transition-colors group"
+                  :class="{ 'relative z-[80]': row.locData && hoveredLocationKey === row.locData.key }">
                   
                   <!-- Location Cell -->
                   <td v-if="row.locData" 
                       :rowspan="row.locData.span" 
                       class="relative py-0.5 px-2 align-middle border-r border-slate-200 dark:border-slate-700 bg-white/40 dark:bg-slate-800/40"
+                      :class="hoveredLocationKey === row.locData.key ? 'z-[90]' : 'z-0'"
                   >
                       <!-- Absolute Color Blocks on LEFT (Horizontal Stack) -->
                       <div class="absolute left-0 top-0 bottom-0 flex flex-row items-center h-full z-0 opacity-80">
@@ -236,24 +227,53 @@ const getColors = (colorStr) => {
                           ></div>
                       </div>
 
-                      <!-- Centered Text -->
-                      <div class="relative z-10 w-full text-center leading-tight px-2 drop-shadow-sm shadow-black"
-                           :class="{ 'cursor-pointer': hasArticle(row.cityData.cityName, row.cityData.districtName) }"
-                           @click="openArticleModal(row.cityData.cityName, row.cityData.districtName)">
-                          <span class="text-base text-slate-800 dark:text-slate-200"
-                                :class="{ 'underline decoration-accent/40 decoration-1 underline-offset-2': hasArticle(row.cityData.cityName, row.cityData.districtName) }">
-                              {{ row.cityData.cityName }}
-                          </span>
-                          <span v-if="row.cityData.districtName"
-                                class="text-sm text-neutral-700 dark:text-neutral-300 p-0.5"
-                                :class="{ 'underline decoration-accent/40 decoration-1 underline-offset-2': hasArticle(row.cityData.cityName, row.cityData.districtName) }">
-                              {{ row.cityData.districtName }}
-                          </span>
+                          <!-- 地名及按需加载的二级信息卡 -->
+                          <div class="relative z-10 w-full text-center leading-tight px-2 drop-shadow-sm shadow-black">
+                              <button type="button" class="inline-block"
+                              @mouseenter="showLocationDetails(row.locData, $event)" @mouseleave="scheduleHideLocationDetails"
+                              @focus="showLocationDetails(row.locData, $event)" @blur="scheduleHideLocationDetails"
+                              @click="showLocationDetails(row.locData, $event)" aria-label="顯示地點詳細信息">
+                              <span class="text-base text-slate-800 dark:text-slate-200 cursor-help">
+                                  {{ row.locData.cityName }}
+                              </span>
+                              <span v-if="row.locData.districtName"
+                                    class="text-sm text-neutral-700 dark:text-neutral-300 p-0.5 cursor-help">
+                                  {{ row.locData.districtName }}
+                              </span>
+                          </button>
+
+                          <Transition name="location-card">
+                              <div v-if="hoveredLocationKey === row.locData.key"
+                                  class="location-popover absolute z-[100] pointer-events-auto w-80 max-w-[calc(100vw-2rem)] border-2 border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4 text-left shadow-[6px_6px_0_rgba(0,0,0,0.12)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.35)]"
+                                  :class="`location-popover--${popoverPlacement}`"
+                                  @mouseenter="showLocationDetails(row.locData)"
+                                  @mouseleave="scheduleHideLocationDetails">
+                                  <div class="font-bold text-slate-900 dark:text-slate-100 mb-2">
+                                      {{ row.locData.detailedName || row.locData.articleName }}
+                                  </div>
+                                  <div class="min-h-16 border-l-4 border-accent/70 bg-slate-50 dark:bg-slate-900/60 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">{{ row.locData.sheetInfo || '暫無地點詳細信息' }}</div>
+                                  <div class="flex gap-2 mt-3">
+                                      <button type="button"
+                                          class="px-3 py-1.5 text-xs font-bold border transition-colors"
+                                          :disabled="articleState[getArticleKey(row.locData)] !== 'available'"
+                                          :class="articleState[getArticleKey(row.locData)] === 'available'
+                                              ? 'border-accent text-accent hover:bg-accent hover:text-white'
+                                              : 'border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed opacity-70'"
+                                          @click="openArticleModal(row.locData)">
+                                          地點介紹
+                                      </button>
+                                      <button type="button" disabled title="音系內容尚未開放"
+                                          class="px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed opacity-70">
+                                          音系
+                                      </button>
+                                  </div>
+                              </div>
+                          </Transition>
                       </div>
                   </td>
 
                   <!-- Pronunciation -->
-                  <td class="py-0.5 px-4 align-middle border-r border-slate-200 dark:border-slate-700 relative"
+                  <td class="py-0.5 px-2 sm:px-4 align-middle border-r border-slate-200 dark:border-slate-700 relative"
                       :colspan="(!row.note) ? 2 : 1"
                   >
                         <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -275,7 +295,7 @@ const getColors = (colorStr) => {
 
                   <!-- Note -->
                   <td v-if="row.note" 
-                      class="py-0.5 px-2 text-slate-500 dark:text-slate-400 align-middle leading-tight max-w-[150px] relative group/note"
+                      class="py-0.5 px-2 text-slate-500 dark:text-slate-400 align-middle leading-tight relative group/note"
                   >
                       <!-- 
                         Using max-height transition. 
@@ -306,3 +326,47 @@ const getColors = (colorStr) => {
           @close="closeModal" />
   </Teleport>
 </template>
+
+<style scoped>
+.location-popover {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.location-popover--left {
+    right: calc(100% + 0.75rem);
+}
+
+.location-popover--right {
+    left: calc(100% + 0.75rem);
+}
+
+.location-popover--below {
+    left: 0;
+    top: calc(100% + 0.75rem);
+    transform: none;
+}
+
+.location-card-enter-active,
+.location-card-leave-active {
+    transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.location-card-enter-from.location-popover--left,
+.location-card-leave-to.location-popover--left {
+    opacity: 0;
+    transform: translate(-0.35rem, -50%);
+}
+
+.location-card-enter-from.location-popover--right,
+.location-card-leave-to.location-popover--right {
+    opacity: 0;
+    transform: translate(0.35rem, -50%);
+}
+
+.location-card-enter-from.location-popover--below,
+.location-card-leave-to.location-popover--below {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+}
+</style>

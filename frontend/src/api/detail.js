@@ -17,12 +17,12 @@ export default {
         });
     },
 
-    // Get character details
-    // params: chara (string)
-    getCharacterDetail(chara) {
+    // Get character details; areas is an optional list of i_area_list ids for location mode.
+    getCharacterDetail(chara, areas = []) {
         return apiClient.get('/detail', {
             params: {
-                chara
+                chara,
+                ...(areas.length ? { areas: areas.join(',') } : {})
             }
         });
     },
