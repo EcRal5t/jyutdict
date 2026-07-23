@@ -190,16 +190,19 @@ onBeforeUnmount(() => {
   <div v-if="tableRows.length > 0"
       class="bg-white/50 dark:bg-slate-800/50 rounded lg:rounded-lg overflow-visible text-md border border-slate-200 dark:border-slate-700"
       :class="compact ? 'mb-0' : 'mb-4'">
-      <table class="w-full text-left border-collapse text-sm">
+      <table class="w-full text-left border-collapse text-sm" :class="{ 'table-fixed': !compact }">
           <thead class="bg-gray-100/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-slate-700 backdrop-blur-sm">
               <tr>
-                  <th class="py-1 px-2 font-bold text-slate-700 dark:text-slate-300 w-[34%] md:w-[22%] xl:w-[18%] border-r border-slate-200 dark:border-slate-700 whitespace-nowrap text-center">
+                  <th class="py-1 px-2 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap text-center"
+                      :class="compact ? 'w-[34%] md:w-[22%] xl:w-[18%]' : 'w-[36%]'">
                       地點
                   </th>
-                  <th class="py-1 px-2 w-[32%] md:w-[28%] border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center">
+                  <th class="py-1 px-2 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center"
+                      :class="compact ? 'w-[32%] md:w-[28%]' : 'w-[38%]'">
                       讀音
                   </th>
-                  <th class="relative py-1 px-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center">
+                  <th class="relative py-1 px-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-center"
+                      :class="compact ? '' : 'w-[26%]'">
                       備註
                       <span class="absolute right-1 top-1/2 -translate-y-1/2">
                           <slot name="actions"></slot>
