@@ -131,6 +131,7 @@ const menuItems = [
 const articleMenuItems = [
     { label: '紀文', path: '/articles' },
     { label: '地點介紹', path: '/locations' },
+    { label: '音系', path: '/location-phonology' },
 ]
 const toolMenuItems = [
     { label: '相似音系測試', path: '/phonology' },

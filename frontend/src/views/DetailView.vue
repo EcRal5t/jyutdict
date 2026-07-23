@@ -125,7 +125,8 @@ const loadData = async (queryChara, areaIds = []) => {
                             latitude: headerInfo.latitude,
                             longitude: headerInfo.longitude,
                             detailedName: headerInfo.detailed_name || '',
-                            sheetInfo: headerInfo.sheet_info || ''
+                            sheetInfo: headerInfo.sheet_info || '',
+                            hasPhonology: Boolean(headerInfo.has_phonology)
                         };
                     });
                     // Use legacy key 'location' for compatibility with template or update template?

@@ -17,7 +17,8 @@ const error = ref('')
 let sortable = null
 
 const emptyForm = () => ({
-    sheetname: '', first: '', second: '', third: '', longitude: 0, latitude: 0, color: '#CCCCCC',
+    sheetname: '', first: '', second: '', third: '', detailed_name: '', sheet_author: '',
+    longitude: 0, latitude: 0, color: '#CCCCCC',
 })
 const form = ref(emptyForm())
 
@@ -118,6 +119,8 @@ const openEdit = (item) => {
         first: item.first,
         second: item.second,
         third: item.third,
+        detailed_name: item.detailed_name || '',
+        sheet_author: item.sheet_author || '',
         longitude: item.longitude,
         latitude: item.latitude,
         color: item.color,
@@ -218,6 +221,8 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
             <input v-model.trim="form.first" placeholder="一级分类" class="p-2 border dark:bg-slate-900" />
             <input v-model.trim="form.second" placeholder="二级地名" class="p-2 border dark:bg-slate-900" />
             <input v-model.trim="form.third" placeholder="三级地名" class="p-2 border dark:bg-slate-900" />
+            <input v-model.trim="form.detailed_name" placeholder="完整地點" class="p-2 border dark:bg-slate-900 sm:col-span-2" />
+            <textarea v-model.trim="form.sheet_author" rows="2" placeholder="字表作者／署名" class="p-2 border dark:bg-slate-900 sm:col-span-2"></textarea>
             <input v-model.number="form.longitude" type="number" step="any" required placeholder="经度" class="p-2 border dark:bg-slate-900" />
             <input v-model.number="form.latitude" type="number" step="any" required placeholder="纬度" class="p-2 border dark:bg-slate-900" />
             <label class="flex items-center gap-2 p-2 border"><input v-model="form.color" type="color" /> {{ form.color }}</label>
@@ -236,7 +241,13 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
                         <td class="p-2"><span class="inline-block w-3 h-3 mr-1" :style="{background:item.color}"></span>{{ locationName(item) }}</td>
                         <td class="p-2 font-mono text-xs">{{ item.sheetname }}</td>
                         <td class="p-2"><span :class="item.archived_at ? 'text-slate-400' : item.is_visible ? 'text-green-600' : 'text-amber-600'">{{ statusLabel(item) }}</span></td>
-                        <td class="p-2 text-xs">{{ item.release_no ? `r${item.release_no} / ${item.entry_count}` : '—' }}</td>
+                        <td class="p-2 text-xs">
+                            <div>{{ item.release_no ? `r${item.release_no} / ${item.entry_count}` : '—' }}</div>
+                            <div v-if="item.source_date" class="text-slate-400">{{ item.source_date }} · {{ item.syllable_count ?? '—' }} 音節</div>
+                            <div v-if="item.current_release_id" :class="item.has_current_phonology ? 'text-emerald-600' : 'text-amber-600'">
+                                音系：{{ item.has_current_phonology ? '已同步' : '未生成／過期' }}
+                            </div>
+                        </td>
                         <td class="p-2 text-xs" :class="item.queue_status === 'failed' ? 'text-red-600' : ''">{{ item.queue_status || '—' }}</td>
                         <td class="p-2"><div class="flex flex-wrap gap-2 text-xs">
                             <button @click="openEdit(item)" class="text-blue-600">編輯</button>

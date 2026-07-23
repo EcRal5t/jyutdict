@@ -8,7 +8,7 @@ const root = resolve(__dirname, '..', '..')
 const dist = resolve(__dirname, '..', 'dist')
 
 // 清理根目录旧文件
-const toDelete = ['assets', 'favicon.ico', 'index.html']
+const toDelete = ['assets', 'data', 'favicon.ico', 'index.html']
 for (const f of toDelete) {
   const p = resolve(root, f)
   if (existsSync(p)) await rm(p, { recursive: true })
@@ -18,6 +18,9 @@ for (const f of toDelete) {
 await cp(resolve(dist, 'index.html'), resolve(root, 'index.html'))
 await cp(resolve(dist, 'favicon.ico'), resolve(root, 'favicon.ico'))
 await cp(resolve(dist, 'assets'), resolve(root, 'assets'), { recursive: true })
+if (existsSync(resolve(dist, 'data'))) {
+  await cp(resolve(dist, 'data'), resolve(root, 'data'), { recursive: true })
+}
 
 // 清理 dist 目录
 if (existsSync(dist)) await rm(dist, { recursive: true })

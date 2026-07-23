@@ -75,8 +75,9 @@ function jyutdictMaintenanceAudit(
 }
 
 function jyutdictMaintenanceGetArea(PDO $dbh, $areaId, $forUpdate = false) {
-    $sql = "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`,
-                   `current_release_id`, `color`, `is_visible`, `sort_order`,
+    $sql = "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`,
+                   `detailed_name`, `sheet_author`, `sheetname`,
+                   `current_release_id`, `current_phonology_id`, `color`, `is_visible`, `sort_order`,
                    `archived_at`, `archived_by`
             FROM `i_area_list` WHERE `id` = ?" . ($forUpdate ? ' FOR UPDATE' : '');
     $stmt = $dbh->prepare($sql);
@@ -92,6 +93,8 @@ function jyutdictMaintenanceGetArea(PDO $dbh, $areaId, $forUpdate = false) {
     $area['sort_order'] = (int)$area['sort_order'];
     $area['current_release_id'] = $area['current_release_id'] === null
         ? null : (int)$area['current_release_id'];
+    $area['current_phonology_id'] = $area['current_phonology_id'] === null
+        ? null : (int)$area['current_phonology_id'];
     $area['archived_by'] = $area['archived_by'] === null ? null : (int)$area['archived_by'];
     return $area;
 }
@@ -115,6 +118,20 @@ function jyutdictMaintenanceValidateMetadata(array $input, array $base = []) {
             }
             $result[$field] = $value;
         }
+    }
+    if (array_key_exists('detailed_name', $input)) {
+        $value = trim((string)$input['detailed_name']);
+        if (mb_strlen($value, 'UTF-8') > 255) {
+            throw new RuntimeException('detailed_name is too long');
+        }
+        $result['detailed_name'] = $value;
+    }
+    if (array_key_exists('sheet_author', $input)) {
+        $value = trim((string)$input['sheet_author']);
+        if (mb_strlen($value, 'UTF-8') > 2000) {
+            throw new RuntimeException('sheet_author is too long');
+        }
+        $result['sheet_author'] = $value;
     }
     foreach (['longitude', 'latitude'] as $field) {
         if (array_key_exists($field, $input)) {

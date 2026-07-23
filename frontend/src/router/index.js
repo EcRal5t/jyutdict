@@ -64,6 +64,11 @@ const router = createRouter({
             name: 'location-article',
             component: () => import('../views/LocationArticleView.vue'),
         },
+        {
+            path: '/location-phonology/:areaId?',
+            name: 'location-phonology',
+            component: () => import('../views/LocationPhonologyView.vue'),
+        },
 
         // ===== 404 保持最后 =====
         {

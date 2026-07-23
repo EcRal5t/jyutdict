@@ -85,4 +85,50 @@ export default {
     getMaintenanceAudit(params = {}) {
         return apiClient.get('/audit', { params });
     },
+    getCommonImport(params = {}) {
+        return apiClient.get('/common-import', { params });
+    },
+    createCommonImport(data) {
+        return apiClient.post('/common-import', { action: 'create', ...data });
+    },
+    uploadCommonImportChunk(jobId, chunkNo, payload, hash) {
+        return apiClient.put('/common-import', payload, {
+            params: { job: jobId, chunk: chunkNo },
+            headers: {
+                'Content-Type': 'application/gzip',
+                'X-Chunk-SHA256': hash,
+            },
+            timeout: 60000,
+        });
+    },
+    publishCommonImport(jobId) {
+        return apiClient.post('/common-import', { action: 'publish', job_id: jobId }, {
+            timeout: 120000,
+        });
+    },
+    abortCommonImport(jobId) {
+        return apiClient.delete('/common-import', { data: { job_id: jobId } });
+    },
+    getCommonRules() {
+        return apiClient.get('/common-rules');
+    },
+    saveCommonRules(version, payload) {
+        return apiClient.post('/common-rules', { version, payload });
+    },
+    getPhonologyRebuildSource(areaId, after = 0, limit = 1500) {
+        return apiClient.get('/phonology-rebuild', {
+            params: { area_id: areaId, after, limit },
+            timeout: 60000,
+        });
+    },
+    publishPhonology(areaId, releaseId, payload, hash) {
+        return apiClient.put('/phonology-rebuild', payload, {
+            params: { area_id: areaId, release_id: releaseId },
+            headers: {
+                'Content-Type': 'application/gzip',
+                'X-Payload-SHA256': hash,
+            },
+            timeout: 120000,
+        });
+    },
 };

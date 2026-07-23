@@ -5,6 +5,9 @@ import adminApi from '@/api/admin.js'
 import AdminLocations from '@/components/admin/AdminLocations.vue'
 import AdminMaintenance from '@/components/admin/AdminMaintenance.vue'
 import AdminAudit from '@/components/admin/AdminAudit.vue'
+import AdminCommonImport from '@/components/admin/AdminCommonImport.vue'
+import AdminCommonRules from '@/components/admin/AdminCommonRules.vue'
+import AdminPhonology from '@/components/admin/AdminPhonology.vue'
 
 const authStore = useAuthStore()
 
@@ -133,6 +136,21 @@ onMounted(() => {
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'locations' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 地點目錄
+            </button>
+            <button v-if="authStore.isOwner" @click="activeTab = 'common-import'"
+                class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
+                :class="activeTab === 'common-import' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
+                字表導入
+            </button>
+            <button v-if="authStore.isOwner" @click="activeTab = 'phonology-rebuild'"
+                class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
+                :class="activeTab === 'phonology-rebuild' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
+                音系重建
+            </button>
+            <button v-if="authStore.isOwner" @click="activeTab = 'common-rules'"
+                class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
+                :class="activeTab === 'common-rules' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
+                轉寫規則
             </button>
             <button @click="activeTab = 'maintenance'"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
@@ -296,6 +314,9 @@ onMounted(() => {
         </div>
 
         <AdminLocations v-if="activeTab === 'locations'" />
+        <AdminCommonImport v-if="authStore.isOwner && activeTab === 'common-import'" />
+        <AdminPhonology v-if="authStore.isOwner && activeTab === 'phonology-rebuild'" />
+        <AdminCommonRules v-if="authStore.isOwner && activeTab === 'common-rules'" />
         <AdminMaintenance v-if="activeTab === 'maintenance'" />
         <AdminAudit v-if="activeTab === 'audit'" />
     </div>

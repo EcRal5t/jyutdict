@@ -47,6 +47,7 @@ ErrorDocument 404 /index.html
   # API v1.0
   RewriteRule ^api/v1\.0/sheet$ api/v1.0/sheet.php [L]
   RewriteRule ^api/v1\.0/detail$ api/v1.0/detail.php [L]
+  RewriteRule ^api/v1\.0/phonology$ api/v1.0/phonology.php [L]
   RewriteRule ^api/v1\.0/articles/about$ api/v1.0/articles/about.php [L]
   RewriteRule ^api/v1\.0/articles$ api/v1.0/articles/index.php [L]
   RewriteRule ^api/v1\.0/comments/char$ api/v1.0/comments/char.php [L]
@@ -58,10 +59,13 @@ ErrorDocument 404 /index.html
 
   # API v1.0 Admin
   RewriteRule ^api/v1\.0/admin/audit$ api/v1.0/admin/audit.php [L]
+  RewriteRule ^api/v1\.0/admin/common-import$ api/v1.0/admin/common-import.php [L]
+  RewriteRule ^api/v1\.0/admin/common-rules$ api/v1.0/admin/common-rules.php [L]
   RewriteRule ^api/v1\.0/admin/editors$ api/v1.0/admin/editors.php [L]
   RewriteRule ^api/v1\.0/admin/location-actions$ api/v1.0/admin/location-actions.php [L]
   RewriteRule ^api/v1\.0/admin/locations$ api/v1.0/admin/locations.php [L]
   RewriteRule ^api/v1\.0/admin/maintenance$ api/v1.0/admin/maintenance.php [L]
+  RewriteRule ^api/v1\.0/admin/phonology-rebuild$ api/v1.0/admin/phonology-rebuild.php [L]
   RewriteRule ^api/v1\.0/admin/users$ api/v1.0/admin/users.php [L]
 
   # Auth API

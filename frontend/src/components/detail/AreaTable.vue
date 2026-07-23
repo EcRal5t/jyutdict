@@ -154,11 +154,13 @@ const tableRows = computed(() => {
                 id: globalRowIndex++,
                 locData: senseIndex === 0 ? {
                     key: loc.id ?? `${articleName}-${locIndex}`,
+                    id: loc.id,
                     articleName,
                     cityName: loc.city || '',
                     districtName: loc.district || '',
                     detailedName: loc.detailedName || '',
                     sheetInfo: loc.sheetInfo || '',
+                    hasPhonology: Boolean(loc.hasPhonology),
                     color: getColors(loc.color || '#999999'),
                     span: senses.length
                 } : null,
@@ -265,7 +267,12 @@ onBeforeUnmount(() => {
                                           @click="openArticleModal(row.locData)">
                                           地點介紹
                                       </button>
-                                      <button type="button" disabled title="音系內容尚未開放"
+                                      <RouterLink v-if="row.locData.hasPhonology"
+                                          :to="{ name: 'location-phonology', params: { areaId: row.locData.id } }"
+                                          class="px-3 py-1.5 text-xs font-bold border border-accent text-accent hover:bg-accent hover:text-white">
+                                          音系
+                                      </RouterLink>
+                                      <button v-else type="button" disabled title="此地點尚未生成音系表"
                                           class="px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed opacity-70">
                                           音系
                                       </button>

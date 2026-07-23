@@ -13,10 +13,12 @@
     "axios": "^1.6.8",
     "dompurify": "^3.3.3",
     "marked": "^17.0.1",
+    "opencc-js": "^1.0.5",
     "pinia": "^3.0.4",
     "sortablejs": "^1.15.6",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
