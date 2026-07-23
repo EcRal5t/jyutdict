@@ -62,14 +62,20 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($method === 'GET') {
     $rows = $dbh->query(
         "SELECT a.`id`, a.`longitude`, a.`latitude`, a.`first`, a.`second`, a.`third`,
-                a.`sheetname`, a.`current_release_id`, a.`color`, a.`is_visible`,
+                a.`detailed_name`, a.`sheet_author`, a.`sheetname`,
+                a.`current_release_id`, a.`current_phonology_id`, a.`color`, a.`is_visible`,
                 a.`sort_order`, a.`archived_at`, a.`archived_by`,
-                r.`release_no`, r.`entry_count`, r.`character_count`, r.`published_at`,
+                r.`release_no`, r.`source_filename`, r.`source_date`, r.`source_sheet`,
+                r.`entry_count`, r.`character_count`, r.`syllable_count`,
+                r.`toneless_syllable_count`, r.`skipped_row_count`, r.`published_at`,
+                IF(p.`id` IS NOT NULL AND p.`source_release_id` = a.`current_release_id`, 1, 0)
+                  AS `has_current_phonology`,
                 q.`status` AS `queue_status`, q.`requested_generation`, q.`processed_generation`,
                 q.`attempt_count`, q.`requested_at`, q.`completed_at`, q.`last_error`,
                 IF(t.`TABLE_NAME` IS NULL, 0, 1) AS `physical_table_exists`
          FROM `i_area_list` AS a
          LEFT JOIN `common_releases` AS r ON r.`id` = a.`current_release_id`
+         LEFT JOIN `phonology_reports` AS p ON p.`id` = a.`current_phonology_id`
          LEFT JOIN `common_sync_queue` AS q ON q.`area_id` = a.`id`
          LEFT JOIN information_schema.TABLES AS t
            ON t.`TABLE_SCHEMA` = DATABASE() AND t.`TABLE_NAME` = a.`sheetname`
@@ -78,12 +84,15 @@ if ($method === 'GET') {
     )->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as &$row) {
         foreach (['id', 'is_visible', 'sort_order', 'release_no', 'entry_count', 'character_count',
+                  'syllable_count', 'toneless_syllable_count', 'skipped_row_count',
+                  'has_current_phonology',
                   'requested_generation', 'processed_generation', 'attempt_count', 'physical_table_exists'] as $field) {
             $row[$field] = $row[$field] === null ? null : (int)$row[$field];
         }
         $row['longitude'] = (float)$row['longitude'];
         $row['latitude'] = (float)$row['latitude'];
         $row['current_release_id'] = $row['current_release_id'] === null ? null : (int)$row['current_release_id'];
+        $row['current_phonology_id'] = $row['current_phonology_id'] === null ? null : (int)$row['current_phonology_id'];
         $row['archived_by'] = $row['archived_by'] === null ? null : (int)$row['archived_by'];
     }
     unset($row);
@@ -108,6 +117,7 @@ try {
         }
         $metadata = jyutdictMaintenanceValidateMetadata($input, [
             'first' => '', 'second' => '', 'third' => '',
+            'detailed_name' => '', 'sheet_author' => '',
             'longitude' => 0.0, 'latitude' => 0.0, 'color' => '#CCCCCC',
         ]);
         $dbh->beginTransaction();
@@ -116,13 +126,15 @@ try {
         )->fetchColumn();
         $stmt = $dbh->prepare(
             "INSERT INTO `i_area_list`
-             (`longitude`, `latitude`, `first`, `second`, `third`, `sheetname`, `color`,
+             (`longitude`, `latitude`, `first`, `second`, `third`, `detailed_name`, `sheet_author`,
+              `sheetname`, `color`,
               `is_visible`, `sort_order`, `archived_at`, `archived_by`)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, NULL, NULL)"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NULL, NULL)"
         );
         $stmt->execute([
             $metadata['longitude'], $metadata['latitude'], $metadata['first'], $metadata['second'],
-            $metadata['third'], $sheetname, $metadata['color'], $sortOrder,
+            $metadata['third'], $metadata['detailed_name'] ?: null, $metadata['sheet_author'] ?: null,
+            $sheetname, $metadata['color'], $sortOrder,
         ]);
         $areaId = (int)$dbh->lastInsertId();
         $after = jyutdictMaintenanceGetArea($dbh, $areaId);
@@ -154,11 +166,13 @@ try {
         $stmt = $dbh->prepare(
             "UPDATE `i_area_list`
              SET `longitude` = ?, `latitude` = ?, `first` = ?, `second` = ?, `third` = ?,
+                 `detailed_name` = ?, `sheet_author` = ?,
                  `color` = ?, `is_visible` = ? WHERE `id` = ?"
         );
         $stmt->execute([
             $updated['longitude'], $updated['latitude'], $updated['first'], $updated['second'],
-            $updated['third'], $updated['color'], $isVisible, $areaId,
+            $updated['third'], $updated['detailed_name'] ?: null, $updated['sheet_author'] ?: null,
+            $updated['color'], $isVisible, $areaId,
         ]);
         $after = jyutdictMaintenanceGetArea($dbh, $areaId);
         jyutdictMaintenanceAudit($dbh, $currentUserId, $requestId, $action, 'success', $areaId, $sheetname, $before, $after);

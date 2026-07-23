@@ -102,7 +102,10 @@ if (isset($_REQUEST['chara']) && $_REQUEST['chara'] === "") {
                 'second' => $area['second'],
                 'third' => $area['third'],
                 'detailed_name' => $area['detailed_name'],
+                'sheet_author' => $area['sheet_author'],
+                'sheet_statistic' => $area['sheet_statistic'],
                 'sheet_info' => $area['sheet_info'],
+                'has_phonology' => $area['has_phonology'],
                 'color' => $area['color'],
             ];
         }, $areas);

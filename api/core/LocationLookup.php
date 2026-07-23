@@ -14,18 +14,62 @@ function jyutdictAssertTableName($tableName) {
     return $tableName;
 }
 
+function jyutdictFormatSheetMetadata(array $area) {
+    $statistics = [];
+    if (!empty($area['source_date'])) {
+        $statistics[] = '版本：' . $area['source_date'];
+    }
+    foreach ([
+        'character_count' => '字數',
+        'syllable_count' => '音節數',
+        'toneless_syllable_count' => '不帶調音節數',
+        'skipped_row_count' => '略過行數',
+    ] as $field => $label) {
+        if ($area[$field] !== null && ($field !== 'skipped_row_count' || (int)$area[$field] > 0)) {
+            $statistics[] = $label . '：' . (int)$area[$field];
+        }
+    }
+    $area['sheet_statistic'] = implode("\n", $statistics);
+    $lines = [];
+    if (!empty($area['detailed_name'])) {
+        $lines[] = '地點：' . $area['detailed_name'];
+    }
+    if (!empty($area['sheet_author'])) {
+        $lines[] = '字表作者：' . $area['sheet_author'];
+    }
+    if ($area['sheet_statistic'] !== '') {
+        $lines[] = $area['sheet_statistic'];
+    }
+    $area['sheet_info'] = $lines
+        ? implode("\n", $lines)
+        : (string)($area['sheet_info_legacy'] ?? '');
+    unset($area['sheet_info_legacy']);
+    return $area;
+}
+
 function jyutdictLoadAreas(PDO $dbh) {
     $stmt = $dbh->query(
-        "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `detailed_name`,
-                `sheet_info`, `sheetname`, `color`
-         FROM `i_area_list`
-         WHERE `is_visible` = 1 AND `current_release_id` IS NOT NULL AND `archived_at` IS NULL
-         ORDER BY `sort_order`, `id`"
+        "SELECT a.`id`, a.`longitude`, a.`latitude`, a.`first`, a.`second`, a.`third`,
+                a.`detailed_name`, a.`sheet_author`, a.`sheet_info` AS `sheet_info_legacy`,
+                a.`sheetname`, a.`color`, a.`current_phonology_id`,
+                r.`source_date`, r.`character_count`, r.`syllable_count`,
+                r.`toneless_syllable_count`, r.`skipped_row_count`,
+                IF(p.`id` IS NOT NULL AND p.`source_release_id` = a.`current_release_id`, 1, 0)
+                  AS `has_phonology`
+         FROM `i_area_list` AS a
+         LEFT JOIN `common_releases` AS r ON r.`id` = a.`current_release_id`
+         LEFT JOIN `phonology_reports` AS p ON p.`id` = a.`current_phonology_id`
+         WHERE a.`is_visible` = 1 AND a.`current_release_id` IS NOT NULL AND a.`archived_at` IS NULL
+         ORDER BY a.`sort_order`, a.`id`"
     );
     $areas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($areas as &$area) {
         jyutdictAssertTableName($area['sheetname']);
         $area['id'] = (int)$area['id'];
+        $area['current_phonology_id'] = $area['current_phonology_id'] === null
+            ? null : (int)$area['current_phonology_id'];
+        $area['has_phonology'] = (int)$area['has_phonology'];
+        $area = jyutdictFormatSheetMetadata($area);
     }
     unset($area);
     return $areas;
@@ -34,11 +78,18 @@ function jyutdictLoadAreas(PDO $dbh) {
 /** Load hidden and visible areas for maintenance scripts. */
 function jyutdictLoadAllAreas(PDO $dbh) {
     $stmt = $dbh->query(
-        "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `detailed_name`,
-                `sheet_info`, `sheetname`, `color`,
-                `is_visible`, `sort_order`
-         FROM `i_area_list`
-         ORDER BY `sort_order`, `id`"
+        "SELECT a.`id`, a.`longitude`, a.`latitude`, a.`first`, a.`second`, a.`third`,
+                a.`detailed_name`, a.`sheet_author`, a.`sheet_info` AS `sheet_info_legacy`,
+                a.`sheetname`, a.`color`, a.`current_phonology_id`,
+                a.`is_visible`, a.`sort_order`,
+                r.`source_date`, r.`character_count`, r.`syllable_count`,
+                r.`toneless_syllable_count`, r.`skipped_row_count`,
+                IF(p.`id` IS NOT NULL AND p.`source_release_id` = a.`current_release_id`, 1, 0)
+                  AS `has_phonology`
+         FROM `i_area_list` AS a
+         LEFT JOIN `common_releases` AS r ON r.`id` = a.`current_release_id`
+         LEFT JOIN `phonology_reports` AS p ON p.`id` = a.`current_phonology_id`
+         ORDER BY a.`sort_order`, a.`id`"
     );
     $areas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($areas as &$area) {
@@ -46,6 +97,10 @@ function jyutdictLoadAllAreas(PDO $dbh) {
         $area['id'] = (int)$area['id'];
         $area['is_visible'] = (int)$area['is_visible'];
         $area['sort_order'] = (int)$area['sort_order'];
+        $area['current_phonology_id'] = $area['current_phonology_id'] === null
+            ? null : (int)$area['current_phonology_id'];
+        $area['has_phonology'] = (int)$area['has_phonology'];
+        $area = jyutdictFormatSheetMetadata($area);
     }
     unset($area);
     return $areas;
