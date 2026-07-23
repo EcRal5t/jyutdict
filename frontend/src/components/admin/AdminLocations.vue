@@ -50,10 +50,14 @@ const load = async () => {
     error.value = ''
     try {
         const response = await adminApi.getCatalogLocations()
-        locations.value = response.data.locations || []
+        if (!Array.isArray(response.data?.locations)) {
+            throw new Error('地點目錄 API 的返回格式不正確')
+        }
+        locations.value = response.data.locations
         await nextTick()
     } catch (e) {
-        error.value = e.response?.data?.error || '載入地點目錄失敗'
+        locations.value = []
+        error.value = e.response?.data?.error || e.message || '載入地點目錄失敗'
     } finally {
         loading.value = false
     }

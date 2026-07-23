@@ -21,6 +21,18 @@ apiClient.interceptors.request.use((config) => {
     return config;
 });
 
+// 管理 API 一律应返回 JSON。若部署时漏了 .htaccess 路由，Vue 的兜底頁會以
+// 200 + text/html 返回；在這裏攔截，避免各管理頁把錯誤響應當成空資料。
+apiClient.interceptors.response.use((response) => {
+    const contentType = String(response.headers?.['content-type'] || '').toLowerCase();
+    if (!contentType.includes('application/json')) {
+        const error = new Error('管理 API 路由未正確部署，伺服器返回了網頁而不是資料');
+        error.code = 'INVALID_ADMIN_API_RESPONSE';
+        throw error;
+    }
+    return response;
+});
+
 export default {
     getUsers(params) {
         return apiClient.get('/users', { params });
