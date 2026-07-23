@@ -101,7 +101,9 @@ function phonologyValidatePayload($payload, $areaId, $releaseId) {
                     count($outcome['examples']) > 8) {
                     throw new RuntimeException('Invalid phonology outcome');
                 }
-                jyutdictCommonImportCleanText($outcome['value'], 'outcome value', 128);
+                // A zero modern initial is represented internally by an empty string.
+                // The public table renders it as ∅, matching the standalone converter.
+                jyutdictCommonImportCleanText($outcome['value'], 'outcome value', 128, true);
                 foreach ($outcome['examples'] as $example) {
                     if (!is_array($example) || !is_string($example['char'] ?? null) ||
                         !is_array($example['pronunciations'] ?? null)) {
@@ -110,6 +112,9 @@ function phonologyValidatePayload($payload, $areaId, $releaseId) {
                     jyutdictCommonImportCleanText($example['char'], 'example char', 16);
                     foreach ($example['pronunciations'] as $pronunciation) {
                         jyutdictCommonImportCleanText($pronunciation, 'example pronunciation', 128);
+                    }
+                    if (array_key_exists('note', $example)) {
+                        jyutdictCommonImportCleanText($example['note'], 'example note', 512, true);
                     }
                 }
             }
