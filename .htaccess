@@ -57,7 +57,11 @@ ErrorDocument 404 /index.html
   RewriteRule ^api/v1\.0/user/profile$ api/v1.0/user/profile.php [L]
 
   # API v1.0 Admin
+  RewriteRule ^api/v1\.0/admin/audit$ api/v1.0/admin/audit.php [L]
   RewriteRule ^api/v1\.0/admin/editors$ api/v1.0/admin/editors.php [L]
+  RewriteRule ^api/v1\.0/admin/location-actions$ api/v1.0/admin/location-actions.php [L]
+  RewriteRule ^api/v1\.0/admin/locations$ api/v1.0/admin/locations.php [L]
+  RewriteRule ^api/v1\.0/admin/maintenance$ api/v1.0/admin/maintenance.php [L]
   RewriteRule ^api/v1\.0/admin/users$ api/v1.0/admin/users.php [L]
 
   # Auth API

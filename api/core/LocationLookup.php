@@ -16,7 +16,8 @@ function jyutdictAssertTableName($tableName) {
 
 function jyutdictLoadAreas(PDO $dbh) {
     $stmt = $dbh->query(
-        "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`, `color`
+        "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `detailed_name`,
+                `sheet_info`, `sheetname`, `color`
          FROM `i_area_list`
          WHERE `is_visible` = 1 AND `current_release_id` IS NOT NULL AND `archived_at` IS NULL
          ORDER BY `sort_order`, `id`"
@@ -33,7 +34,8 @@ function jyutdictLoadAreas(PDO $dbh) {
 /** Load hidden and visible areas for maintenance scripts. */
 function jyutdictLoadAllAreas(PDO $dbh) {
     $stmt = $dbh->query(
-        "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `sheetname`, `color`,
+        "SELECT `id`, `longitude`, `latitude`, `first`, `second`, `third`, `detailed_name`,
+                `sheet_info`, `sheetname`, `color`,
                 `is_visible`, `sort_order`
          FROM `i_area_list`
          ORDER BY `sort_order`, `id`"
