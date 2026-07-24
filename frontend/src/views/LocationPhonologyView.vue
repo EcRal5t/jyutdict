@@ -260,6 +260,7 @@ onMounted(loadLocations)
                 <template v-else>
                     <div class="mb-4 border border-slate-200 bg-white p-4 shadow-[5px_5px_0_rgba(0,0,0,0.06)] dark:border-slate-700 dark:bg-slate-800 dark:shadow-[5px_5px_0_rgba(0,0,0,0.3)]">
                         <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ report.locationName || areaName(selectedLocation) }}</h2>
+                        <div class="mt-4 text-sm">本表爲程序生成，音之分合均爲程序依條件熵所定</div>
                         <div class="mt-4 flex flex-wrap gap-1" role="tablist" aria-label="選擇音系對照表">
                             <button v-for="(section, index) in sections" :id="`location-phonology-tab-${section.id}`" :key="section.id"
                                 role="tab" :aria-selected="activeSectionId === section.id"
