@@ -15,6 +15,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 include_once(__DIR__ . '/../core/db.php');
 include_once(__DIR__ . '/../core/helpers.php');
+include_once(__DIR__ . '/../core/LocationArticleIdentity.php');
 include_once(__DIR__ . '/../middleware/csrf.php');
 
 
@@ -42,7 +43,10 @@ try {
     if ($user['role'] === 'editor') {
         $stmt = $dbh->prepare("SELECT `location_name` FROM `editor_locations` WHERE `editor_id` = :eid");
         $stmt->execute([':eid' => $userId]);
-        $assignedLocations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $assignedLocations = jyutdictCanonicalizeAssignedLocationRows(
+            $dbh,
+            $stmt->fetchAll(PDO::FETCH_ASSOC)
+        );
     }
 
     outputJson([

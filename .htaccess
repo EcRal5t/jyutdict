@@ -63,6 +63,7 @@ ErrorDocument 404 /index.html
   RewriteRule ^api/v1\.0/admin/common-rules$ api/v1.0/admin/common-rules.php [L]
   RewriteRule ^api/v1\.0/admin/editors$ api/v1.0/admin/editors.php [L]
   RewriteRule ^api/v1\.0/admin/location-actions$ api/v1.0/admin/location-actions.php [L]
+  RewriteRule ^api/v1\.0/admin/location-aliases$ api/v1.0/admin/location-aliases.php [L]
   RewriteRule ^api/v1\.0/admin/locations$ api/v1.0/admin/locations.php [L]
   RewriteRule ^api/v1\.0/admin/maintenance$ api/v1.0/admin/maintenance.php [L]
   RewriteRule ^api/v1\.0/admin/phonology-rebuild$ api/v1.0/admin/phonology-rebuild.php [L]
