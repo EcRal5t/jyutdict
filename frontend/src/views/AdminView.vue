@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import adminApi from '@/api/admin.js'
 import AdminLocations from '@/components/admin/AdminLocations.vue'
@@ -14,6 +14,14 @@ const authStore = useAuthStore()
 
 // ===== Tab 切换 =====
 const activeTab = ref('users')
+const visitedTabs = reactive(new Set(['users']))
+
+const selectTab = (tab) => {
+    const firstVisit = !visitedTabs.has(tab)
+    visitedTabs.add(tab)
+    activeTab.value = tab
+    if (tab === 'editors' && firstVisit) searchEditors()
+}
 
 // ===== 用户管理 =====
 const users = ref([])
@@ -128,47 +136,47 @@ onMounted(() => {
 
         <!-- Tab 切換 -->
         <div class="flex flex-wrap gap-1 mb-6 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-none w-fit border border-slate-200 dark:border-slate-700">
-            <button @click="activeTab = 'users'"
+            <button @click="selectTab('users')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'users' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)] dark:shadow-[2px_2px_0_rgba(211,41,19,0.4)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
                 用戶管理
             </button>
-            <button @click="activeTab = 'editors'; searchEditors()"
+            <button @click="selectTab('editors')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'editors' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)] dark:shadow-[2px_2px_0_rgba(211,41,19,0.4)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'">
                 編纂者地點分配
             </button>
-            <button @click="activeTab = 'locations'"
+            <button @click="selectTab('locations')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'locations' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 地點目錄
             </button>
-            <button @click="activeTab = 'location-aliases'"
+            <button @click="selectTab('location-aliases')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'location-aliases' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 文章地點
             </button>
-            <button v-if="authStore.isOwner" @click="activeTab = 'common-import'"
+            <button v-if="authStore.isOwner" @click="selectTab('common-import')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'common-import' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 字表導入
             </button>
-            <button v-if="authStore.isOwner" @click="activeTab = 'phonology-rebuild'"
+            <button v-if="authStore.isOwner" @click="selectTab('phonology-rebuild')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'phonology-rebuild' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 音系重建
             </button>
-            <button v-if="authStore.isOwner" @click="activeTab = 'common-rules'"
+            <button v-if="authStore.isOwner" @click="selectTab('common-rules')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'common-rules' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 轉寫規則
             </button>
-            <button @click="activeTab = 'maintenance'"
+            <button @click="selectTab('maintenance')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'maintenance' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 同步隊列
             </button>
-            <button @click="activeTab = 'audit'"
+            <button @click="selectTab('audit')"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'audit' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 操作記錄
@@ -176,7 +184,7 @@ onMounted(() => {
         </div>
 
         <!-- ===== 用戶管理 Tab ===== -->
-        <div v-if="activeTab === 'users'">
+        <div v-show="activeTab === 'users'">
             <!-- 搜索與篩選 -->
             <div class="flex flex-col sm:flex-row gap-2 mb-4">
                 <input v-model="searchQuery" @keypress.enter="loadUsers(1)" placeholder="搜索郵箱或暱稱..."
@@ -266,7 +274,7 @@ onMounted(() => {
         </div>
 
         <!-- ===== 編纂者地點分配 Tab ===== -->
-        <div v-if="activeTab === 'editors'" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div v-if="visitedTabs.has('editors')" v-show="activeTab === 'editors'" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <!-- 左欄：選擇編纂者 -->
             <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-none shadow-[4px_4px_0_rgba(0,0,0,0.06)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] border border-slate-200/50 dark:border-slate-700/50 p-4">
                 <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 border-l-4 border-accent pl-2">
@@ -327,12 +335,12 @@ onMounted(() => {
             </div>
         </div>
 
-        <AdminLocations v-if="activeTab === 'locations'" />
-        <AdminLocationAliases v-if="activeTab === 'location-aliases'" />
-        <AdminCommonImport v-if="authStore.isOwner && activeTab === 'common-import'" />
-        <AdminPhonology v-if="authStore.isOwner && activeTab === 'phonology-rebuild'" />
-        <AdminCommonRules v-if="authStore.isOwner && activeTab === 'common-rules'" />
-        <AdminMaintenance v-if="activeTab === 'maintenance'" />
-        <AdminAudit v-if="activeTab === 'audit'" />
+        <AdminLocations v-if="visitedTabs.has('locations')" v-show="activeTab === 'locations'" />
+        <AdminLocationAliases v-if="visitedTabs.has('location-aliases')" v-show="activeTab === 'location-aliases'" />
+        <AdminCommonImport v-if="authStore.isOwner && visitedTabs.has('common-import')" v-show="activeTab === 'common-import'" />
+        <AdminPhonology v-if="authStore.isOwner && visitedTabs.has('phonology-rebuild')" v-show="activeTab === 'phonology-rebuild'" />
+        <AdminCommonRules v-if="authStore.isOwner && visitedTabs.has('common-rules')" v-show="activeTab === 'common-rules'" />
+        <AdminMaintenance v-if="visitedTabs.has('maintenance')" v-show="activeTab === 'maintenance'" />
+        <AdminAudit v-if="visitedTabs.has('audit')" v-show="activeTab === 'audit'" />
     </div>
 </template>

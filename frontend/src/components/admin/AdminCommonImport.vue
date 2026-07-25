@@ -20,8 +20,10 @@ const jobId = ref('')
 const targetMode = ref('existing')
 const areaId = ref('')
 const rebuildAfterPublish = ref(false)
+const presetNotice = ref('')
+const validationQuery = ref('')
 
-const config = reactive({
+const DEFAULT_IMPORT_CONFIG = {
     sheetName: 'Sheet1',
     localeName: '',
     charColumn: 'A',
@@ -36,7 +38,8 @@ const config = reactive({
     convertMeanings: false,
     removeRedundantMeaning: false,
     sortPronunciations: false,
-})
+}
+const config = reactive({ ...DEFAULT_IMPORT_CONFIG })
 const sourceDate = ref('')
 const stable = reactive({ detailed_name: '', sheet_author: '' })
 const newArea = reactive({
@@ -49,6 +52,72 @@ const selectedArea = computed(() =>
     locations.value.find(area => Number(area.id) === Number(areaId.value)) || null
 )
 const areaName = area => [area.second, area.third].filter(Boolean).join('') || area.first || ''
+const savedConfigs = computed(() => metadata.value?.saved_configs || [])
+const validationPreview = computed(() => {
+    const rows = parsed.value?.rows || []
+    const query = validationQuery.value.trim()
+    if (!query) {
+        return { rows: rows.slice(0, 30), total: rows.length, limit: 30 }
+    }
+    const characters = [...new Set([...query])]
+    const matches = rows.filter(row => {
+        const chara = String(row.chara || '')
+        return chara.includes(query) || characters.some(character => chara.includes(character))
+    })
+    return { rows: matches.slice(0, 100), total: matches.length, limit: 100 }
+})
+
+function normalizeLocationName(value) {
+    return String(value || '')
+        .normalize('NFKC')
+        .replace(/[\s·・._\-—–()（）[\]【】]+/g, '')
+        .toLowerCase()
+}
+
+function inferLocaleName(filename) {
+    let stem = String(filename || '').split(/[\\/]/).pop().replace(/\.xlsx$/i, '').trim()
+    const dateMatch = stem.match(/(?:\d{8}|\d{6})$/)
+    if (dateMatch) stem = stem.slice(0, -dateMatch[0].length)
+    return stem.replace(/[\s._\-—–]+$/g, '').trim()
+}
+
+function locationNames(area) {
+    return [
+        areaName(area),
+        area.third,
+        area.second,
+        area.first,
+        [area.first, area.second, area.third].filter(Boolean).join(''),
+        area.detailed_name,
+    ].map(normalizeLocationName).filter(Boolean)
+}
+
+function findLocation(localeName) {
+    const key = normalizeLocationName(localeName)
+    if (!key) return null
+    return locations.value.find(area => locationNames(area).includes(key)) || null
+}
+
+function findSavedConfig(localeName, filenameArea) {
+    const key = normalizeLocationName(localeName)
+    return savedConfigs.value.find(saved =>
+        normalizeLocationName(saved.rule_profile) === key
+    ) || savedConfigs.value.find(saved =>
+        normalizeLocationName(inferLocaleName(saved.source_filename)) === key
+    ) || (filenameArea
+        ? savedConfigs.value.find(saved => Number(saved.area_id) === Number(filenameArea.id))
+        : null)
+}
+
+function applySavedConfig(saved) {
+    if (!saved?.config) return
+    for (const key of Object.keys(DEFAULT_IMPORT_CONFIG)) {
+        if (Object.prototype.hasOwnProperty.call(saved.config, key)) {
+            config[key] = saved.config[key]
+        }
+    }
+    config.localeName = saved.rule_profile || config.localeName
+}
 
 function inferDate(filename) {
     const matches = [...String(filename).matchAll(/(?:^|\D)(\d{8}|\d{6})(?=\D|$)/g)]
@@ -74,7 +143,7 @@ function applySelectedArea() {
     stable.sheet_author = area.sheet_author || ''
 }
 
-watch(areaId, applySelectedArea)
+watch(areaId, applySelectedArea, { flush: 'sync' })
 
 async function load() {
     loading.value = true
@@ -86,10 +155,6 @@ async function load() {
         ])
         metadata.value = metaResponse.data
         ruleBundle.value = rulesResponse.data.active
-        if (!areaId.value && locations.value.length) {
-            areaId.value = locations.value[0].id
-            applySelectedArea()
-        }
     } catch (caught) {
         error.value = caught.response?.data?.error || caught.message || '載入導入工具失敗'
     } finally {
@@ -105,7 +170,39 @@ function chooseFile(event) {
     jobId.value = ''
     success.value = ''
     error.value = ''
-    if (file) sourceDate.value = inferDate(file.name)
+    progress.value = { percent: 0, message: '' }
+    validationQuery.value = ''
+    presetNotice.value = ''
+    Object.assign(config, DEFAULT_IMPORT_CONFIG)
+    Object.assign(stable, { detailed_name: '', sheet_author: '' })
+    areaId.value = ''
+    targetMode.value = 'existing'
+    sourceDate.value = file ? inferDate(file.name) : ''
+    if (!file) return
+
+    const inferredLocale = inferLocaleName(file.name)
+    const filenameArea = findLocation(inferredLocale)
+    const saved = findSavedConfig(inferredLocale, filenameArea)
+    const savedArea = saved?.area_id
+        ? locations.value.find(area => Number(area.id) === Number(saved.area_id))
+        : null
+    const targetArea = filenameArea || savedArea || null
+
+    if (targetArea) areaId.value = targetArea.id
+    if (saved) applySavedConfig(saved)
+    if (!saved?.rule_profile) config.localeName = inferredLocale
+
+    const messages = []
+    if (inferredLocale) messages.push(`從檔名識別「${inferredLocale}」`)
+    if (saved) messages.push(`已套用 ${saved.published_at || '上次'} 的個人配置`)
+    if (filenameArea) {
+        messages.push(`目標表按地名匹配為 ${filenameArea.sheetname}`)
+    } else if (savedArea) {
+        messages.push(`目標表沿用上次的 ${savedArea.sheetname}`)
+    } else {
+        messages.push('未能決定目標表，請人工選擇')
+    }
+    presetNotice.value = messages.join('；')
 }
 
 function validateBeforeParse() {
@@ -290,12 +387,16 @@ onMounted(load)
                 <h3 class="border-l-4 border-accent pl-2 text-sm font-bold">1　檔案與地點</h3>
                 <input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     class="block w-full border-2 border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900" @change="chooseFile" />
+                <p v-if="presetNotice" class="border-l-2 border-emerald-500 bg-emerald-50 px-3 py-2 text-xs leading-relaxed text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300">
+                    {{ presetNotice }}
+                </p>
 
                 <div class="flex gap-4 text-sm">
                     <label><input v-model="targetMode" type="radio" value="existing" /> 更新已有地點</label>
                     <label><input v-model="targetMode" type="radio" value="new" /> 新增地點</label>
                 </div>
                 <select v-if="targetMode === 'existing'" v-model="areaId" class="w-full border-2 border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900">
+                    <option value="">請選擇目標地點／資料表</option>
                     <option v-for="area in locations" :key="area.id" :value="area.id">{{ areaName(area) }}（{{ area.sheetname }}）</option>
                 </select>
                 <div v-else class="grid grid-cols-2 gap-2">
@@ -365,10 +466,21 @@ onMounted(load)
                             <summary class="cursor-pointer font-bold">{{ parsed.warnings.length }} 項提示</summary>
                             <ul class="mt-2 max-h-40 list-disc overflow-auto pl-5"><li v-for="warning in parsed.warnings" :key="warning">{{ warning }}</li></ul>
                         </details>
+                        <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <input v-model="validationQuery" type="search" placeholder="輸入漢字篩選驗證條目"
+                                class="min-w-0 flex-1 border-2 border-slate-200 p-2 text-sm outline-none focus:border-accent dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="text-xs text-slate-400">
+                                <template v-if="validationQuery.trim()">找到 {{ validationPreview.total }} 行<span v-if="validationPreview.total > validationPreview.limit">，顯示前 {{ validationPreview.limit }} 行</span></template>
+                                <template v-else>顯示前 {{ Math.min(validationPreview.total, validationPreview.limit) }}／{{ validationPreview.total }} 行</template>
+                            </span>
+                        </div>
                         <div class="mt-3 max-h-72 overflow-auto border">
                             <table class="w-full min-w-[720px] text-xs">
                                 <thead class="sticky top-0 bg-slate-100 dark:bg-slate-900"><tr><th class="p-2">字</th><th>J++</th><th>IPA</th><th>釋義</th><th>Excel 行</th></tr></thead>
-                                <tbody><tr v-for="row in parsed.rows.slice(0, 30)" :key="row.row_no" class="border-t"><td class="p-2 text-center text-base">{{ row.chara }}</td><td>{{ row.initial }}{{ row.nuclei }}{{ row.coda }}{{ row.tone }}</td><td>{{ row.ipa }}</td><td>{{ row.note }}</td><td>{{ row.source_row }}</td></tr></tbody>
+                                <tbody>
+                                    <tr v-for="row in validationPreview.rows" :key="row.row_no" class="border-t"><td class="p-2 text-center text-base">{{ row.chara }}</td><td>{{ row.initial }}{{ row.nuclei }}{{ row.coda }}{{ row.tone }}</td><td>{{ row.ipa }}</td><td>{{ row.note }}</td><td>{{ row.source_row }}</td></tr>
+                                    <tr v-if="!validationPreview.rows.length"><td colspan="5" class="p-8 text-center text-slate-400">沒有符合的漢字</td></tr>
+                                </tbody>
                             </table>
                         </div>
                     </template>
