@@ -13,6 +13,7 @@ const emit = defineEmits(['close'])
 
 const authStore = useAuthStore()
 const article = ref(null)
+const resolvedLocationName = ref(props.locationName)
 const isLoading = ref(true)
 const error = ref(null)
 
@@ -26,7 +27,7 @@ const canEdit = computed(() => {
     if (authStore.isAdmin) return true
     if (authStore.userRole === 'editor' && authStore.user?.assigned_locations) {
         return authStore.user.assigned_locations.some(
-            loc => loc.location_name === props.locationName
+            loc => loc.location_name === resolvedLocationName.value
         )
     }
     return false
@@ -38,6 +39,7 @@ const loadArticle = async () => {
     try {
         const res = await articlesApi.getArticle(props.locationName)
         article.value = res.data.article
+        resolvedLocationName.value = res.data.resolved_location_name || props.locationName
     } catch (e) {
         error.value = '載入文章失敗'
     } finally {
@@ -58,6 +60,7 @@ const onKeydown = (e) => {
 }
 
 watch(() => props.locationName, () => {
+    resolvedLocationName.value = props.locationName
     loadArticle()
 }, { immediate: true })
 
@@ -74,7 +77,12 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
         <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-none shadow-[8px_8px_0_rgba(0,0,0,0.15)] dark:shadow-[8px_8px_0_rgba(0,0,0,0.5)] border border-gray-100/50 dark:border-slate-700/50 w-full max-w-[600px] max-h-full overflow-hidden flex flex-col scale-100 translate-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <!-- 标题栏 -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100/50 dark:border-slate-700/50">
-                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">{{ locationName }}</h2>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">{{ resolvedLocationName }}</h2>
+                    <p v-if="resolvedLocationName !== locationName" class="mt-0.5 text-xs text-slate-400">
+                        由「{{ locationName }}」重定向
+                    </p>
+                </div>
                 <button @click="emit('close')"
                     class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -112,7 +120,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
                     <span class="ml-3">{{ article.updated_at }}</span>
                 </div>
                 <router-link v-if="canEdit"
-                    :to="{ name: 'location-article', params: { locationName } }"
+                    :to="{ name: 'location-article', params: { locationName: resolvedLocationName } }"
                     @click="emit('close')"
                     class="text-xs px-3 py-1.5 rounded-none bg-accent text-white hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all">
                     前往修改

@@ -10,6 +10,10 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const locationName = computed(() => decodeURIComponent(route.params.locationName))  // 地点名称字符串
+const resolvedLocationName = ref('')
+const isRedirected = computed(() => Boolean(
+    resolvedLocationName.value && resolvedLocationName.value !== locationName.value
+))
 
 // ===== 文章数据 =====
 const article = ref(null)        // { id, content, updated_at, nickname, email, role }
@@ -35,7 +39,7 @@ const canEdit = computed(() => {
     if (authStore.isAdmin) return true
     if (authStore.userRole === 'editor' && authStore.user?.assigned_locations) {
         return authStore.user.assigned_locations.some(
-            loc => loc.location_name === locationName.value
+            loc => loc.location_name === resolvedLocationName.value
         )
     }
     return false
@@ -48,6 +52,7 @@ const loadArticle = async () => {
     try {
         const res = await articlesApi.getArticle(locationName.value)
         article.value = res.data.article
+        resolvedLocationName.value = res.data.resolved_location_name || locationName.value
     } catch (e) {
         error.value = '載入文章失敗'
         console.error(e)
@@ -81,7 +86,7 @@ const saveArticle = async () => {
     saveError.value = ''
     try {
         await articlesApi.saveArticle({
-            location_name: locationName.value,
+            location_name: resolvedLocationName.value || locationName.value,
             content: editContent.value,
             edit_summary: editSummary.value || null,
         })
@@ -104,7 +109,7 @@ const editPreviewHtml = computed(() => {
 const loadVersions = async () => {
     versionsLoading.value = true
     try {
-        const res = await articlesApi.getVersions(locationName.value)
+        const res = await articlesApi.getVersions(resolvedLocationName.value || locationName.value)
         versions.value = res.data.versions || []
     } catch (e) {
         console.error(e)
@@ -150,6 +155,7 @@ onMounted(() => {
 })
 
 watch(locationName, () => {
+    resolvedLocationName.value = ''
     loadArticle()
     showVersions.value = false
     previewVersion.value = null
@@ -165,7 +171,10 @@ watch(locationName, () => {
                     地點文章
                 </h1>
                 <p class="text-sm text-slate-400 mt-1 pl-3">
-                    {{ locationName }}
+                    {{ resolvedLocationName || locationName }}
+                </p>
+                <p v-if="isRedirected" class="text-xs text-slate-400 mt-1 pl-3">
+                    由「{{ locationName }}」重定向
                 </p>
             </div>
             <div class="flex gap-2">

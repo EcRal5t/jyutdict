@@ -65,7 +65,7 @@
 | **SheetView**           | `/sheet`                  | 泛粵字表頁，以表格形式查詢字表資料，支援模糊、截取、正則、釋義等多種查詢模式 |
 | **ArticleView**         | `/article/:id`            | 紀文頁，展示音韻學相關文章，支援 HTML 和音韻表格區塊                         |
 | **LocationListView**    | `/locations`              | 地點介紹列表頁，展示各地點的文章列表及預覽                                   |
-| **LocationArticleView** | `/location/:locationName` | 地點文章頁，顯示/編輯特定地點的介紹文章（Markdown），支援版本歷史            |
+| **LocationArticleView** | `/location-article/:locationName` | 地點文章頁，顯示/編輯特定地點的介紹文章（Markdown），支援抽象地名、來源別名與版本歷史 |
 | **PhonologyView**       | `/phonology`              | 音系探針小玩具，根據用戶選擇的音韻特徵計算與各方言點的相似度                 |
 | **UserCenterView**      | `/user`                   | 用戶中心，管理個人資料、查看評論記錄、管理地點文章（編纂者）                 |
 | **AdminView**           | `/admin`                  | 後臺管理頁，用戶角色管理及編纂者地點分配（管理員/站長）                      |

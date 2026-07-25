@@ -76,6 +76,30 @@ export default {
     locationAction(action, data) {
         return apiClient.post('/location-actions', { action, ...data });
     },
+    getLocationAliases() {
+        return apiClient.get('/location-aliases');
+    },
+    createLocationAliasGroup(canonicalName, aliases) {
+        return apiClient.post('/location-aliases', {
+            canonical_name: canonicalName,
+            aliases,
+        });
+    },
+    updateLocationAliasGroup(currentCanonicalName, canonicalName, aliases) {
+        return apiClient.patch('/location-aliases', {
+            current_canonical_name: currentCanonicalName,
+            canonical_name: canonicalName,
+            aliases,
+        });
+    },
+    deleteLocationAliasGroup(canonicalName, confirmation) {
+        return apiClient.delete('/location-aliases', {
+            data: {
+                canonical_name: canonicalName,
+                confirm_canonical_name: confirmation,
+            },
+        });
+    },
     getMaintenance() {
         return apiClient.get('/maintenance');
     },

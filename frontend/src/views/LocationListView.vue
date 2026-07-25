@@ -125,6 +125,9 @@ onMounted(() => {
 
                 <!-- 文章内容 -->
                 <div v-else-if="articleContent" class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-5 md:p-6 border border-gray-100 dark:border-slate-700 hover:shadow-[8px_8px_0_rgba(0,0,0,0.08)] dark:hover:shadow-[8px_8px_0_rgba(0,0,0,0.4)] hover:-translate-y-0.5 transition-all duration-300">
+                    <p v-if="selectedArticle.aliases?.length" class="mb-4 border-l-2 border-accent pl-3 text-xs text-slate-400">
+                        關聯地名：{{ selectedArticle.aliases.join('、') }}
+                    </p>
                     <div v-if="renderedContent"
                         class="prose dark:prose-invert max-w-none"
                         v-html="renderedContent">

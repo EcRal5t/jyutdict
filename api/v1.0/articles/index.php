@@ -30,8 +30,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 include_once(__DIR__ . '/../../core/db.php');
 include_once(__DIR__ . '/../../core/helpers.php');
-
-
+include_once(__DIR__ . '/../../core/LocationArticleIdentity.php');
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
@@ -39,6 +38,17 @@ $articleType = $_GET['type'] ?? 'location';
 
 if (!in_array($articleType, ['location', 'phonology'], true)) {
     outputJson(['error' => 'Invalid article type'], 400);
+}
+
+function articleLocationMeta(PDO $dbh, $requestedName, $articleType) {
+    if ($articleType !== 'location') {
+        return [
+            'requested_location_name' => (string)$requestedName,
+            'resolved_location_name' => (string)$requestedName,
+            'redirected' => false,
+        ];
+    }
+    return jyutdictLocationIdentityMeta($dbh, $requestedName);
 }
 
 // ========== GET：公开读取 ==========
@@ -58,7 +68,18 @@ if ($method === 'GET') {
             ";
             $params = [':article_type' => $articleType];
 
-            if ($search) {
+            if ($search && $articleType === 'location' && jyutdictLocationRedirectTableExists($dbh)) {
+                $sql .= " AND (
+                    a.`location_name` LIKE :search
+                    OR EXISTS (
+                        SELECT 1 FROM `location_name_redirects` r
+                        WHERE r.`canonical_name` = a.`location_name`
+                          AND r.`alias_name` LIKE :alias_search
+                    )
+                )";
+                $params[':search'] = '%' . $search . '%';
+                $params[':alias_search'] = '%' . $search . '%';
+            } elseif ($search) {
                 $sql .= " AND a.`location_name` LIKE :search";
                 $params[':search'] = '%' . $search . '%';
             }
@@ -69,12 +90,17 @@ if ($method === 'GET') {
             $stmt->execute($params);
             $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+            $aliasesByCanonical = $articleType === 'location'
+                ? jyutdictLocationAliasesByCanonical($dbh)
+                : [];
+
             // 清理 excerpt：去掉 Markdown 标记的前 200 字符
             foreach ($articles as &$art) {
                 $art['excerpt'] = mb_substr(
                     preg_replace('/[#*\[\]`>_~]/', '', $art['excerpt']),
                     0, 100
                 );
+                $art['aliases'] = $aliasesByCanonical[$art['location_name']] ?? [];
             }
 
             outputJson(['articles' => $articles]);
@@ -107,11 +133,13 @@ if ($method === 'GET') {
     }
 
     // --- 需要 location_name ---
-    $locationName = $_GET['location_name'] ?? '';
+    $requestedLocationName = $_GET['location_name'] ?? '';
 
-    if (!$locationName) {
+    if (!$requestedLocationName) {
         outputJson(['error' => 'Missing location_name parameter'], 400);
     }
+    $locationMeta = articleLocationMeta($dbh, $requestedLocationName, $articleType);
+    $locationName = $locationMeta['resolved_location_name'];
 
     // --- 获取版本历史 ---
     if (isset($_GET['versions'])) {
@@ -122,7 +150,7 @@ if ($method === 'GET') {
             $article = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$article) {
-                outputJson(['versions' => []]);
+                outputJson(array_merge(['versions' => []], $locationMeta));
             }
 
             $stmt = $dbh->prepare("
@@ -136,7 +164,10 @@ if ($method === 'GET') {
             $stmt->execute([':aid' => $article['id']]);
             $versions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            outputJson(['article_id' => (int)$article['id'], 'versions' => $versions]);
+            outputJson(array_merge(
+                ['article_id' => (int)$article['id'], 'versions' => $versions],
+                $locationMeta
+            ));
         } catch (PDOException $e) {
             outputJson(['error' => 'Database error'], 500);
         }
@@ -147,7 +178,10 @@ if ($method === 'GET') {
         try {
             $stmt = $dbh->prepare("SELECT 1 FROM `articles` WHERE `location_name` = :lname AND `article_type` = :type LIMIT 1");
             $stmt->execute([':lname' => $locationName, ':type' => $articleType]);
-            outputJson(['exists' => (bool)$stmt->fetchColumn()]);
+            outputPublicJson(array_merge(
+                ['exists' => (bool)$stmt->fetchColumn()],
+                $locationMeta
+            ));
         } catch (PDOException $e) {
             outputJson(['error' => 'Database error'], 500);
         }
@@ -156,7 +190,7 @@ if ($method === 'GET') {
     // --- 获取文章内容 ---
     try {
         $stmt = $dbh->prepare("
-            SELECT a.`id`, a.`content`, a.`updated_at`,
+            SELECT a.`id`, a.`location_name`, a.`content`, a.`updated_at`,
                    u.`nickname`, u.`email`, u.`role`
             FROM `articles` a
             JOIN `users` u ON a.`author_id` = u.`id`
@@ -166,10 +200,10 @@ if ($method === 'GET') {
         $article = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$article) {
-            outputJson(['article' => null]); // 该地点暂无文章
+            outputJson(array_merge(['article' => null], $locationMeta)); // 该地点暂无文章
         }
 
-        outputJson(['article' => $article]);
+        outputJson(array_merge(['article' => $article], $locationMeta));
     } catch (PDOException $e) {
         outputJson(['error' => 'Database error'], 500);
     }
@@ -234,17 +268,19 @@ if ($method === 'POST') {
     requireRole('editor'); // 至少是编纂者
 
     $input = json_decode(file_get_contents('php://input'), true);
-    $locName = $input['location_name'] ?? '';
+    $requestedLocName = $input['location_name'] ?? '';
     $articleType = $input['type'] ?? $articleType;
     $content = $input['content'] ?? '';
     $editSummary = $input['edit_summary'] ?? null;
 
-    if (!$locName) {
+    if (!$requestedLocName) {
         outputJson(['error' => 'Missing location_name'], 400);
     }
     if (!in_array($articleType, ['location', 'phonology'], true)) {
         outputJson(['error' => 'Invalid article type'], 400);
     }
+    $locationMeta = articleLocationMeta($dbh, $requestedLocName, $articleType);
+    $locName = $locationMeta['resolved_location_name'];
 
     // 权限检查：编纂者只能编辑已分配地点，管理员+可以编辑任意地点
     if (getRoleLevel($currentUserRole) < getRoleLevel('admin')) {
@@ -296,7 +332,10 @@ if ($method === 'POST') {
         ]);
 
         $dbh->commit();
-        outputJson(['success' => true, 'article_id' => (int)$articleId]);
+        outputJson(array_merge(
+            ['success' => true, 'article_id' => (int)$articleId],
+            $locationMeta
+        ));
     } catch (PDOException $e) {
         $dbh->rollBack();
         outputJson(['error' => 'Database error'], 500);
@@ -312,10 +351,12 @@ if ($method === 'DELETE') {
 
     requireRole('admin');
 
-    $locationName = $_GET['location_name'] ?? '';
-    if (!$locationName) {
+    $requestedLocationName = $_GET['location_name'] ?? '';
+    if (!$requestedLocationName) {
         outputJson(['error' => 'Missing location_name parameter'], 400);
     }
+    $locationMeta = articleLocationMeta($dbh, $requestedLocationName, $articleType);
+    $locationName = $locationMeta['resolved_location_name'];
 
     try {
         // 查找文章
@@ -340,7 +381,7 @@ if ($method === 'DELETE') {
         $stmt->execute([':aid' => $articleId]);
 
         $dbh->commit();
-        outputJson(['success' => true]);
+        outputJson(array_merge(['success' => true], $locationMeta));
     } catch (PDOException $e) {
         $dbh->rollBack();
         outputJson(['error' => 'Database error during deletion'], 500);

@@ -202,7 +202,7 @@ const calculateDensityScore = (rowData) => {
 onMounted(async () => {
     initFromUrl();
     await loadHeaders();
-    articlesApi.getArticleList(); // 觸發緩存加載，整個 session 只請求一次
+    await articlesApi.getArticleList(); // 載入文章及別名映射，整個 session 只請求一次
     // 無論是否有查詢參數，都執行搜索（空查詢會觸發隨機返回）
     performSearch();
 });

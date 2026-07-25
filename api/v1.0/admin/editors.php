@@ -15,6 +15,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 include_once(__DIR__ . '/../../core/db.php');
 include_once(__DIR__ . '/../../core/helpers.php');
+include_once(__DIR__ . '/../../core/LocationArticleIdentity.php');
 include_once(__DIR__ . '/../../middleware/auth.php');
 include_once(__DIR__ . '/../../middleware/role.php');
 include_once(__DIR__ . '/../../middleware/csrf.php');
@@ -31,40 +32,8 @@ if ($method === 'GET') {
     // 获取所有可分配的地点列表（合并去重）
     if (isset($_GET['list_locations'])) {
         try {
-            $locationSet = []; // name => { name, sources: [] }
-
-            // i_area_list 地点
-            $stmt = $dbh->prepare("SELECT `first`, `second`, `third` FROM `i_area_list` WHERE `is_visible` = 1 AND `archived_at` IS NULL ORDER BY `sort_order`, `id`");
-            $stmt->execute();
-            $areaRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            foreach ($areaRows as $row) {
-                $name = $row['second'] . ($row['third'] ?: '');
-                if (!isset($locationSet[$name])) {
-                    $locationSet[$name] = [
-                        'name' => $name,
-                        'first' => $row['first'],
-                    ];
-                }
-            }
-
-            // i_faamjyut 地点（仅 kind=1，即真正的地名）
-            $stmt = $dbh->prepare("SELECT `fullname`, `fullname_note` FROM `i_faamjyut` WHERE `kind` = 1 ORDER BY `id`");
-            $stmt->execute();
-            $faamjyutRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            foreach ($faamjyutRows as $row) {
-                $name = $row['fullname'] . ($row['fullname_note'] ?: '');
-                if (!isset($locationSet[$name])) {
-                    $locationSet[$name] = [
-                        'name' => $name,
-                        'first' => '',
-                    ];
-                }
-            }
-
             outputJson([
-                'locations' => array_values($locationSet),
+                'locations' => jyutdictLoadLocationArticleIdentities($dbh),
             ]);
         } catch (PDOException $e) {
             outputJson(['error' => 'Database error'], 500);
@@ -84,7 +53,10 @@ if ($method === 'GET') {
                 ORDER BY el.`assigned_at` DESC
             ");
             $stmt->execute([':eid' => $editorId]);
-            $locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $locations = jyutdictCanonicalizeAssignedLocationRows(
+                $dbh,
+                $stmt->fetchAll(PDO::FETCH_ASSOC)
+            );
             outputJson(['editor_id' => $editorId, 'locations' => $locations]);
         } catch (PDOException $e) {
             outputJson(['error' => 'Database error'], 500);
@@ -93,7 +65,8 @@ if ($method === 'GET') {
 
     // 查询某地点的编纂者
     if (isset($_GET['location_name'])) {
-        $locName = $_GET['location_name'];
+        $requestedName = $_GET['location_name'];
+        $locName = jyutdictResolveLocationName($dbh, $requestedName);
         try {
             $stmt = $dbh->prepare("
                 SELECT el.`editor_id`, u.`nickname`, u.`email`, el.`assigned_at`
@@ -103,7 +76,12 @@ if ($method === 'GET') {
             ");
             $stmt->execute([':lname' => $locName]);
             $editors = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            outputJson(['location_name' => $locName, 'editors' => $editors]);
+            outputJson([
+                'requested_location_name' => $requestedName,
+                'location_name' => $locName,
+                'redirected' => $requestedName !== $locName,
+                'editors' => $editors,
+            ]);
         } catch (PDOException $e) {
             outputJson(['error' => 'Database error'], 500);
         }
@@ -118,9 +96,10 @@ if ($method === 'POST') {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $editorId = (int) ($input['editor_id'] ?? 0);
-    $locName = $input['location_name'] ?? '';
+    $requestedName = $input['location_name'] ?? '';
+    $locName = jyutdictResolveLocationName($dbh, $requestedName);
 
-    if (!$editorId || !$locName) {
+    if (!$editorId || !$requestedName) {
         outputJson(['error' => 'Missing required fields: editor_id, location_name'], 400);
     }
 
@@ -148,7 +127,12 @@ if ($method === 'POST') {
             ':assignee' => $currentUserId,
         ]);
 
-        outputJson(['success' => true]);
+        outputJson([
+            'success' => true,
+            'requested_location_name' => $requestedName,
+            'location_name' => $locName,
+            'redirected' => $requestedName !== $locName,
+        ]);
     } catch (PDOException $e) {
         if ($e->getCode() == 23000) {
             outputJson(['error' => 'This location is already assigned to this editor'], 409);
@@ -163,9 +147,10 @@ if ($method === 'DELETE') {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $editorId = (int) ($input['editor_id'] ?? 0);
-    $locName = $input['location_name'] ?? '';
+    $requestedName = $input['location_name'] ?? '';
+    $locName = jyutdictResolveLocationName($dbh, $requestedName);
 
-    if (!$editorId || !$locName) {
+    if (!$editorId || !$requestedName) {
         outputJson(['error' => 'Missing required fields'], 400);
     }
 
@@ -180,7 +165,12 @@ if ($method === 'DELETE') {
             outputJson(['error' => 'Assignment not found'], 404);
         }
 
-        outputJson(['success' => true]);
+        outputJson([
+            'success' => true,
+            'requested_location_name' => $requestedName,
+            'location_name' => $locName,
+            'redirected' => $requestedName !== $locName,
+        ]);
     } catch (PDOException $e) {
         outputJson(['error' => 'Database error'], 500);
     }

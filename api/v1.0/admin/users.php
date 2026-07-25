@@ -15,6 +15,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 include_once(__DIR__ . '/../../core/db.php');
 include_once(__DIR__ . '/../../core/helpers.php');
+include_once(__DIR__ . '/../../core/LocationArticleIdentity.php');
 include_once(__DIR__ . '/../../middleware/auth.php');
 include_once(__DIR__ . '/../../middleware/role.php');
 include_once(__DIR__ . '/../../middleware/csrf.php');
@@ -54,7 +55,10 @@ if ($method === 'GET') {
             // 获取分配的地点
             $stmt = $dbh->prepare("SELECT `location_name`, `assigned_at` FROM `editor_locations` WHERE `editor_id` = :eid");
             $stmt->execute([':eid' => $targetId]);
-            $locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $locations = jyutdictCanonicalizeAssignedLocationRows(
+                $dbh,
+                $stmt->fetchAll(PDO::FETCH_ASSOC)
+            );
 
             $user['recent_comments'] = $comments;
             $user['assigned_locations'] = $locations;

@@ -219,7 +219,8 @@ onMounted(() => {
 
             <!-- 地点列表 -->
             <div v-else-if="availableLocations.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-[250px] overflow-y-auto overflow-x-hidden pr-2">
-                <div v-for="loc in availableLocations" :key="`${loc.source}-${loc.name}`"
+                <div v-for="loc in availableLocations" :key="loc.name"
+                    :title="loc.aliases?.length ? `關聯地名：${loc.aliases.join('、')}` : ''"
                     class="flex items-center justify-between px-2.5 py-1.5 bg-white dark:bg-slate-800/50 rounded-none border-l-4 transition-all duration-300 group hover:translate-x-0.5"
                     :class="loc.has_article ? 'border-l-accent' : 'border-l-gray-300 dark:border-l-slate-600 hover:border-l-accent/50'">
                     <div>

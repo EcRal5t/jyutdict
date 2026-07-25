@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import adminApi from '@/api/admin.js'
 import AdminLocations from '@/components/admin/AdminLocations.vue'
+import AdminLocationAliases from '@/components/admin/AdminLocationAliases.vue'
 import AdminMaintenance from '@/components/admin/AdminMaintenance.vue'
 import AdminAudit from '@/components/admin/AdminAudit.vue'
 import AdminCommonImport from '@/components/admin/AdminCommonImport.vue'
@@ -110,6 +111,11 @@ const removeLocation = async (locationName) => {
     }
 }
 
+const locationSourceTypes = (location) => {
+    const labels = (location.sources || []).map(source => source.type === 'common' ? '通表' : '粵表')
+    return [...new Set(labels)].join('/')
+}
+
 onMounted(() => {
     loadUsers()
     loadLocations()
@@ -136,6 +142,11 @@ onMounted(() => {
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
                 :class="activeTab === 'locations' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
                 地點目錄
+            </button>
+            <button @click="activeTab = 'location-aliases'"
+                class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
+                :class="activeTab === 'location-aliases' ? 'bg-white dark:bg-slate-700 text-accent shadow-[2px_2px_0_rgba(211,41,19,0.2)]' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50'">
+                文章地點
             </button>
             <button v-if="authStore.isOwner" @click="activeTab = 'common-import'"
                 class="px-4 py-1.5 text-sm font-medium rounded-none transition-all duration-300"
@@ -306,7 +317,10 @@ onMounted(() => {
                             @click="assignLocation(loc.name)"
                             class="w-full text-left p-1.5 text-xs rounded-none hover:bg-green-50 dark:hover:bg-green-900/20 transition-all border-l-4 border-transparent hover:border-green-500 hover:translate-x-1">
                             {{ loc.name }}
-                            <span v-if="loc.first" class="text-slate-400">({{ loc.first }})</span>
+                            <span v-if="loc.aliases?.length" class="text-slate-400">（{{ loc.aliases.join('、') }}）</span>
+                            <span v-if="loc.sources?.length" class="ml-1 text-[10px] text-slate-400">
+                                {{ locationSourceTypes(loc) }}
+                            </span>
                         </button>
                     </div>
                 </template>
@@ -314,6 +328,7 @@ onMounted(() => {
         </div>
 
         <AdminLocations v-if="activeTab === 'locations'" />
+        <AdminLocationAliases v-if="activeTab === 'location-aliases'" />
         <AdminCommonImport v-if="authStore.isOwner && activeTab === 'common-import'" />
         <AdminPhonology v-if="authStore.isOwner && activeTab === 'phonology-rebuild'" />
         <AdminCommonRules v-if="authStore.isOwner && activeTab === 'common-rules'" />
