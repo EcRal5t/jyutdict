@@ -87,7 +87,7 @@ export function splitJpp(raw) {
     return { initial, nuclei, coda, tone }
 }
 
-function splitIpa(raw) {
+export function splitIpa(raw) {
     let syllable = String(raw || '').trim()
     const tone = syllable.match(/(\d*)$/)?.[0] || ''
     if (tone) syllable = syllable.slice(0, -tone.length)
@@ -105,7 +105,7 @@ function splitIpa(raw) {
     }
 }
 
-function normJpp(parts) {
+export function normJpp(parts) {
     let { initial, nuclei, coda } = parts
     if (initial === '0') initial = ''
     if (initial && nuclei.length >= 2) {
@@ -120,7 +120,7 @@ function normJpp(parts) {
     return { initial, nuclei, coda }
 }
 
-function termObject(rule) {
+function termObject(rule, meta = null) {
     return {
         beforeInitial: String(rule[0] ?? ''),
         beforeVowel: String(rule[1] ?? ''),
@@ -129,21 +129,24 @@ function termObject(rule) {
         afterVowel: String(rule[4] ?? ''),
         afterCoda: String(rule[5] ?? ''),
         important: rule.length === 7 && rule[6] === '!',
+        meta,
     }
 }
 
-function selectRules(bundle, locale) {
-    const append = Array.isArray(bundle.appendProfiles) ? bundle.appendProfiles.map(String) : ['0', '1']
+export function selectRuleProfiles(bundle, profiles) {
+    const orderedProfiles = [...new Set((profiles || []).map(value => String(value).trim()).filter(Boolean))]
+    const primaryProfile = orderedProfiles[0] || ''
     const selected = {}
     for (const name of ['i2i', 'i2j', 'j2i', 'j2j']) {
         const source = bundle.rules?.[name] || {}
-        selected[name] = [
-            ...(source[locale] || []),
-            ...append.flatMap(profile => source[profile] || []),
-        ].map(termObject)
+        selected[name] = orderedProfiles.flatMap(profile =>
+            (source[profile] || []).map((rule, index) =>
+                termObject(rule, { book: name, profile, index: index + 1 })
+            )
+        )
     }
-    selected.toneJ2i = bundle.tones?.j2i?.[locale] || {}
-    selected.toneJ2j = bundle.tones?.j2j?.[locale] || {}
+    selected.toneJ2i = bundle.tones?.j2i?.[primaryProfile] || {}
+    selected.toneJ2j = bundle.tones?.j2j?.[primaryProfile] || {}
     selected.toneI2j = Object.fromEntries(
         Object.entries(selected.toneJ2i).map(([groupName, group]) => [
             groupName,
@@ -153,6 +156,11 @@ function selectRules(bundle, locale) {
         ])
     )
     return selected
+}
+
+function selectRules(bundle, locale) {
+    const append = Array.isArray(bundle.appendProfiles) ? bundle.appendProfiles.map(String) : ['0', '1']
+    return selectRuleProfiles(bundle, [String(locale || ''), ...append])
 }
 
 function getVowelsIpa(value) {
@@ -179,7 +187,7 @@ function getVowelsJpp(value) {
     return result.join('')
 }
 
-function pronTranslate(rules, input, direction) {
+function pronTranslate(rules, input, direction, trace = null) {
     let initial
     let nuclei
     let coda
@@ -193,9 +201,27 @@ function pronTranslate(rules, input, direction) {
         if (rule.beforeCoda !== '*' &&
             rule.beforeCoda !== input.coda &&
             (direction !== null || rule.beforeCoda !== coda)) continue
-        if (rule.afterInitial !== '*' && (rule.important || initial === undefined)) initial = rule.afterInitial
-        if (rule.afterVowel !== '*' && (rule.important || nuclei === undefined)) nuclei = rule.afterVowel
-        if (rule.afterCoda !== '*' && (rule.important || coda === undefined)) coda = rule.afterCoda
+        const changes = []
+        if (rule.afterInitial !== '*' && (rule.important || initial === undefined)) {
+            changes.push({ field: '聲母', from: initial ?? input.initial, to: rule.afterInitial })
+            initial = rule.afterInitial
+        }
+        if (rule.afterVowel !== '*' && (rule.important || nuclei === undefined)) {
+            changes.push({ field: '韻核', from: nuclei ?? input.nuclei, to: rule.afterVowel })
+            nuclei = rule.afterVowel
+        }
+        if (rule.afterCoda !== '*' && (rule.important || coda === undefined)) {
+            changes.push({ field: '韻尾', from: coda ?? input.coda, to: rule.afterCoda })
+            coda = rule.afterCoda
+        }
+        if (trace && (changes.length || rule.meta)) {
+            trace.push({
+                type: 'segment',
+                ...rule.meta,
+                force: rule.important,
+                changes,
+            })
+        }
     }
     if (direction === null) {
         return {
@@ -229,6 +255,78 @@ function pronTranslate(rules, input, direction) {
         nuclei: nuclei ?? getVowelsJpp(input.nuclei),
         coda: coda ?? (IPA_TO_JPP_CODA[input.coda] ?? (() => { throw new Error(`IPA 韻尾不存在：${input.coda}`) })()),
     }
+}
+
+function isCheckedCoda(coda, ipa = false) {
+    return ipa
+        ? ['p', 't', 'k', 'ʔ'].includes(coda)
+        : ['p', 't', 'k', 'h'].includes(coda)
+}
+
+function traceTone(trace, book, profile, category, before, after) {
+    if (!trace || before === after) return
+    trace.push({
+        type: 'tone',
+        book,
+        profile,
+        category,
+        changes: [{ field: '聲調', from: before, to: after }],
+    })
+}
+
+export function convertRuleSyllable(bundle, profiles, direction, raw) {
+    const input = String(raw || '').trim()
+    if (!input) throw new Error('輸入音節為空')
+    const orderedProfiles = [...new Set((profiles || []).map(value => String(value).trim()).filter(Boolean))]
+    if (!orderedProfiles.length) throw new Error('至少選擇一個規則組')
+    const primary = orderedProfiles[0]
+    const rules = selectRuleProfiles(bundle, orderedProfiles)
+    const trace = []
+    let result = ''
+
+    if (direction === 'j2j' || direction === 'j2i') {
+        const source = splitJpp(input)
+        const normalized = normJpp(pronTranslate(rules.j2j, source, null, trace))
+        const checked = isCheckedCoda(source.coda)
+        const category = checked ? '入聲' : '舒聲'
+        const normalizedTone = toneTranslate(rules.toneJ2j, checked, source.tone, true)
+        traceTone(trace, 'tone-j2j', primary, category, source.tone, normalizedTone)
+        if (direction === 'j2j') {
+            result = `${normalized.initial}${normalized.nuclei}${normalized.coda}${normalizedTone}`
+        } else {
+            const ipa = pronTranslate(rules.j2i, normalized, 'ipa', trace)
+            const ipaTone = toneTranslate(rules.toneJ2i, checked, normalizedTone)
+            traceTone(trace, 'tone-j2i', primary, category, normalizedTone, ipaTone)
+            result = `${ipa.initial}${ipa.nuclei}${ipa.coda}${ipaTone}`
+        }
+    } else if (direction === 'i2i' || direction === 'i2j') {
+        const source = splitIpa(input)
+        const normalized = pronTranslate(rules.i2i, source, null, trace)
+        if (direction === 'i2i') {
+            result = `${normalized.initial}${normalized.nuclei}${normalized.coda}${source.tone}`
+        } else {
+            const jpp = normJpp(pronTranslate(rules.i2j, normalized, 'jpp', trace))
+            const checked = isCheckedCoda(source.coda, true)
+            const category = checked ? '入聲' : '舒聲'
+            const tone = toneTranslate(rules.toneI2j, checked, source.tone)
+            traceTone(trace, 'tone-i2j', primary, category, source.tone, tone)
+            result = `${jpp.initial}${jpp.nuclei}${jpp.coda}${tone}`
+        }
+    } else {
+        throw new Error(`未知轉換方向：${direction}`)
+    }
+    return { input, output: result, trace }
+}
+
+export function convertRuleText(bundle, profiles, direction, text) {
+    const tokens = String(text || '').split(/[\s,，;；]+/u).map(value => value.trim()).filter(Boolean)
+    return tokens.map(input => {
+        try {
+            return { ok: true, ...convertRuleSyllable(bundle, profiles, direction, input) }
+        } catch (error) {
+            return { ok: false, input, output: '', error: error?.message || String(error), trace: [] }
+        }
+    })
 }
 
 function toneTranslate(groups, checked, tone, skippable = false) {
