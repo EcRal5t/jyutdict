@@ -115,7 +115,7 @@ if ($method === 'GET') {
         try {
             $stmt = $dbh->prepare("
                 SELECT av.`id`, av.`article_id`, av.`content`, av.`edit_summary`, av.`created_at`,
-                       u.`nickname`, u.`email`, u.`role`
+                       u.`nickname`, u.`role`
                 FROM `article_versions` av
                 JOIN `users` u ON av.`editor_id` = u.`id`
                 WHERE av.`id` = :vid
@@ -155,7 +155,7 @@ if ($method === 'GET') {
 
             $stmt = $dbh->prepare("
                 SELECT av.`id`, av.`edit_summary`, av.`created_at`,
-                       u.`nickname`, u.`email`, u.`role`
+                       u.`nickname`, u.`role`
                 FROM `article_versions` av
                 JOIN `users` u ON av.`editor_id` = u.`id`
                 WHERE av.`article_id` = :aid
@@ -191,7 +191,7 @@ if ($method === 'GET') {
     try {
         $stmt = $dbh->prepare("
             SELECT a.`id`, a.`location_name`, a.`content`, a.`updated_at`,
-                   u.`nickname`, u.`email`, u.`role`
+                   u.`nickname`, u.`role`
             FROM `articles` a
             JOIN `users` u ON a.`author_id` = u.`id`
             WHERE a.`location_name` = :lname AND a.`article_type` = :type

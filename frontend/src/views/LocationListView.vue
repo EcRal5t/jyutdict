@@ -137,7 +137,7 @@ onMounted(() => {
                     <!-- 文章元数据 -->
                     <div class="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-400">
                         <div class="flex items-center gap-3 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
-                            <span>最後編輯：{{ articleContent.nickname || articleContent.email }}</span>
+                            <span>最後編輯：{{ articleContent.nickname || '未署名' }}</span>
                             <span>{{ articleContent.updated_at }}</span>
                         </div>
                         <router-link v-if="canEditSelected"

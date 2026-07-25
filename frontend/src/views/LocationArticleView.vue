@@ -16,7 +16,7 @@ const isRedirected = computed(() => Boolean(
 ))
 
 // ===== 文章数据 =====
-const article = ref(null)        // { id, content, updated_at, nickname, email, role }
+const article = ref(null)        // { id, content, updated_at, nickname, role }
 const isLoading = ref(true)
 const error = ref(null)
 
@@ -266,7 +266,7 @@ watch(locationName, () => {
 
             <!-- 文章元數據 -->
             <div v-if="article" class="mt-4 text-xs text-slate-400 flex items-center gap-4 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
-                <span>最後編輯：{{ article.nickname || article.email }}</span>
+                <span>最後編輯：{{ article.nickname || '未署名' }}</span>
                 <span>{{ article.updated_at }}</span>
             </div>
         </template>
@@ -292,7 +292,7 @@ watch(locationName, () => {
                         <span class="text-xs text-slate-400">{{ v.created_at }}</span>
                     </div>
                     <div class="text-xs text-slate-500 mt-1">
-                        {{ v.nickname || v.email }}
+                        {{ v.nickname || '未署名' }}
                         <span v-if="v.edit_summary" class="ml-2 text-slate-400">— {{ v.edit_summary }}</span>
                     </div>
                 </button>

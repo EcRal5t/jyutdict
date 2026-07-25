@@ -116,7 +116,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
             <!-- 底栏 -->
             <div v-if="article" class="px-6 py-3 border-t border-gray-100/50 dark:border-slate-700/50 bg-gray-50/50 dark:bg-slate-800/30 flex items-center justify-between text-xs text-slate-400">
                 <div>
-                    <span>{{ article.nickname || article.email }}</span>
+                    <span>{{ article.nickname || '未署名' }}</span>
                     <span class="ml-3">{{ article.updated_at }}</span>
                 </div>
                 <router-link v-if="canEdit"
