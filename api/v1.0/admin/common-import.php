@@ -59,6 +59,46 @@ function commonImportCatalog(PDO $dbh) {
     return $rows;
 }
 
+function commonImportSavedConfigs(PDO $dbh, $ownerId) {
+    $stmt = $dbh->prepare(
+        "SELECT j.`area_id`, j.`rule_profile`, j.`config_json`, j.`source_filename`,
+                j.`source_sheet`, j.`published_at`
+         FROM `common_import_jobs` AS j
+         WHERE j.`created_by` = ?
+           AND j.`status` = 'published'
+           AND NOT EXISTS (
+             SELECT 1
+             FROM `common_import_jobs` AS newer
+             WHERE newer.`created_by` = j.`created_by`
+               AND newer.`status` = 'published'
+               AND newer.`rule_profile` = j.`rule_profile`
+               AND (
+                 newer.`published_at` > j.`published_at`
+                 OR (newer.`published_at` = j.`published_at` AND newer.`id` > j.`id`)
+               )
+           )
+         ORDER BY j.`published_at` DESC
+         LIMIT 250"
+    );
+    $stmt->execute([$ownerId]);
+    $configs = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $config = json_decode((string)$row['config_json'], true);
+        if (!is_array($config)) {
+            continue;
+        }
+        $configs[] = [
+            'area_id' => $row['area_id'] === null ? null : (int)$row['area_id'],
+            'rule_profile' => $row['rule_profile'],
+            'config' => $config,
+            'source_filename' => $row['source_filename'],
+            'source_sheet' => $row['source_sheet'],
+            'published_at' => $row['published_at'],
+        ];
+    }
+    return $configs;
+}
+
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 try {
@@ -108,6 +148,7 @@ try {
         }
         outputJson([
             'locations' => commonImportCatalog($dbh),
+            'saved_configs' => commonImportSavedConfigs($dbh, $currentUserId),
             'rule_bundle' => [
                 'id' => $bundle['id'],
                 'version' => $bundle['version'],
