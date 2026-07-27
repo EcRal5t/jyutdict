@@ -4,6 +4,11 @@ import adminApi from '@/api/admin.js'
 import { COMMON_CONVERTER_VERSION } from '@/utils/commonConverter.js'
 import { prepareImportTransfer } from '@/utils/commonTransfer.js'
 import { runCommonWorker } from '@/utils/commonWorkerClient.js'
+import {
+    findBestLocation,
+    locationDisplayName,
+    normalizeLocationName,
+} from '@/utils/locationMatch.js'
 import { rebuildLocationPhonology } from '@/utils/phonologyRebuild.js'
 
 const metadata = shallowRef(null)
@@ -52,7 +57,7 @@ const locations = computed(() => metadata.value?.locations?.filter(area => !area
 const selectedArea = computed(() =>
     locations.value.find(area => Number(area.id) === Number(areaId.value)) || null
 )
-const areaName = area => [area.second, area.third].filter(Boolean).join('') || area.first || ''
+const areaName = locationDisplayName
 const savedConfigs = computed(() => metadata.value?.saved_configs || [])
 const validationPreview = computed(() => {
     const rows = parsed.value?.rows || []
@@ -68,13 +73,6 @@ const validationPreview = computed(() => {
     return { rows: matches.slice(0, 100), total: matches.length, limit: 100 }
 })
 
-function normalizeLocationName(value) {
-    return String(value || '')
-        .normalize('NFKC')
-        .replace(/[\s·・._\-—–()（）[\]【】]+/g, '')
-        .toLowerCase()
-}
-
 function inferLocaleName(filename) {
     let stem = String(filename || '').split(/[\\/]/).pop().replace(/\.xlsx$/i, '').trim()
     const dateMatch = stem.match(/(?:\d{8}|\d{6})$/)
@@ -82,21 +80,8 @@ function inferLocaleName(filename) {
     return stem.replace(/[\s._\-—–]+$/g, '').trim()
 }
 
-function locationNames(area) {
-    return [
-        areaName(area),
-        area.third,
-        area.second,
-        area.first,
-        [area.first, area.second, area.third].filter(Boolean).join(''),
-        area.detailed_name,
-    ].map(normalizeLocationName).filter(Boolean)
-}
-
 function findLocation(localeName) {
-    const key = normalizeLocationName(localeName)
-    if (!key) return null
-    return locations.value.find(area => locationNames(area).includes(key)) || null
+    return findBestLocation(locations.value, localeName)
 }
 
 function findSavedConfig(localeName, filenameArea) {
