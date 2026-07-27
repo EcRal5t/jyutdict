@@ -25,7 +25,7 @@ const presetNotice = ref('')
 const validationQuery = ref('')
 
 const DEFAULT_IMPORT_CONFIG = {
-    sheetName: 'Sheet1',
+    sheetName: '',
     localeName: '',
     charColumn: 'A',
     pronColumns: 'B',
@@ -114,6 +114,10 @@ function applySavedConfig(saved) {
     if (!saved?.config) return
     for (const key of Object.keys(DEFAULT_IMPORT_CONFIG)) {
         if (Object.prototype.hasOwnProperty.call(saved.config, key)) {
+            // Sheet1 used to be the implicit default. Treat stored copies of that
+            // default as automatic selection so multi-sheet workbooks can choose
+            // their real main table.
+            if (key === 'sheetName' && saved.config[key] === 'Sheet1') continue
             config[key] = saved.config[key]
         }
     }
@@ -297,7 +301,7 @@ async function parseWorkbook() {
         jobId.value = resumable?.id || crypto.randomUUID()
         success.value = resumable
             ? `已找到相同內容的未完成任務，將從 ${resumable.received_chunk_count}/${resumable.expected_chunk_count} 分塊續傳。`
-            : '轉換完成。原始 Excel 尚未離開瀏覽器。'
+            : `已解析工作表「${result.sourceSheet}」。原始 Excel 尚未離開瀏覽器。`
     } catch (caught) {
         error.value = caught.message || '轉換失敗'
     } finally {
@@ -457,7 +461,7 @@ onMounted(load)
 
                 <h3 class="border-l-4 border-accent pl-2 text-sm font-bold">2　Excel 欄位</h3>
                 <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    <label class="text-xs text-slate-500">工作表<input v-model.trim="config.sheetName" class="mt-1 w-full border p-2 text-sm dark:bg-slate-900" /></label>
+                    <label class="text-xs text-slate-500">工作表<input v-model.trim="config.sheetName" placeholder="留空則自動選擇主表" class="mt-1 w-full border p-2 text-sm dark:bg-slate-900" /></label>
                     <label class="text-xs text-slate-500">字頭 -c<input v-model.trim="config.charColumn" class="mt-1 w-full border p-2 text-sm dark:bg-slate-900" /></label>
                     <label class="text-xs text-slate-500">J++ -p<input v-model.trim="config.pronColumns" class="mt-1 w-full border p-2 text-sm dark:bg-slate-900" /></label>
                     <label class="text-xs text-slate-500">次音 -P<input v-model.trim="config.secondaryPronColumns" class="mt-1 w-full border p-2 text-sm dark:bg-slate-900" /></label>

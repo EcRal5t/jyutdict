@@ -11,6 +11,39 @@ function getDenseCell(sheet, row, column) {
     return sheet[XLSX.utils.encode_cell({ r: row, c: column })]
 }
 
+function getSheetInfo(workbook, name) {
+    const reference = workbook.Sheets[name]?.['!ref']
+    if (!reference) return { name, rowCount: 0, columnCount: 0 }
+    const range = XLSX.utils.decode_range(reference)
+    return {
+        name,
+        rowCount: range.e.r + 1,
+        columnCount: range.e.c + 1,
+    }
+}
+
+function selectSheet(workbook, requested) {
+    if (requested && workbook.SheetNames.includes(requested)) {
+        return { name: requested, warning: '' }
+    }
+
+    const sheets = workbook.SheetNames.map(name => getSheetInfo(workbook, name))
+    const conventionalName = ['主表', '字表', '審音表', '审音表']
+        .find(name => workbook.SheetNames.includes(name))
+    const largest = [...sheets].sort((left, right) =>
+        right.rowCount * right.columnCount - left.rowCount * left.columnCount
+    )[0]
+    const name = conventionalName || largest?.name || workbook.SheetNames[0]
+    return {
+        name,
+        warning: requested
+            ? `找不到工作表「${requested}」，已改用「${name}」`
+            : workbook.SheetNames.length > 1
+                ? `未指定工作表，已自動選擇「${name}」`
+                : '',
+    }
+}
+
 function readWorkbook(buffer, config, requestId) {
     postProgress(requestId, 'workbook', 5, '正在讀取活頁簿')
     const workbook = XLSX.read(buffer, {
@@ -23,8 +56,8 @@ function readWorkbook(buffer, config, requestId) {
     })
     if (!workbook.SheetNames.length) throw new Error('活頁簿沒有工作表')
     const requested = String(config.sheetName || '').trim()
-    const candidates = [requested, 'Sheet1', '主表', '字表', workbook.SheetNames[0]].filter(Boolean)
-    const sheetName = candidates.find(name => workbook.SheetNames.includes(name))
+    const selection = selectSheet(workbook, requested)
+    const sheetName = selection.name
     const sheet = workbook.Sheets[sheetName]
     if (!sheet?.['!ref']) throw new Error(`工作表「${sheetName}」沒有資料`)
     const range = XLSX.utils.decode_range(sheet['!ref'])
@@ -73,9 +106,7 @@ function readWorkbook(buffer, config, requestId) {
         rows,
         sheetName,
         sheetNames: workbook.SheetNames,
-        warning: requested && requested !== sheetName
-            ? `找不到工作表「${requested}」，已改用「${sheetName}」`
-            : '',
+        warning: selection.warning,
     }
 }
 
