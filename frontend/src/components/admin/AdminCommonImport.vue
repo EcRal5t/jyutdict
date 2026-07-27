@@ -8,6 +8,7 @@ import { rebuildLocationPhonology } from '@/utils/phonologyRebuild.js'
 
 const metadata = shallowRef(null)
 const ruleBundle = shallowRef(null)
+const ruleBundleEtag = ref('')
 const loading = ref(true)
 const busy = ref(false)
 const error = ref('')
@@ -145,16 +146,45 @@ function applySelectedArea() {
 
 watch(areaId, applySelectedArea, { flush: 'sync' })
 
+function applyRuleBundleResponse(response) {
+    if (response.status === 304) {
+        if (!ruleBundle.value) throw new Error('本機尚未載入轉寫規則')
+        return ruleBundle.value
+    }
+    const active = response.data?.active
+    if (!active?.payload || !active?.payload_hash) {
+        throw new Error('伺服器返回的轉寫規則不完整')
+    }
+    ruleBundle.value = active
+    ruleBundleEtag.value = response.headers?.etag || `"${active.payload_hash}"`
+    if (metadata.value) {
+        metadata.value = {
+            ...metadata.value,
+            rule_bundle: {
+                id: active.id,
+                version: active.version,
+                payload_hash: active.payload_hash,
+            },
+        }
+    }
+    return active
+}
+
+async function refreshRuleBundle() {
+    const response = await adminApi.getActiveCommonRules(ruleBundleEtag.value)
+    return applyRuleBundleResponse(response)
+}
+
 async function load() {
     loading.value = true
     error.value = ''
     try {
         const [metaResponse, rulesResponse] = await Promise.all([
             adminApi.getCommonImport(),
-            adminApi.getCommonRules(),
+            adminApi.getActiveCommonRules(),
         ])
         metadata.value = metaResponse.data
-        ruleBundle.value = rulesResponse.data.active
+        applyRuleBundleResponse(rulesResponse)
     } catch (caught) {
         error.value = caught.response?.data?.error || caught.message || '載入導入工具失敗'
     } finally {
@@ -227,11 +257,13 @@ async function parseWorkbook() {
     transfer.value = null
     try {
         validateBeforeParse()
+        progress.value = { percent: 0, message: '正在檢查最新轉寫規則' }
+        const activeRuleBundle = await refreshRuleBundle()
         const buffer = await selectedFile.value.arrayBuffer()
         const result = await runCommonWorker('parse-workbook', {
             buffer,
             config: { ...config },
-            ruleBundle: ruleBundle.value.payload,
+            ruleBundle: activeRuleBundle.payload,
         }, {
             transfer: [buffer],
             onProgress: value => { progress.value = value },

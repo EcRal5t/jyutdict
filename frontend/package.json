@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "vite build",
     "postbuild": "node scripts/deploy.js",
-    "test:jyutping": "node scripts/test-jyutping.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

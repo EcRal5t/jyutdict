@@ -16,6 +16,43 @@ try {
     jyutdictCommonImportRequireSchema($dbh);
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
     if ($method === 'GET') {
+        if (($_GET['active_only'] ?? '') === '1') {
+            $active = $dbh->query(
+                "SELECT `id`, `version`, HEX(`payload_hash`) AS `payload_hash`, `created_at`
+                 FROM `common_rule_bundles`
+                 WHERE `is_active` = 1
+                 ORDER BY `created_at` DESC, `id` DESC
+                 LIMIT 1"
+            )->fetch(PDO::FETCH_ASSOC);
+            if (!$active) {
+                throw new RuntimeException('No active common conversion rule bundle');
+            }
+            $active['id'] = (int)$active['id'];
+            $active['payload_hash'] = strtolower($active['payload_hash']);
+            $etag = '"' . $active['payload_hash'] . '"';
+            header('Cache-Control: private, no-cache, must-revalidate');
+            header("ETag: {$etag}");
+            $requestEtags = array_map(
+                'trim',
+                explode(',', (string)($_SERVER['HTTP_IF_NONE_MATCH'] ?? ''))
+            );
+            if (in_array($etag, $requestEtags, true) || in_array('*', $requestEtags, true)) {
+                http_response_code(304);
+                exit;
+            }
+
+            $payloadStmt = $dbh->prepare(
+                "SELECT `payload_json` FROM `common_rule_bundles` WHERE `id` = ? LIMIT 1"
+            );
+            $payloadStmt->execute([$active['id']]);
+            $payload = json_decode((string)$payloadStmt->fetchColumn(), true);
+            if (!is_array($payload)) {
+                throw new RuntimeException('Active rule bundle is invalid JSON');
+            }
+            $active['payload'] = $payload;
+            outputJson(['active' => $active]);
+        }
+
         $active = jyutdictCommonImportActiveBundle($dbh);
         $payload = json_decode($active['payload_json'], true);
         if (!is_array($payload)) {

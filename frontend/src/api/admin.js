@@ -24,6 +24,9 @@ apiClient.interceptors.request.use((config) => {
 // 管理 API 一律应返回 JSON。若部署时漏了 .htaccess 路由，Vue 的兜底頁會以
 // 200 + text/html 返回；在這裏攔截，避免各管理頁把錯誤響應當成空資料。
 apiClient.interceptors.response.use((response) => {
+    if (response.status === 304) {
+        return response;
+    }
     const contentType = String(response.headers?.['content-type'] || '').toLowerCase();
     if (!contentType.includes('application/json')) {
         const error = new Error('管理 API 路由未正確部署，伺服器返回了網頁而不是資料');
@@ -135,6 +138,13 @@ export default {
     },
     getCommonRules() {
         return apiClient.get('/common-rules');
+    },
+    getActiveCommonRules(etag = '') {
+        return apiClient.get('/common-rules', {
+            params: { active_only: 1 },
+            headers: etag ? { 'If-None-Match': etag } : {},
+            validateStatus: status => (status >= 200 && status < 300) || status === 304,
+        });
     },
     saveCommonRules(version, payload) {
         return apiClient.post('/common-rules', { version, payload });

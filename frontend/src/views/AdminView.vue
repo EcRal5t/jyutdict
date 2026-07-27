@@ -1,5 +1,6 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import adminApi from '@/api/admin.js'
 import AdminLocations from '@/components/admin/AdminLocations.vue'
@@ -11,16 +12,37 @@ import AdminCommonRules from '@/components/admin/AdminCommonRules.vue'
 import AdminPhonology from '@/components/admin/AdminPhonology.vue'
 
 const authStore = useAuthStore()
+const route = useRoute()
+const router = useRouter()
 
 // ===== Tab 切换 =====
-const activeTab = ref('users')
-const visitedTabs = reactive(new Set(['users']))
+const adminTabs = new Set([
+    'users', 'editors', 'locations', 'location-aliases', 'common-import',
+    'phonology-rebuild', 'common-rules', 'maintenance', 'audit',
+])
+const ownerTabs = new Set(['common-import', 'phonology-rebuild', 'common-rules'])
+const normalizeTab = tab => {
+    const value = typeof tab === 'string' ? tab : ''
+    if (!adminTabs.has(value) || (ownerTabs.has(value) && !authStore.isOwner)) return 'users'
+    return value
+}
+const activeTab = ref(normalizeTab(route.query.tab))
+const visitedTabs = reactive(new Set([activeTab.value]))
 
-const selectTab = (tab) => {
+const activateTab = (tab) => {
+    tab = normalizeTab(tab)
     const firstVisit = !visitedTabs.has(tab)
     visitedTabs.add(tab)
     activeTab.value = tab
     if (tab === 'editors' && firstVisit) searchEditors()
+}
+
+const selectTab = (tab) => {
+    tab = normalizeTab(tab)
+    activateTab(tab)
+    if (route.query.tab !== tab) {
+        router.replace({ query: { ...route.query, tab } })
+    }
 }
 
 // ===== 用户管理 =====
@@ -127,6 +149,12 @@ const locationSourceTypes = (location) => {
 onMounted(() => {
     loadUsers()
     loadLocations()
+    if (activeTab.value === 'editors') searchEditors()
+})
+
+watch(() => route.query.tab, tab => {
+    const normalized = normalizeTab(tab)
+    if (normalized !== activeTab.value) activateTab(normalized)
 })
 </script>
 
