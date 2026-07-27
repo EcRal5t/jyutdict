@@ -306,10 +306,14 @@ async function uploadChunkWithRetry(job, chunk) {
             )
         } catch (caught) {
             lastError = caught
+            const status = Number(caught.response?.status || 0)
+            if (status >= 400 && status < 500 && status !== 408 && status !== 429) {
+                throw caught
+            }
             if (attempt < 3) {
                 progress.value = {
                     percent: progress.value.percent,
-                    message: `第 ${chunk.number + 1} 分塊連線失敗，正在第 ${attempt + 1} 次重試`,
+                    message: `第 ${chunk.number + 1} 分塊上傳失敗，正在第 ${attempt + 1} 次重試`,
                 }
             }
         }

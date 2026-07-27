@@ -358,6 +358,18 @@ function readSyllables(values, separator) {
     }
 }
 
+function pairReadings(prons, ipas) {
+    const count = Math.max(prons.length, ipas.length)
+    const valueAt = (values, index) => {
+        if (values.length === 1 && count > 1) return values[0]
+        return values[index] || ''
+    }
+    return Array.from({ length: count }, (_, index) => ({
+        pron: valueAt(prons, index),
+        ipa: valueAt(ipas, index),
+    }))
+}
+
 function mergeDuplicateGroups(groups) {
     if (groups.length < 2) return groups
     const merged = groups.map(group => ({
@@ -384,10 +396,33 @@ function mergeDuplicateGroups(groups) {
             } else {
                 mean = `${left.mean}${right.mean}`
             }
+            const readings = []
+            const seenReadings = new Set()
+            for (const reading of [
+                ...pairReadings(left.prons, left.ipas),
+                ...pairReadings(right.prons, right.ipas),
+            ]) {
+                const key = `${reading.pron}\u001f${reading.ipa}`
+                if (seenReadings.has(key)) continue
+                const incomplete = readings.findIndex(candidate =>
+                    candidate.pron === reading.pron && !candidate.ipa && reading.ipa
+                )
+                if (incomplete >= 0) {
+                    seenReadings.delete(`${readings[incomplete].pron}\u001f`)
+                    readings[incomplete] = reading
+                    seenReadings.add(key)
+                    continue
+                }
+                if (!reading.ipa && readings.some(candidate =>
+                    candidate.pron === reading.pron && candidate.ipa
+                )) continue
+                seenReadings.add(key)
+                readings.push(reading)
+            }
             merged[i] = {
                 ...left,
-                prons: [...new Set([...left.prons, ...right.prons])],
-                ipas: [...new Set([...left.ipas, ...right.ipas])],
+                prons: readings.map(reading => reading.pron),
+                ipas: readings.map(reading => reading.ipa),
                 mean,
                 sourceRows: [...new Set([...left.sourceRows, ...right.sourceRows])].sort((a, b) => a - b),
             }
@@ -419,15 +454,26 @@ function normalizeGroups(entries, rules, hasJpp, hasIpa, warnings) {
                     group.prons = transformed.map(value => value.pron)
                     group.ipas = transformed.map(value => value.ipa)
                 } else if (hasJpp && hasIpa) {
-                    group.prons = group.prons
-                        .map(splitJpp)
-                        .sort((a, b) => `${a.nuclei}${a.coda}`.localeCompare(`${b.nuclei}${b.coda}`))
-                        .map(parts => {
+                    const transformed = pairReadings(group.prons, group.ipas)
+                        .map(reading => {
+                            if (!reading.pron) throw new Error('J++ 讀音爲空')
+                            const parts = splitJpp(reading.pron)
+                            if (!parts.nuclei) throw new Error(`J++ 韻核不存在：${reading.pron}`)
                             const normalized = normJpp(pronTranslate(rules.j2j, parts, null))
                             const checked = ['p', 't', 'k', 'h'].includes(parts.coda)
                             const tone = toneTranslate(rules.toneJ2j, checked, parts.tone, true)
-                            return `${normalized.initial}${normalized.nuclei}${normalized.coda}${tone}`
+                            return {
+                                pron: `${normalized.initial}${normalized.nuclei}${normalized.coda}${tone}`,
+                                ipa: reading.ipa,
+                            }
                         })
+                        .sort((a, b) => {
+                            const left = splitJpp(a.pron)
+                            const right = splitJpp(b.pron)
+                            return `${left.nuclei}${left.coda}`.localeCompare(`${right.nuclei}${right.coda}`)
+                        })
+                    group.prons = transformed.map(value => value.pron)
+                    group.ipas = transformed.map(value => value.ipa)
                 } else if (hasIpa) {
                     const transformed = group.ipas
                         .map(splitIpa)
@@ -566,6 +612,12 @@ export function convertGrid(rows, config, ruleBundle) {
             const count = Math.max(group.prons.length, group.ipas.length)
             for (let item = 0; item < count; item += 1) {
                 const pron = splitJpp(group.prons[item] || '')
+                if (!pron.nuclei) {
+                    const sourceRow = group.sourceRows[0] || null
+                    throw new Error(
+                        `第 ${sourceRow || '未知'} 行「${entry.chara}」的 J++ 未能解析出韻核`
+                    )
+                }
                 output.push({
                     row_no: output.length + 1,
                     display_order: displayOrder,
