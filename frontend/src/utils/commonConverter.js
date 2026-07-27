@@ -53,7 +53,7 @@ const IPA_TO_JPP_CODA = {
 }
 
 const initialPattern = /^(mb?|n[jrd]?|ngg?|[bdg]{1,2}|g[hn]?|r[bdgzscrh]|[zcs][hrjl]?|[ptkvw]h?|[hqfjlrx0])([jwv]?)(?=[aeoiuymn])/
-const tonePattern = /[0-9]?[0-9*]0?[0-9'ABCD]?(`\d+)?$/
+const tonePattern = /[0-9]?[0-9*]0?[0-9*'ABCD]?(`\d+)?$/
 const vowelTokens = Object.keys(JPP_TO_IPA_VOWEL).sort((a, b) => b.length - a.length)
 const ipaVowelPattern = /([iyɯueɵoɤəɛøœɔæɐaɑɒʌɿɪʊᵃə̯a̯ɜɯ̜]+|ŋ̩|n̩|m̩|ŋ̍)/
 

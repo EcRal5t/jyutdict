@@ -10,10 +10,10 @@ export class Jyutping {
     // Logic ported from Jyutping.class.php
     static parse(jyutpingStr) {
         // Regex patterns from PHP class
-        const format = /^[a-z%]{1,10}([0-9]?[0-9*][0-9\']?)?$/;
+        const format = /^[a-z%]{1,10}([0-9]?[0-9*][0-9*']?)?$/;
         const initialFormat = /^(mb?|n[jrd]?|ngg?|[bdg]{1,2}|g[hn]?|r[bdgzscrh]|[zcs][hrjl]?|[ptkvw]h?|[hqfjlrx0])([jwv]?)(?=[aeoiuymn])/;
-        const codaFormat = /[aoreiwu%](n[ng]?|[mptkh|%])(\d{0,2}|%)$/;
-        const toneFormat = /[0-9]?[0-9*][0-9\']?$/;
+        const codaFormat = /[aoreiwu%](n[ng]?|[mptkh%])(?:[0-9]?[0-9*][0-9*']?|%)?$/;
+        const toneFormat = /[0-9]?[0-9*][0-9*']?$/;
         const vowelFormat = /(^ng?$|^m$|i[rwi]?|u[rwu]?|[aeo][aeowr]?|yu$|y)$/;
 
         if (format.test(jyutpingStr)) {

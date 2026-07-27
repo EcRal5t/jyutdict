@@ -1,7 +1,7 @@
-const INPUT_FORMAT = /^[a-z? ]{1,10}\d{0,2}$/;
+const INPUT_FORMAT = /^[a-z? ]{1,10}(?:[0-9]?[0-9*][0-9*']?(`\d+)?)?$/;
 const INITIAL_FORMAT = /^(?:ngg?|mb?|n[jrd]?|[bdg]{1,2}|g[whn]?|r[bdgzscrh]|[zcs][hrjl]?|[ptkvw]h?|[hqfjlrx0])(?=$|[aeoiuymn? ])/;
 const CODA_FORMAT = /(ng|n|m|p|t|k|h)$/;
-const TONE_FORMAT = /[0-9]?[0-9*][0-9']?(`\d+)?$/;
+const TONE_FORMAT = /[0-9]?[0-9*][0-9*']?(`\d+)?$/;
 
 const invalidResult = (status = 'invalid') => ({
     status,
