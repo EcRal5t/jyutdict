@@ -23,7 +23,7 @@ function jyutdictFormatSheetMetadata(array $area) {
         'character_count' => '字數',
         'syllable_count' => '音節數',
         'toneless_syllable_count' => '不帶調音節數',
-        'skipped_row_count' => '略過行數',
+        // 'skipped_row_count' => '略過行數',
     ] as $field => $label) {
         if ($area[$field] !== null && ($field !== 'skipped_row_count' || (int)$area[$field] > 0)) {
             $statistics[] = $label . '：' . (int)$area[$field];
