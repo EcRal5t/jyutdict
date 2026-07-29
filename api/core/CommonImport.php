@@ -302,19 +302,25 @@ function jyutdictCommonImportNewArea(PDO $dbh, $json, $stableJson) {
     $stable = is_array($stable) ? $stable : [];
     $detailedName = jyutdictCommonImportCleanText($stable['detailed_name'] ?? '', 'detailed_name', 255, true);
     $author = jyutdictCommonImportCleanText($stable['sheet_author'] ?? '', 'sheet_author', 2000, true);
+    $licenseConsent = $input['cc_by_sa_4_0_consent'] ?? null;
+    if ($licenseConsent !== null && !is_bool($licenseConsent)) {
+        throw new RuntimeException('cc_by_sa_4_0_consent must be null or boolean');
+    }
     $sortOrder = (int)$dbh->query(
         "SELECT COALESCE(MAX(`sort_order`), 0) + 10 FROM `i_area_list` WHERE `archived_at` IS NULL"
     )->fetchColumn();
     $stmt = $dbh->prepare(
         "INSERT INTO `i_area_list`
          (`longitude`, `latitude`, `first`, `second`, `third`, `detailed_name`, `sheet_author`,
-          `sheetname`, `color`, `is_visible`, `sort_order`, `archived_at`, `archived_by`)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NULL, NULL)"
+          `cc_by_sa_4_0_consent`, `sheetname`, `color`, `is_visible`, `sort_order`,
+          `archived_at`, `archived_by`)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NULL, NULL)"
     );
     $stmt->execute([
         $metadata['longitude'], $metadata['latitude'], $metadata['first'], $metadata['second'],
-        $metadata['third'], $detailedName ?: null, $author ?: null, $sheetname,
-        $metadata['color'], $sortOrder,
+        $metadata['third'], $detailedName ?: null, $author ?: null,
+        $licenseConsent === null ? null : (int)$licenseConsent, $sheetname, $metadata['color'],
+        $sortOrder,
     ]);
     return (int)$dbh->lastInsertId();
 }

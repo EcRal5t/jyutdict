@@ -1,6 +1,6 @@
 import * as OpenCC from 'opencc-js'
 
-export const COMMON_CONVERTER_VERSION = 'jyutdict-web-1.0.0'
+export const COMMON_CONVERTER_VERSION = 'jyutdict-web-1.1.0'
 
 const LEGACY_KEEP_CHARS = new Set(Array.from(
     '干后系历板表丑范丰刮胡回伙姜借克困里帘面蔑千秋松咸向余郁御愿云芸沄致制朱筑准辟别卜斗谷划几据卷了累朴仆曲舍胜术台吁佣折征症采吃床峰杠恒栗秘凶熏肴占苧咨粽并雇广么霉群抬涂托涌游灶皂庄岩叶坏厘尸个冲巩碱种岳于网万糍夸荐杰晒痴姹麽昵蘖唇虱宁膻厂'
@@ -105,21 +105,6 @@ export function splitIpa(raw) {
     }
 }
 
-export function normJpp(parts) {
-    let { initial, nuclei, coda } = parts
-    if (initial === '0') initial = ''
-    if (initial && nuclei.length >= 2) {
-        if ((nuclei === 'ie' && coda) || nuclei === 'ieu') nuclei = nuclei.slice(1)
-        if (initial.endsWith('j') && (
-            ['ia', 'ie', 'io'].includes(nuclei.slice(0, 2)) || (nuclei === 'io' && coda)
-        )) nuclei = nuclei.slice(1)
-        if (initial.endsWith('w') && (
-            ['ua', 'ue', 'uo'].includes(nuclei.slice(0, 2)) || (nuclei === 'ui' && coda)
-        )) nuclei = nuclei.slice(1)
-    }
-    return { initial, nuclei, coda }
-}
-
 function termObject(rule, meta = null) {
     return {
         beforeInitial: String(rule[0] ?? ''),
@@ -158,9 +143,36 @@ export function selectRuleProfiles(bundle, profiles) {
     return selected
 }
 
-function selectRules(bundle, locale) {
-    const append = Array.isArray(bundle.appendProfiles) ? bundle.appendProfiles.map(String) : ['0', '1']
-    return selectRuleProfiles(bundle, [String(locale || ''), ...append])
+export function ruleProfileNames(bundle) {
+    const names = new Set(
+        (Array.isArray(bundle?.appendProfiles) ? bundle.appendProfiles : []).map(String)
+    )
+    for (const book of ['i2i', 'i2j', 'j2i', 'j2j']) {
+        for (const profile of Object.keys(bundle?.rules?.[book] || {})) names.add(profile)
+    }
+    for (const book of ['j2i', 'j2j']) {
+        for (const profile of Object.keys(bundle?.tones?.[book] || {})) names.add(profile)
+    }
+    return [...names]
+}
+
+export function defaultRuleProfiles(bundle, primaryProfile = '') {
+    const primary = String(primaryProfile || '').trim()
+    const append = Array.isArray(bundle?.appendProfiles)
+        ? bundle.appendProfiles.map(String)
+        : ['0', '1']
+    const available = new Set(ruleProfileNames(bundle))
+    return [...new Set([primary, ...append, '999'].filter(Boolean))]
+        .filter(profile => profile === primary || available.has(profile))
+}
+
+function selectRules(bundle, config) {
+    const explicit = Array.isArray(config.ruleProfiles)
+        ? [...new Set(config.ruleProfiles.map(value => String(value).trim()).filter(Boolean))]
+        : null
+    const profiles = explicit ?? defaultRuleProfiles(bundle, config.localeName)
+    if (!profiles.length) throw new Error('至少選擇一個規則組')
+    return selectRuleProfiles(bundle, profiles)
 }
 
 function getVowelsIpa(value) {
@@ -286,7 +298,7 @@ export function convertRuleSyllable(bundle, profiles, direction, raw) {
 
     if (direction === 'j2j' || direction === 'j2i') {
         const source = splitJpp(input)
-        const normalized = normJpp(pronTranslate(rules.j2j, source, null, trace))
+        const normalized = pronTranslate(rules.j2j, source, null, trace)
         const checked = isCheckedCoda(source.coda)
         const category = checked ? '入聲' : '舒聲'
         const normalizedTone = toneTranslate(rules.toneJ2j, checked, source.tone, true)
@@ -305,7 +317,7 @@ export function convertRuleSyllable(bundle, profiles, direction, raw) {
         if (direction === 'i2i') {
             result = `${normalized.initial}${normalized.nuclei}${normalized.coda}${source.tone}`
         } else {
-            const jpp = normJpp(pronTranslate(rules.i2j, normalized, 'jpp', trace))
+            const jpp = pronTranslate(rules.i2j, normalized, 'jpp', trace)
             const checked = isCheckedCoda(source.coda, true)
             const category = checked ? '入聲' : '舒聲'
             const tone = toneTranslate(rules.toneI2j, checked, source.tone)
@@ -441,7 +453,7 @@ function normalizeGroups(entries, rules, hasJpp, hasIpa, warnings) {
                         .map(splitJpp)
                         .sort((a, b) => `${a.nuclei}${a.coda}`.localeCompare(`${b.nuclei}${b.coda}`))
                         .map(parts => {
-                            const normalized = normJpp(pronTranslate(rules.j2j, parts, null))
+                            const normalized = pronTranslate(rules.j2j, parts, null)
                             const checked = ['p', 't', 'k', 'h'].includes(parts.coda)
                             const tone = toneTranslate(rules.toneJ2j, checked, parts.tone, true)
                             const ipaTone = toneTranslate(rules.toneJ2i, checked, tone)
@@ -459,7 +471,7 @@ function normalizeGroups(entries, rules, hasJpp, hasIpa, warnings) {
                             if (!reading.pron) throw new Error('J++ 讀音爲空')
                             const parts = splitJpp(reading.pron)
                             if (!parts.nuclei) throw new Error(`J++ 韻核不存在：${reading.pron}`)
-                            const normalized = normJpp(pronTranslate(rules.j2j, parts, null))
+                            const normalized = pronTranslate(rules.j2j, parts, null)
                             const checked = ['p', 't', 'k', 'h'].includes(parts.coda)
                             const tone = toneTranslate(rules.toneJ2j, checked, parts.tone, true)
                             return {
@@ -480,7 +492,7 @@ function normalizeGroups(entries, rules, hasJpp, hasIpa, warnings) {
                         .sort((a, b) => `${a.nuclei}${a.coda}`.localeCompare(`${b.nuclei}${b.coda}`))
                         .map(parts => {
                             const normalized = pronTranslate(rules.i2i, parts, null)
-                            const jpp = normJpp(pronTranslate(rules.i2j, normalized, 'jpp'))
+                            const jpp = pronTranslate(rules.i2j, normalized, 'jpp')
                             const checked = ['p', 't', 'k', 'ʔ'].includes(parts.coda)
                             const tone = toneTranslate(rules.toneI2j, checked, parts.tone)
                             return {
@@ -586,7 +598,7 @@ export function convertGrid(rows, config, ruleBundle) {
     for (const entry of entries) {
         if (hasJpp) entry.groups = mergeDuplicateGroups(entry.groups)
     }
-    const rules = selectRules(ruleBundle, config.localeName || '')
+    const rules = selectRules(ruleBundle, config)
     normalizeGroups(entries, rules, hasJpp, hasIpa, warnings)
     if (config.s2tMode !== 'off') {
         applyLegacyS2t(entries, Boolean(config.keepS2tCollision), Boolean(config.convertMeanings))

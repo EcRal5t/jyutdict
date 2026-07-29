@@ -208,6 +208,10 @@ try {
                 'first' => '', 'second' => '', 'third' => '',
                 'longitude' => 0.0, 'latitude' => 0.0, 'color' => '#CCCCCC',
             ]);
+            $licenseConsent = $newArea['cc_by_sa_4_0_consent'] ?? null;
+            if ($licenseConsent !== null && !is_bool($licenseConsent)) {
+                throw new RuntimeException('cc_by_sa_4_0_consent must be null or boolean');
+            }
         }
 
         $expectedChunks = (int)($input['expected_chunk_count'] ?? 0);
@@ -246,6 +250,28 @@ try {
         $config = $input['config'] ?? null;
         if (!is_array($config)) {
             throw new RuntimeException('config must be an object');
+        }
+        if (array_key_exists('ruleProfiles', $config)) {
+            if (!is_array($config['ruleProfiles']) ||
+                count($config['ruleProfiles']) < 1 ||
+                count($config['ruleProfiles']) > 100) {
+                throw new RuntimeException('config.ruleProfiles must contain 1 to 100 rule profiles');
+            }
+            $ruleProfiles = [];
+            foreach ($config['ruleProfiles'] as $profile) {
+                if (!is_string($profile) && !is_numeric($profile)) {
+                    throw new RuntimeException('config.ruleProfiles items must be strings');
+                }
+                $cleanProfile = jyutdictCommonImportCleanText(
+                    $profile,
+                    'config.ruleProfiles item',
+                    128
+                );
+                if (!in_array($cleanProfile, $ruleProfiles, true)) {
+                    $ruleProfiles[] = $cleanProfile;
+                }
+            }
+            $config['ruleProfiles'] = $ruleProfiles;
         }
         $stable = $input['stable_metadata'] ?? [];
         if (!is_array($stable)) {

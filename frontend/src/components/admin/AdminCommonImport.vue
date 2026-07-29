@@ -1,7 +1,11 @@
 <script setup>
 import { computed, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import adminApi from '@/api/admin.js'
-import { COMMON_CONVERTER_VERSION } from '@/utils/commonConverter.js'
+import {
+    COMMON_CONVERTER_VERSION,
+    defaultRuleProfiles as getDefaultRuleProfiles,
+    ruleProfileNames,
+} from '@/utils/commonConverter.js'
 import { prepareImportTransfer } from '@/utils/commonTransfer.js'
 import { runCommonWorker } from '@/utils/commonWorkerClient.js'
 import {
@@ -28,10 +32,14 @@ const areaId = ref('')
 const rebuildAfterPublish = ref(false)
 const presetNotice = ref('')
 const validationQuery = ref('')
+const ruleProfileToAdd = ref('')
+const dragRuleProfileIndex = ref(null)
+const localeProfileBeforeEdit = ref('')
 
 const DEFAULT_IMPORT_CONFIG = {
     sheetName: '',
     localeName: '',
+    ruleProfiles: null,
     charColumn: 'A',
     pronColumns: 'B',
     secondaryPronColumns: '',
@@ -45,12 +53,14 @@ const DEFAULT_IMPORT_CONFIG = {
     removeRedundantMeaning: false,
     sortPronunciations: false,
 }
-const config = reactive({ ...DEFAULT_IMPORT_CONFIG })
+const freshImportConfig = () => ({ ...DEFAULT_IMPORT_CONFIG, ruleProfiles: [] })
+const config = reactive(freshImportConfig())
 const sourceDate = ref('')
 const stable = reactive({ detailed_name: '', sheet_author: '' })
 const newArea = reactive({
     sheetname: '', first: '', second: '', third: '',
     longitude: 0, latitude: 0, color: '#CCCCCC',
+    cc_by_sa_4_0_consent: null,
 })
 
 const locations = computed(() => metadata.value?.locations?.filter(area => !area.archived_at) || [])
@@ -59,6 +69,22 @@ const selectedArea = computed(() =>
 )
 const areaName = locationDisplayName
 const savedConfigs = computed(() => metadata.value?.saved_configs || [])
+const availableRuleProfiles = computed(() => {
+    const payload = ruleBundle.value?.payload
+    if (!payload) return []
+    const preferred = getDefaultRuleProfiles(payload)
+    const preferredOrder = new Map(preferred.map((profile, index) => [profile, index]))
+    return ruleProfileNames(payload).sort((left, right) => {
+        const leftOrder = preferredOrder.get(left)
+        const rightOrder = preferredOrder.get(right)
+        if (leftOrder !== undefined || rightOrder !== undefined) {
+            if (leftOrder === undefined) return 1
+            if (rightOrder === undefined) return -1
+            return leftOrder - rightOrder
+        }
+        return left.localeCompare(right, undefined, { numeric: true })
+    })
+})
 const validationPreview = computed(() => {
     const rows = parsed.value?.rows || []
     const query = validationQuery.value.trim()
@@ -95,18 +121,88 @@ function findSavedConfig(localeName, filenameArea) {
         : null)
 }
 
+function defaultImportRuleProfiles(primary = config.localeName) {
+    const payload = ruleBundle.value?.payload
+    if (!payload) {
+        return [...new Set([String(primary || '').trim(), '0', '1', '999'].filter(Boolean))]
+    }
+    return getDefaultRuleProfiles(payload, primary)
+}
+
+function resetRuleProfiles() {
+    config.ruleProfiles = defaultImportRuleProfiles()
+    ruleProfileToAdd.value = ''
+}
+
+function replacePrimaryRuleProfile(previous, next) {
+    const before = String(previous || '').trim()
+    const after = String(next || '').trim()
+    if (!Array.isArray(config.ruleProfiles) || !config.ruleProfiles.length) {
+        config.ruleProfiles = defaultImportRuleProfiles(after)
+        return
+    }
+    if (before && config.ruleProfiles[0] === before) {
+        const rest = config.ruleProfiles.slice(1).filter(profile => profile !== after)
+        config.ruleProfiles = after ? [after, ...rest] : rest
+    } else if (!before && after && !config.ruleProfiles.includes(after)) {
+        config.ruleProfiles = [after, ...config.ruleProfiles]
+    }
+}
+
+function setRuleLocale(value) {
+    const previous = config.localeName
+    const next = String(value || '').trim()
+    config.localeName = next
+    replacePrimaryRuleProfile(previous, next)
+}
+
+function syncEditedRuleLocale() {
+    replacePrimaryRuleProfile(localeProfileBeforeEdit.value, config.localeName)
+    localeProfileBeforeEdit.value = config.localeName
+}
+
+function addRuleProfile() {
+    const profile = ruleProfileToAdd.value
+    if (!profile || config.ruleProfiles.includes(profile)) return
+    config.ruleProfiles.push(profile)
+    ruleProfileToAdd.value = ''
+}
+
+function moveRuleProfile(index, direction) {
+    const target = index + direction
+    if (target < 0 || target >= config.ruleProfiles.length) return
+    config.ruleProfiles.splice(target, 0, config.ruleProfiles.splice(index, 1)[0])
+}
+
+function dropRuleProfile(targetIndex) {
+    const sourceIndex = dragRuleProfileIndex.value
+    if (sourceIndex == null || sourceIndex === targetIndex) return
+    config.ruleProfiles.splice(targetIndex, 0, config.ruleProfiles.splice(sourceIndex, 1)[0])
+    dragRuleProfileIndex.value = null
+}
+
 function applySavedConfig(saved) {
     if (!saved?.config) return
+    const hasSavedRuleProfiles = Array.isArray(saved.config.ruleProfiles)
     for (const key of Object.keys(DEFAULT_IMPORT_CONFIG)) {
         if (Object.prototype.hasOwnProperty.call(saved.config, key)) {
             // Sheet1 used to be the implicit default. Treat stored copies of that
             // default as automatic selection so multi-sheet workbooks can choose
             // their real main table.
             if (key === 'sheetName' && saved.config[key] === 'Sheet1') continue
+            if (key === 'ruleProfiles') {
+                if (Array.isArray(saved.config[key])) {
+                    config[key] = [...new Set(
+                        saved.config[key].map(value => String(value).trim()).filter(Boolean)
+                    )]
+                }
+                continue
+            }
             config[key] = saved.config[key]
         }
     }
     config.localeName = saved.rule_profile || config.localeName
+    if (!hasSavedRuleProfiles) config.ruleProfiles = defaultImportRuleProfiles(config.localeName)
 }
 
 function inferDate(filename) {
@@ -128,7 +224,7 @@ function inferDate(filename) {
 function applySelectedArea() {
     const area = selectedArea.value
     if (!area) return
-    config.localeName = [area.second, area.third].filter(Boolean).join('') || area.first
+    setRuleLocale([area.second, area.third].filter(Boolean).join('') || area.first)
     stable.detailed_name = area.detailed_name || ''
     stable.sheet_author = area.sheet_author || ''
 }
@@ -146,6 +242,9 @@ function applyRuleBundleResponse(response) {
     }
     ruleBundle.value = active
     ruleBundleEtag.value = response.headers?.etag || `"${active.payload_hash}"`
+    if (!Array.isArray(config.ruleProfiles) || !config.ruleProfiles.length) {
+        config.ruleProfiles = defaultImportRuleProfiles(config.localeName)
+    }
     if (metadata.value) {
         metadata.value = {
             ...metadata.value,
@@ -192,7 +291,7 @@ function chooseFile(event) {
     progress.value = { percent: 0, message: '' }
     validationQuery.value = ''
     presetNotice.value = ''
-    Object.assign(config, DEFAULT_IMPORT_CONFIG)
+    Object.assign(config, freshImportConfig())
     Object.assign(stable, { detailed_name: '', sheet_author: '' })
     areaId.value = ''
     targetMode.value = 'existing'
@@ -209,7 +308,7 @@ function chooseFile(event) {
 
     if (targetArea) areaId.value = targetArea.id
     if (saved) applySavedConfig(saved)
-    if (!saved?.rule_profile) config.localeName = inferredLocale
+    if (!saved?.rule_profile) setRuleLocale(inferredLocale)
 
     const messages = []
     if (inferredLocale) messages.push(`從檔名識別「${inferredLocale}」`)
@@ -232,6 +331,9 @@ function validateBeforeParse() {
         throw new Error('活頁簿超過 20 MB 上限')
     }
     if (!config.localeName.trim()) throw new Error('請填寫規則地點名')
+    if (!Array.isArray(config.ruleProfiles) || !config.ruleProfiles.length) {
+        throw new Error('請至少選擇一個規則組')
+    }
     if (!config.charColumn.trim()) throw new Error('請填寫字頭欄')
     if (!config.pronColumns.trim() && !config.ipaColumns.trim()) {
         throw new Error('J++ 欄與 IPA 欄至少填一項')
@@ -432,6 +534,14 @@ onMounted(load)
                     <label class="flex items-center gap-2 border p-2 text-xs"><input v-model="newArea.color" type="color" />{{ newArea.color }}</label>
                     <input v-model.number="newArea.longitude" type="number" step="any" placeholder="經度" class="border p-2 text-sm dark:bg-slate-900" />
                     <input v-model.number="newArea.latitude" type="number" step="any" placeholder="緯度" class="border p-2 text-sm dark:bg-slate-900" />
+                    <label class="col-span-2 grid gap-1 text-xs text-slate-500 dark:text-slate-400">
+                        是否同意 CC BY-SA 4.0（內部資料）
+                        <select v-model="newArea.cc_by_sa_4_0_consent" class="border p-2 text-sm text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+                            <option :value="null">未登記</option>
+                            <option :value="true">同意</option>
+                            <option :value="false">不同意</option>
+                        </select>
+                    </label>
                 </div>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <label class="text-xs text-slate-500">完整地點
@@ -444,8 +554,40 @@ onMounted(load)
                         <input v-model="sourceDate" required type="date" class="mt-1 w-full border p-2 text-sm text-slate-800 dark:bg-slate-900 dark:text-slate-100" />
                     </label>
                     <label class="text-xs text-slate-500">規則地點名
-                        <input v-model.trim="config.localeName" required class="mt-1 w-full border p-2 text-sm text-slate-800 dark:bg-slate-900 dark:text-slate-100" />
+                        <input v-model.trim="config.localeName" required
+                            class="mt-1 w-full border p-2 text-sm text-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                            @focus="localeProfileBeforeEdit = config.localeName" @change="syncEditedRuleLocale" />
                     </label>
+                </div>
+                <div class="border p-3 text-xs dark:border-slate-700">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="font-bold">啟用規則組（首項負責聲調）</label>
+                        <button type="button" class="border px-2 py-1 text-slate-500 hover:border-accent hover:text-accent" @click="resetRuleProfiles">
+                            恢復預設
+                        </button>
+                    </div>
+                    <div class="mt-2 space-y-1">
+                        <div v-for="(profile, index) in config.ruleProfiles" :key="`${profile}-${index}`" draggable="true"
+                            class="flex items-center gap-1 border bg-slate-50 px-2 py-1 dark:border-slate-700 dark:bg-slate-900"
+                            @dragstart="dragRuleProfileIndex = index" @dragover.prevent @drop="dropRuleProfile(index)">
+                            <span class="cursor-grab text-slate-400">⠿</span>
+                            <span class="min-w-0 flex-1 truncate font-mono">{{ profile }}</span>
+                            <span v-if="index === 0" class="text-[10px] text-accent">主</span>
+                            <button type="button" :disabled="index === 0" @click="moveRuleProfile(index, -1)">↑</button>
+                            <button type="button" :disabled="index === config.ruleProfiles.length - 1" @click="moveRuleProfile(index, 1)">↓</button>
+                            <button type="button" class="text-red-500" @click="config.ruleProfiles.splice(index, 1)">×</button>
+                        </div>
+                        <p v-if="!config.ruleProfiles.length" class="border border-dashed p-2 text-center text-red-500">尚未選擇規則組</p>
+                    </div>
+                    <div class="mt-2 flex">
+                        <select v-model="ruleProfileToAdd" class="min-w-0 flex-1 border p-1 dark:border-slate-700 dark:bg-slate-900">
+                            <option value="">選擇規則組</option>
+                            <option v-for="profile in availableRuleProfiles.filter(item => !config.ruleProfiles.includes(item))"
+                                :key="profile" :value="profile">{{ profile }}</option>
+                        </select>
+                        <button type="button" class="border border-l-0 px-2" @click="addRuleProfile">加入</button>
+                    </div>
+                    <p class="mt-2 text-slate-400">此列表及順序會隨本次導入配置保存；舊配置首次載入時使用地點組、0、1、999。</p>
                 </div>
 
                 <h3 class="border-l-4 border-accent pl-2 text-sm font-bold">2　Excel 欄位</h3>

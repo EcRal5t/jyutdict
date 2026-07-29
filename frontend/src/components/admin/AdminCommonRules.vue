@@ -160,6 +160,31 @@ function makeRow(data) {
     return { id: ++rowSequence, ...data }
 }
 
+function stringToRuleColor(value, dark = false) {
+    const text = String(value ?? '')
+    if (text === '*') return dark ? 'hsl(215 22% 25%)' : 'hsl(215 30% 90%)'
+    if (text === '') return dark ? 'hsl(38 18% 23%)' : 'hsl(38 35% 92%)'
+    let hash = 2166136261
+    for (const char of Array.from(text)) {
+        hash ^= char.codePointAt(0)
+        hash = Math.imul(hash, 16777619)
+    }
+    const unsigned = hash >>> 0
+    const hue = unsigned % 360
+    const saturation = 52 + ((unsigned >>> 9) % 17)
+    const lightness = dark
+        ? 21 + ((unsigned >>> 17) % 5)
+        : 88 + ((unsigned >>> 17) % 4)
+    return `hsl(${hue} ${saturation}% ${lightness}%)`
+}
+
+function ruleValueStyle(value) {
+    return {
+        '--rule-value-bg': stringToRuleColor(value),
+        '--rule-value-bg-dark': stringToRuleColor(value, true),
+    }
+}
+
 function cloneState() {
     return {
         rowsByBook: JSON.parse(JSON.stringify(rowsByBook.value)),
@@ -317,7 +342,8 @@ async function load() {
 }
 
 function defaultTestProfiles(profile) {
-    return [...new Set([profile, ...appendProfiles.value].map(String).filter(Boolean))]
+    return [...new Set([profile, ...appendProfiles.value, '999'].map(String).filter(Boolean))]
+        .filter(value => allProfiles.value.includes(value))
 }
 
 function restoreDraft() {
@@ -876,7 +902,7 @@ onBeforeUnmount(() => {
                     <div class="flex flex-wrap items-center gap-2 border-l-4 border-accent bg-white/80 p-3 dark:bg-slate-800/80">
                         <div class="mr-auto">
                             <h3 class="font-mono text-lg font-bold">{{ activeProfile }}</h3>
-                            <p class="text-xs text-slate-400">{{ appendProfiles.includes(activeProfile) ? '公共規則組：會追加到 Excel 匯入的音段規則。' : '規則組' }}</p>
+                            <p class="text-xs text-slate-400">{{ appendProfiles.includes(activeProfile) ? '公共規則組：會成為 Excel 導入預設啟用的規則組。' : '規則組' }}</p>
                         </div>
                         <button class="toolbar-button" @click="renameProfile">全局改名</button>
                         <button class="border border-red-300 px-3 py-2 text-xs font-bold text-red-600" @click="deleteProfile">刪除規則組</button>
@@ -947,12 +973,14 @@ onBeforeUnmount(() => {
                                                 </button>
                                             </div>
                                             <input :value="row.fields[index - 1] === '*' ? '' : row.fields[index - 1]"
-                                                class="mt-1 w-full border p-1 font-mono dark:bg-slate-900"
+                                                class="rule-value-input mt-1 w-full border p-1 font-mono"
+                                                :style="ruleValueStyle(row.fields[index - 1])"
                                                 :placeholder="index <= 3 ? '具體值／值1|值2' : '指定值'"
                                                 @input="row.fields[index - 1] = $event.target.value"
                                                 @keydown.enter.prevent="addRow('舒聲', row)" @keydown.ctrl.d.prevent="duplicateRow(row)" />
                                             <div v-if="valueTags(row.fields[index - 1]).length > 1" class="mt-1 flex flex-wrap gap-1">
-                                                <span v-for="tag in valueTags(row.fields[index - 1])" :key="tag" class="bg-sky-100 px-1 font-mono text-sky-800 dark:bg-sky-950 dark:text-sky-200">{{ tag }}</span>
+                                                <span v-for="tag in valueTags(row.fields[index - 1])" :key="tag"
+                                                    class="rule-value-tag px-1 font-mono" :style="ruleValueStyle(tag)">{{ tag }}</span>
                                             </div>
                                         </td>
                                         <td class="p-1 text-center"><input v-model="row.force" type="checkbox" title="覆寫較早規則產生的欄位" /></td>
@@ -978,8 +1006,8 @@ onBeforeUnmount(() => {
                                         <tr v-for="row in visibleToneRows[category]" :key="row.id" draggable="true" class="border-t dark:border-slate-700"
                                             @dragstart="onDragStart(row)" @dragover.prevent @drop="onDrop(row)">
                                             <td class="p-1 text-center"><span class="mr-2 cursor-grab text-slate-400">⠿</span><input type="checkbox" :checked="selectedIds.has(row.id)" @change="toggleSelected(row.id)" /></td>
-                                            <td class="p-1"><input v-model="row.from" class="w-full border p-1.5 font-mono dark:bg-slate-900" @keydown.enter.prevent="addRow(category, row)" @keydown.ctrl.d.prevent="duplicateRow(row)" /></td>
-                                            <td class="p-1"><input v-model="row.to" class="w-full border p-1.5 font-mono dark:bg-slate-900" @keydown.enter.prevent="addRow(category, row)" @keydown.ctrl.d.prevent="duplicateRow(row)" /></td>
+                                            <td class="p-1"><input v-model="row.from" class="rule-value-input w-full border p-1.5 font-mono" :style="ruleValueStyle(row.from)" @keydown.enter.prevent="addRow(category, row)" @keydown.ctrl.d.prevent="duplicateRow(row)" /></td>
+                                            <td class="p-1"><input v-model="row.to" class="rule-value-input w-full border p-1.5 font-mono" :style="ruleValueStyle(row.to)" @keydown.enter.prevent="addRow(category, row)" @keydown.ctrl.d.prevent="duplicateRow(row)" /></td>
                                             <td class="p-1 whitespace-nowrap"><button class="border px-2 py-1" @click="duplicateRow(row)">⧉</button><button class="ml-1 border border-red-300 px-2 py-1 text-red-600" @click="removeRow(row)">×</button></td>
                                         </tr>
                                         <tr v-if="!visibleToneRows[category]?.length"><td colspan="4" class="p-6 text-center text-slate-400">沒有映射</td></tr>
@@ -1128,6 +1156,21 @@ onBeforeUnmount(() => {
 .rule-cell {
     min-width: 6.5rem;
     vertical-align: top;
+}
+.rule-value-input,
+.rule-value-tag {
+    background-color: var(--rule-value-bg);
+    color: rgb(30 41 59);
+    transition: background-color .12s ease;
+}
+:global(.dark) .rule-value-input,
+:global(.dark) .rule-value-tag {
+    background-color: var(--rule-value-bg-dark);
+    color: rgb(241 245 249);
+}
+.rule-value-input:focus {
+    border-color: #D32913;
+    outline: 1px solid #D32913;
 }
 .field-mode-button {
     min-width: 0;
