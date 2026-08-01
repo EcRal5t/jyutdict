@@ -16,6 +16,10 @@ if (PHP_SAPI !== 'cli') {
 require_once __DIR__ . '/../core/db.php';
 
 const COMMON_IMPORT_SCHEMA_VERSION = '20260724_browser_common_import_v1';
+const COMMON_JPP_NORMALIZATION_RULE_MIGRATION = '20260730_explicit_jpp_normalization_v1';
+const COMMON_JPP_NORMALIZATION_RULE_VERSION = 'jpp-rules-explicit-normalization-20260730';
+const COMMON_JPP_IEU_RETRACTION_MIGRATION = '20260730_retract_generic_ie_ieu_rules_v1';
+const COMMON_JPP_IEU_RETRACTION_VERSION = 'jpp-rules-without-generic-ie-ieu-20260730';
 
 $apply = in_array('--apply', $argv, true);
 
@@ -235,6 +239,9 @@ if (!cisTableExists($dbh, 'phonology_reports')) {
 cisAddColumn($dbh, 'i_area_list', 'sheet_author',
     "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL AFTER `detailed_name`",
     $apply, $changes);
+cisAddColumn($dbh, 'i_area_list', 'cc_by_sa_4_0_consent',
+    "TINYINT(1) NULL DEFAULT NULL AFTER `sheet_author`",
+    $apply, $changes);
 cisAddColumn($dbh, 'i_area_list', 'current_phonology_id',
     "BIGINT UNSIGNED NULL AFTER `current_release_id`",
     $apply, $changes);
@@ -317,6 +324,36 @@ if (!cisConstraintExists($dbh, 'fk_cij_published_release')) {
     $changes++;
 }
 
+$normalizationRuleMigrationNeeded = false;
+if (cisTableExists($dbh, 'schema_migrations')) {
+    $stmt = $dbh->prepare(
+        "SELECT COUNT(*) FROM `schema_migrations` WHERE `version` = ?"
+    );
+    $stmt->execute([COMMON_JPP_NORMALIZATION_RULE_MIGRATION]);
+    $normalizationRuleMigrationNeeded = (int)$stmt->fetchColumn() === 0;
+    if ($normalizationRuleMigrationNeeded) {
+        echo 'CREATE immutable active rule bundle ' .
+            COMMON_JPP_NORMALIZATION_RULE_VERSION .
+            " with explicit j2j.0 and j2j.999 normalization rules;\n";
+        $changes++;
+    }
+}
+
+$ieuRetractionMigrationNeeded = false;
+if (cisTableExists($dbh, 'schema_migrations')) {
+    $stmt = $dbh->prepare(
+        "SELECT COUNT(*) FROM `schema_migrations` WHERE `version` = ?"
+    );
+    $stmt->execute([COMMON_JPP_IEU_RETRACTION_MIGRATION]);
+    $ieuRetractionMigrationNeeded = (int)$stmt->fetchColumn() === 0;
+    if ($ieuRetractionMigrationNeeded) {
+        echo 'CREATE immutable active rule bundle ' .
+            COMMON_JPP_IEU_RETRACTION_VERSION .
+            " without the generic ie/ieu normalization rules;\n";
+        $changes++;
+    }
+}
+
 if ($apply) {
     $fixture = __DIR__ . '/../data/common_rule_bundle_v1.json';
     if (!is_file($fixture)) {
@@ -350,6 +387,195 @@ if ($apply) {
                  ON DUPLICATE KEY UPDATE `is_active` = 1"
             );
             $stmt->execute([$version, $payload, $hash]);
+        }
+
+        if ($normalizationRuleMigrationNeeded) {
+            $activeRuleRow = $dbh->query(
+                "SELECT `id`, `payload_json`
+                 FROM `common_rule_bundles`
+                 WHERE `is_active` = 1
+                 ORDER BY `created_at` DESC, `id` DESC
+                 LIMIT 1
+                 FOR UPDATE"
+            )->fetch(PDO::FETCH_ASSOC);
+            if (!$activeRuleRow) {
+                throw new RuntimeException('No active rule bundle is available for normalization migration');
+            }
+            $rulePayload = json_decode((string)$activeRuleRow['payload_json'], true);
+            if (!is_array($rulePayload) ||
+                !is_array($rulePayload['rules']['j2j'] ?? null)) {
+                throw new RuntimeException('Active rule bundle is invalid');
+            }
+            if (!is_array($rulePayload['rules']['j2j']['0'] ?? null)) {
+                $rulePayload['rules']['j2j']['0'] = [];
+            }
+            if (!is_array($rulePayload['rules']['j2j']['999'] ?? null)) {
+                $rulePayload['rules']['j2j']['999'] = [];
+            }
+
+            $zeroInitialRule = ['0', '*', '*', '', '*', '*'];
+            $explicitNormalizationRules = [
+                ['', 'ie', '*', '*', 'ie', '*'],
+                ['0', 'ie', '*', '*', 'ie', '*'],
+                ['*', 'ie', '', '*', 'ie', '*'],
+                ['*', 'ie', '*', '*', 'e', '*'],
+                ['', 'ieu', '*', '*', 'ieu', '*'],
+                ['0', 'ieu', '*', '*', 'ieu', '*'],
+                ['*', 'ieu', '*', '*', 'eu', '*'],
+            ];
+            $ruleIdentity = static function ($rule) {
+                return json_encode($rule, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            };
+            $zeroRuleIdentities = array_map($ruleIdentity, $rulePayload['rules']['j2j']['0']);
+            if (!in_array($ruleIdentity($zeroInitialRule), $zeroRuleIdentities, true)) {
+                $rulePayload['rules']['j2j']['0'][] = $zeroInitialRule;
+            }
+            $normalizationRuleIdentities = array_map(
+                $ruleIdentity,
+                $rulePayload['rules']['j2j']['999']
+            );
+            foreach ($explicitNormalizationRules as $rule) {
+                $identity = $ruleIdentity($rule);
+                if (!in_array($identity, $normalizationRuleIdentities, true)) {
+                    $rulePayload['rules']['j2j']['999'][] = $rule;
+                    $normalizationRuleIdentities[] = $identity;
+                }
+            }
+            $appendProfiles = is_array($rulePayload['appendProfiles'] ?? null)
+                ? array_map('strval', $rulePayload['appendProfiles'])
+                : [];
+            if (!in_array('999', $appendProfiles, true)) {
+                $appendProfiles[] = '999';
+            }
+            $rulePayload['appendProfiles'] = array_values(array_unique($appendProfiles));
+            $rulePayload['bundleVersion'] = COMMON_JPP_NORMALIZATION_RULE_VERSION;
+            $ruleJson = json_encode(
+                $rulePayload,
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            );
+            if ($ruleJson === false || strlen($ruleJson) > 2097152) {
+                throw new RuntimeException('Migrated rule bundle is invalid or too large');
+            }
+            $ruleHash = hash('sha256', $ruleJson, true);
+            $existingRuleStmt = $dbh->prepare(
+                "SELECT `id`, `payload_hash`
+                 FROM `common_rule_bundles`
+                 WHERE `version` = ?
+                 LIMIT 1
+                 FOR UPDATE"
+            );
+            $existingRuleStmt->execute([COMMON_JPP_NORMALIZATION_RULE_VERSION]);
+            $existingRule = $existingRuleStmt->fetch(PDO::FETCH_ASSOC);
+            $dbh->exec("UPDATE `common_rule_bundles` SET `is_active` = 0");
+            if ($existingRule) {
+                if (!hash_equals($existingRule['payload_hash'], $ruleHash)) {
+                    throw new RuntimeException(
+                        'Explicit normalization rule bundle version already exists with different content'
+                    );
+                }
+                $activateRuleStmt = $dbh->prepare(
+                    "UPDATE `common_rule_bundles` SET `is_active` = 1 WHERE `id` = ?"
+                );
+                $activateRuleStmt->execute([(int)$existingRule['id']]);
+            } else {
+                $insertRuleStmt = $dbh->prepare(
+                    "INSERT INTO `common_rule_bundles`
+                     (`version`, `payload_json`, `payload_hash`, `is_active`, `created_by`)
+                     VALUES (?, ?, ?, 1, NULL)"
+                );
+                $insertRuleStmt->execute([
+                    COMMON_JPP_NORMALIZATION_RULE_VERSION,
+                    $ruleJson,
+                    $ruleHash,
+                ]);
+            }
+            $ruleMigrationStmt = $dbh->prepare(
+                "INSERT INTO `schema_migrations` (`version`) VALUES (?)"
+            );
+            $ruleMigrationStmt->execute([COMMON_JPP_NORMALIZATION_RULE_MIGRATION]);
+        }
+
+        if ($ieuRetractionMigrationNeeded) {
+            $activeRuleRow = $dbh->query(
+                "SELECT `id`, `payload_json`
+                 FROM `common_rule_bundles`
+                 WHERE `is_active` = 1
+                 ORDER BY `created_at` DESC, `id` DESC
+                 LIMIT 1
+                 FOR UPDATE"
+            )->fetch(PDO::FETCH_ASSOC);
+            if (!$activeRuleRow) {
+                throw new RuntimeException('No active rule bundle is available for ie/ieu rule retraction');
+            }
+            $rulePayload = json_decode((string)$activeRuleRow['payload_json'], true);
+            if (!is_array($rulePayload) ||
+                !is_array($rulePayload['rules']['j2j']['999'] ?? null)) {
+                throw new RuntimeException('Active rule bundle is invalid');
+            }
+            $retractedRules = [
+                ['', 'ie', '*', '*', 'ie', '*'],
+                ['0', 'ie', '*', '*', 'ie', '*'],
+                ['*', 'ie', '', '*', 'ie', '*'],
+                ['*', 'ie', '*', '*', 'e', '*'],
+                ['', 'ieu', '*', '*', 'ieu', '*'],
+                ['0', 'ieu', '*', '*', 'ieu', '*'],
+                ['*', 'ieu', '*', '*', 'eu', '*'],
+            ];
+            $ruleIdentity = static function ($rule) {
+                return json_encode($rule, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            };
+            $retractedIdentities = array_map($ruleIdentity, $retractedRules);
+            $rulePayload['rules']['j2j']['999'] = array_values(array_filter(
+                $rulePayload['rules']['j2j']['999'],
+                static function ($rule) use ($ruleIdentity, $retractedIdentities) {
+                    return !in_array($ruleIdentity($rule), $retractedIdentities, true);
+                }
+            ));
+            $rulePayload['bundleVersion'] = COMMON_JPP_IEU_RETRACTION_VERSION;
+            $ruleJson = json_encode(
+                $rulePayload,
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            );
+            if ($ruleJson === false || strlen($ruleJson) > 2097152) {
+                throw new RuntimeException('Retracted rule bundle is invalid or too large');
+            }
+            $ruleHash = hash('sha256', $ruleJson, true);
+            $existingRuleStmt = $dbh->prepare(
+                "SELECT `id`, `payload_hash`
+                 FROM `common_rule_bundles`
+                 WHERE `version` = ?
+                 LIMIT 1
+                 FOR UPDATE"
+            );
+            $existingRuleStmt->execute([COMMON_JPP_IEU_RETRACTION_VERSION]);
+            $existingRule = $existingRuleStmt->fetch(PDO::FETCH_ASSOC);
+            $dbh->exec("UPDATE `common_rule_bundles` SET `is_active` = 0");
+            if ($existingRule) {
+                if (!hash_equals($existingRule['payload_hash'], $ruleHash)) {
+                    throw new RuntimeException(
+                        'Retracted ie/ieu rule bundle version already exists with different content'
+                    );
+                }
+                $activateRuleStmt = $dbh->prepare(
+                    "UPDATE `common_rule_bundles` SET `is_active` = 1 WHERE `id` = ?"
+                );
+                $activateRuleStmt->execute([(int)$existingRule['id']]);
+            } else {
+                $insertRuleStmt = $dbh->prepare(
+                    "INSERT INTO `common_rule_bundles`
+                     (`version`, `payload_json`, `payload_hash`, `is_active`, `created_by`)
+                     VALUES (?, ?, ?, 1, NULL)"
+                );
+                $insertRuleStmt->execute([
+                    COMMON_JPP_IEU_RETRACTION_VERSION,
+                    $ruleJson,
+                    $ruleHash,
+                ]);
+            }
+            $ruleMigrationStmt = $dbh->prepare(
+                "INSERT INTO `schema_migrations` (`version`) VALUES (?)"
+            );
+            $ruleMigrationStmt->execute([COMMON_JPP_IEU_RETRACTION_MIGRATION]);
         }
 
         $migrationStmt = $dbh->prepare(
