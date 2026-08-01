@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import Sortable from 'sortablejs'
 import adminApi from '@/api/admin.js'
 import { useAuthStore } from '@/stores/auth.js'
+import AdminLocationEditor from './AdminLocationEditor.vue'
 
 const authStore = useAuthStore()
 const locations = ref([])
@@ -11,6 +12,7 @@ const saving = ref(false)
 const search = ref('')
 const filter = ref('active')
 const listElement = ref(null)
+const editFormElement = ref(null)
 const editing = ref(null)
 const creating = ref(false)
 const error = ref('')
@@ -23,7 +25,8 @@ const emptyForm = () => ({
 const form = ref(emptyForm())
 
 const activeLocations = computed(() => locations.value.filter((item) => !item.archived_at))
-const canDrag = computed(() => filter.value === 'active' && search.value.trim() === '')
+const canReorderView = computed(() => filter.value === 'active' && search.value.trim() === '')
+const canDrag = computed(() => canReorderView.value && !creating.value && !editing.value)
 const displayed = computed(() => {
     let rows = locations.value
     if (filter.value === 'active') rows = rows.filter((item) => !item.archived_at)
@@ -110,7 +113,11 @@ const openCreate = () => {
     creating.value = true
 }
 
-const openEdit = (item) => {
+const setEditFormElement = (element) => {
+    editFormElement.value = element
+}
+
+const openEdit = async (item) => {
     creating.value = false
     editing.value = item
     form.value = {
@@ -126,6 +133,8 @@ const openEdit = (item) => {
         color: item.color,
         is_visible: Boolean(item.is_visible),
     }
+    await nextTick()
+    editFormElement.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 }
 
 const closeForm = () => {
@@ -206,36 +215,34 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
 <template>
     <section>
         <div class="flex flex-col md:flex-row gap-2 mb-4">
-            <input v-model="search" placeholder="搜尋地名或 sheetname…" class="flex-1 p-2 text-sm border-2 border-slate-200 dark:border-slate-700 dark:bg-slate-900" />
-            <select v-model="filter" class="p-2 text-sm border-2 border-slate-200 dark:border-slate-700 dark:bg-slate-900">
+            <input v-model="search" :disabled="creating || !!editing" placeholder="搜尋地名或 sheetname…" class="flex-1 p-2 text-sm border-2 border-slate-200 dark:border-slate-700 dark:bg-slate-900 disabled:opacity-50" />
+            <select v-model="filter" :disabled="creating || !!editing" class="p-2 text-sm border-2 border-slate-200 dark:border-slate-700 dark:bg-slate-900 disabled:opacity-50">
                 <option value="active">全部未歸檔</option><option value="visible">公開</option>
                 <option value="hidden">隱藏</option><option value="pending">待首次同步</option><option value="archived">已歸檔</option>
             </select>
             <button v-if="authStore.isOwner" @click="openCreate" class="bg-accent text-white px-4 py-2 text-sm">新增地點</button>
         </div>
-        <p v-if="!canDrag && filter !== 'archived'" class="text-xs text-amber-600 mb-2">清除搜尋並選擇「全部未歸檔」後可拖拽排序。</p>
+        <p v-if="!canReorderView && filter !== 'archived'" class="text-xs text-amber-600 mb-2">清除搜尋並選擇「全部未歸檔」後可拖拽排序。</p>
         <p v-if="error" class="p-2 mb-3 text-sm text-red-700 bg-red-50 border-l-4 border-red-500">{{ error }}</p>
 
-        <form v-if="creating || editing" @submit.prevent="submitForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-4 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <input v-model.trim="form.sheetname" :disabled="!!editing" required placeholder="sheetname" class="p-2 border dark:bg-slate-900" />
-            <input v-model.trim="form.first" placeholder="一级分类" class="p-2 border dark:bg-slate-900" />
-            <input v-model.trim="form.second" placeholder="二级地名" class="p-2 border dark:bg-slate-900" />
-            <input v-model.trim="form.third" placeholder="三级地名" class="p-2 border dark:bg-slate-900" />
-            <input v-model.trim="form.detailed_name" placeholder="完整地點" class="p-2 border dark:bg-slate-900 sm:col-span-2" />
-            <textarea v-model.trim="form.sheet_author" rows="2" placeholder="字表作者／署名" class="p-2 border dark:bg-slate-900 sm:col-span-2"></textarea>
-            <input v-model.number="form.longitude" type="number" step="any" required placeholder="经度" class="p-2 border dark:bg-slate-900" />
-            <input v-model.number="form.latitude" type="number" step="any" required placeholder="纬度" class="p-2 border dark:bg-slate-900" />
-            <label class="flex items-center gap-2 p-2 border"><input v-model="form.color" type="color" /> {{ form.color }}</label>
-            <label v-if="editing" class="flex items-center gap-2 p-2"><input v-model="form.is_visible" type="checkbox" /> 對外顯示</label>
-            <div class="flex gap-2"><button :disabled="saving" class="bg-accent text-white px-4 py-2 text-sm disabled:opacity-50">儲存</button><button type="button" @click="closeForm" class="px-4 py-2 text-sm border">取消</button></div>
-        </form>
+        <AdminLocationEditor
+            v-if="creating"
+            v-model="form"
+            :saving="saving"
+            @submit="submitForm"
+            @cancel="closeForm"
+        />
 
         <div class="bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 overflow-x-auto">
             <table class="w-full text-sm min-w-[900px]">
                 <thead><tr class="bg-slate-50 dark:bg-slate-900/40 border-b"><th class="p-2 w-10"></th><th class="p-2 text-left">順序</th><th class="p-2 text-left">地點</th><th class="p-2 text-left">sheetname</th><th class="p-2 text-left">狀態</th><th class="p-2 text-left">版本/行數</th><th class="p-2 text-left">隊列</th><th class="p-2 text-left">操作</th></tr></thead>
                 <tbody ref="listElement">
                     <tr v-if="loading"><td colspan="8" class="p-6 text-center text-slate-400">載入中…</td></tr>
-                    <tr v-for="item in displayed" :key="item.id" class="location-row border-b border-slate-100 dark:border-slate-700/50">
+                    <template v-for="item in displayed" :key="item.id">
+                    <tr
+                        class="location-row border-b border-slate-100 dark:border-slate-700/50"
+                        :class="editing?.id === item.id ? 'bg-accent/[0.06]' : ''"
+                    >
                         <td class="p-2"><button v-if="!item.archived_at" :class="canDrag ? 'cursor-grab' : 'opacity-30'" class="drag-handle text-lg" title="拖拽排序">⋮⋮</button></td>
                         <td class="p-2 whitespace-nowrap">{{ item.sort_order }} <button v-if="!item.archived_at" @click="move(item,-1)" class="ml-1">↑</button><button v-if="!item.archived_at" @click="move(item,1)" class="ml-1">↓</button></td>
                         <td class="p-2"><span class="inline-block w-3 h-3 mr-1" :style="{background:item.color}"></span>{{ locationName(item) }}</td>
@@ -260,6 +267,21 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
                             </template>
                         </div></td>
                     </tr>
+                    <tr v-if="editing?.id === item.id" class="border-b-2 border-accent/40 bg-accent/[0.03]">
+                        <td colspan="8" class="p-0">
+                            <div :ref="setEditFormElement">
+                                <AdminLocationEditor
+                                    v-model="form"
+                                    editing
+                                    embedded
+                                    :saving="saving"
+                                    @submit="submitForm"
+                                    @cancel="closeForm"
+                                />
+                            </div>
+                        </td>
+                    </tr>
+                    </template>
                     <tr v-if="!loading && displayed.length === 0"><td colspan="8" class="p-6 text-center text-slate-400">沒有符合條件的地點</td></tr>
                 </tbody>
             </table>
