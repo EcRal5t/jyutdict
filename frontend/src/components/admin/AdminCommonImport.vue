@@ -340,6 +340,13 @@ function validateBeforeParse() {
     }
 }
 
+function importConfigPayload() {
+    return {
+        ...config,
+        ruleProfiles: Array.isArray(config.ruleProfiles) ? [...config.ruleProfiles] : [],
+    }
+}
+
 async function parseWorkbook() {
     busy.value = true
     error.value = ''
@@ -353,7 +360,7 @@ async function parseWorkbook() {
         const buffer = await selectedFile.value.arrayBuffer()
         const result = await runCommonWorker('parse-workbook', {
             buffer,
-            config: { ...config },
+            config: importConfigPayload(),
             ruleBundle: activeRuleBundle.payload,
         }, {
             transfer: [buffer],
@@ -379,7 +386,7 @@ async function parseWorkbook() {
             job.rule_profile === config.localeName &&
             job.expected_chunk_count === transfer.value.chunks.length &&
             job.expected_row_count === result.stats.entry_count &&
-            JSON.stringify(job.config || {}) === JSON.stringify({ ...config }) &&
+            JSON.stringify(job.config || {}) === JSON.stringify(importConfigPayload()) &&
             JSON.stringify(job.stable_metadata || {}) === JSON.stringify({ ...stable }) &&
             JSON.stringify(job.new_area || null) === JSON.stringify(
                 targetMode.value === 'new' ? { ...newArea } : null
@@ -449,7 +456,7 @@ async function publishWorkbook() {
             rule_profile: config.localeName,
             rule_bundle_id: metadata.value.rule_bundle.id,
             rule_bundle_hash: metadata.value.rule_bundle.payload_hash,
-            config: { ...config },
+            config: importConfigPayload(),
             expected_chunk_count: transfer.value.chunks.length,
             expected_row_count: parsed.value.stats.entry_count,
             character_count: parsed.value.stats.character_count,
