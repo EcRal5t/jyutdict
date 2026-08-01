@@ -1,16 +1,46 @@
 <?php
-/** Owner-only source feed and immutable publication endpoint for generated phonology. */
+/** Role-scoped source feed and immutable publication endpoint for generated phonology. */
 
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/helpers.php';
 require_once __DIR__ . '/../../core/CommonImport.php';
+require_once __DIR__ . '/../../core/EditorAreaAccess.php';
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../middleware/role.php';
 require_once __DIR__ . '/../../middleware/csrf.php';
 
-requireRole('owner');
+requireRole('editor');
+
+function phonologyRequireEditorImport(PDO $dbh, array $area, $userId, $role) {
+    jyutdictRequireEditableArea($dbh, $userId, $role, (int)$area['id']);
+    if ((string)$role !== 'editor') {
+        return;
+    }
+    if ((int)($area['phonology_source_release_id'] ?? 0) === (int)$area['current_release_id']) {
+        outputJson(['error' => 'Editors may rebuild phonology only once for a newly imported release'], 403);
+    }
+    try {
+        $jobId = jyutdictCommonImportValidateUuid($_GET['import_job_id'] ?? '');
+    } catch (Throwable $error) {
+        outputJson(['error' => 'Editor phonology rebuild requires its published import job'], 403);
+    }
+    $stmt = $dbh->prepare(
+        "SELECT COUNT(*) FROM `common_import_jobs`
+         WHERE `id` = ? AND `created_by` = ? AND `area_id` = ?
+           AND `published_release_id` = ? AND `status` = 'published'"
+    );
+    $stmt->execute([
+        $jobId,
+        (int)$userId,
+        (int)$area['id'],
+        (int)$area['current_release_id'],
+    ]);
+    if ((int)$stmt->fetchColumn() !== 1) {
+        outputJson(['error' => 'Editor phonology rebuild is not linked to this import'], 403);
+    }
+}
 
 function phonologyRebuildArea(PDO $dbh, $areaId) {
     $stmt = $dbh->prepare(
@@ -131,6 +161,7 @@ try {
         throw new RuntimeException('area_id is required');
     }
     $area = phonologyRebuildArea($dbh, $areaId);
+    phonologyRequireEditorImport($dbh, $area, $currentUserId, $currentUserRole);
 
     if ($method === 'GET') {
         $after = max(0, (int)($_GET['after'] ?? 0));

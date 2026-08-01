@@ -19,6 +19,9 @@ export const useAuthStore = defineStore('auth', () => {
     const isAdmin = computed(() => ['admin', 'owner'].includes(userRole.value));
     const isEditor = computed(() => ['editor', 'admin', 'owner'].includes(userRole.value));
     const isOwner = computed(() => userRole.value === 'owner');
+    const hasLocationAccess = computed(() => isAdmin.value || (
+        userRole.value === 'editor' && (user.value?.assigned_locations?.length || 0) > 0
+    ));
 
     // ========== Actions ==========
 
@@ -82,7 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     return {
         user, csrfToken, isLoading, isInitialized,
-        isLoggedIn, userRole, displayName, isAdmin, isEditor, isOwner,
+        isLoggedIn, userRole, displayName, isAdmin, isEditor, isOwner, hasLocationAccess,
         init, login, logout, refreshUser,
     };
 });

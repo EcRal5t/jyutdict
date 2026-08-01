@@ -20,6 +20,12 @@ const filteredCandidates = computed(() => {
 
 const sourceLabel = (source) => source.type === 'common' ? '通表' : '粵表'
 
+const toggleAlias = (name) => {
+    const next = new Set(form.value.aliases)
+    next.has(name) ? next.delete(name) : next.add(name)
+    form.value.aliases = [...next]
+}
+
 const load = async () => {
     loading.value = true
     error.value = ''
@@ -107,12 +113,21 @@ onMounted(load)
                 </div>
                 <div>
                     <label class="mb-2 block text-xs font-bold text-slate-500">來源別名（可多選）</label>
-                    <select v-model="form.aliases" multiple required
-                        class="h-44 w-full border-2 border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900">
-                        <option v-for="candidate in filteredCandidates" :key="candidate.name" :value="candidate.name">
-                            {{ candidate.name }} · {{ candidate.sources.map(sourceLabel).join('/') }}
-                        </option>
-                    </select>
+                    <div class="h-44 overflow-y-auto border-2 border-slate-200 p-2 dark:border-slate-700 dark:bg-slate-900">
+                        <label v-for="candidate in filteredCandidates" :key="candidate.name"
+                            class="flex cursor-pointer items-start gap-2 border-b border-slate-100 px-1 py-1.5 text-sm last:border-0 hover:bg-accent/5 dark:border-slate-800">
+                            <input type="checkbox" :checked="form.aliases.includes(candidate.name)" class="mt-0.5" @change="toggleAlias(candidate.name)" />
+                            <span>{{ candidate.name }} <small class="text-slate-400">· {{ candidate.sources.map(sourceLabel).join('/') }}</small></span>
+                        </label>
+                        <p v-if="!filteredCandidates.length" class="p-4 text-center text-xs text-slate-400">沒有符合條件的來源地名</p>
+                    </div>
+                    <div v-if="form.aliases.length" class="mt-2 flex flex-wrap gap-1">
+                        <button v-for="alias in form.aliases" :key="alias" type="button"
+                            class="border border-accent/40 bg-accent/5 px-2 py-1 text-xs text-accent"
+                            :title="`取消選擇 ${alias}`" @click="toggleAlias(alias)">
+                            {{ alias }} ×
+                        </button>
+                    </div>
                 </div>
                 <div class="flex gap-2 lg:col-span-2">
                     <button :disabled="saving || !form.aliases.length"

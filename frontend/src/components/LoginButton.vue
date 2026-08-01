@@ -59,7 +59,7 @@ onUnmounted(() => {
                 用戶中心
             </router-link>
 
-            <router-link v-if="authStore.isAdmin" to="/admin" @click="showDropdown = false" class="block px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-accent/10 hover:text-accent transition-colors">
+            <router-link v-if="authStore.hasLocationAccess" to="/admin" @click="showDropdown = false" class="block px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-accent/10 hover:text-accent transition-colors">
                 後臺管理
             </router-link>
 

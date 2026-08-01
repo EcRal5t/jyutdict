@@ -15,13 +15,13 @@ function loadMiddleChinese() {
     return middleChinesePromise
 }
 
-export async function rebuildLocationPhonology(areaId, onProgress = null) {
+export async function rebuildLocationPhonology(areaId, onProgress = null, importJobId = '') {
     const entries = []
     let after = 0
     let area = null
     do {
         onProgress?.({ phase: 'download', message: `正在讀取字表（已讀 ${entries.length} 行）` })
-        const response = await adminApi.getPhonologyRebuildSource(areaId, after)
+        const response = await adminApi.getPhonologyRebuildSource(areaId, after, 1500, importJobId)
         if (!area) area = response.data.area
         if (Number(response.data.area.current_release_id) !== Number(area.current_release_id)) {
             throw new Error('下載期間字表版本已改變，請重新開始')
@@ -45,8 +45,8 @@ export async function rebuildLocationPhonology(areaId, onProgress = null) {
         area.id,
         area.current_release_id,
         prepared.payload,
-        prepared.hash
+        prepared.hash,
+        importJobId
     )
     return { payload, report: response.data.report }
 }
-

@@ -64,6 +64,8 @@ const newArea = reactive({
 })
 
 const locations = computed(() => metadata.value?.locations?.filter(area => !area.archived_at) || [])
+const canCreateLocation = computed(() => Boolean(metadata.value?.permissions?.can_create_location))
+const forcePhonologyRebuild = computed(() => Boolean(metadata.value?.permissions?.force_phonology_rebuild))
 const selectedArea = computed(() =>
     locations.value.find(area => Number(area.id) === Number(areaId.value)) || null
 )
@@ -272,6 +274,7 @@ async function load() {
             adminApi.getActiveCommonRules(),
         ])
         metadata.value = metaResponse.data
+        if (forcePhonologyRebuild.value) rebuildAfterPublish.value = true
         applyRuleBundleResponse(rulesResponse)
     } catch (caught) {
         error.value = caught.response?.data?.error || caught.message || '載入導入工具失敗'
@@ -480,11 +483,11 @@ async function publishWorkbook() {
         const publishResponse = await adminApi.publishCommonImport(jobId.value)
         const publication = publishResponse.data.publication
         success.value = `已發佈 r${publication.release_no || ''}：${publication.entry_count} 行、${publication.character_count} 字。`
-        if (rebuildAfterPublish.value) {
+        if (rebuildAfterPublish.value || forcePhonologyRebuild.value) {
             progress.value = { percent: 90, message: '正在重建音系表' }
             await rebuildLocationPhonology(publication.area_id, value => {
                 progress.value = { percent: 90, message: value.message }
-            })
+            }, jobId.value)
             success.value += ' 音系四表亦已重建。'
         }
         progress.value = { percent: 100, message: '全部完成' }
@@ -527,7 +530,7 @@ onMounted(load)
 
                 <div class="flex gap-4 text-sm">
                     <label><input v-model="targetMode" type="radio" value="existing" /> 更新已有地點</label>
-                    <label><input v-model="targetMode" type="radio" value="new" /> 新增地點</label>
+                    <label v-if="canCreateLocation"><input v-model="targetMode" type="radio" value="new" /> 新增地點</label>
                 </div>
                 <select v-if="targetMode === 'existing'" v-model="areaId" class="w-full border-2 border-slate-200 p-2 text-sm dark:border-slate-700 dark:bg-slate-900">
                     <option value="">請選擇目標地點／資料表</option>
@@ -660,7 +663,10 @@ onMounted(load)
                     </template>
                 </div>
                 <div class="border border-slate-200 bg-white/80 p-4 dark:border-slate-700 dark:bg-slate-800/80">
-                    <label class="mb-3 block text-sm"><input v-model="rebuildAfterPublish" type="checkbox" /> 發佈成功後立即重建音系</label>
+                    <label class="mb-3 block text-sm">
+                        <input v-model="rebuildAfterPublish" type="checkbox" :disabled="forcePhonologyRebuild" />
+                        發佈成功後立即重建音系<span v-if="forcePhonologyRebuild" class="ml-1 text-xs text-slate-400">（編纂者固定啟用）</span>
+                    </label>
                     <button :disabled="busy || !parsed || !transfer" @click="publishWorkbook"
                         class="w-full bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-accent disabled:opacity-40 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-accent dark:hover:text-white">
                         斷點上傳並發佈

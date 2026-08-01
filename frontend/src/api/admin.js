@@ -149,15 +149,15 @@ export default {
     saveCommonRules(version, payload) {
         return apiClient.post('/common-rules', { version, payload });
     },
-    getPhonologyRebuildSource(areaId, after = 0, limit = 1500) {
+    getPhonologyRebuildSource(areaId, after = 0, limit = 1500, importJobId = '') {
         return apiClient.get('/phonology-rebuild', {
-            params: { area_id: areaId, after, limit },
+            params: { area_id: areaId, after, limit, import_job_id: importJobId || undefined },
             timeout: 60000,
         });
     },
-    publishPhonology(areaId, releaseId, payload, hash) {
+    publishPhonology(areaId, releaseId, payload, hash, importJobId = '') {
         return apiClient.put('/phonology-rebuild', payload, {
-            params: { area_id: areaId, release_id: releaseId },
+            params: { area_id: areaId, release_id: releaseId, import_job_id: importJobId || undefined },
             headers: {
                 'Content-Type': 'application/gzip',
                 'X-Payload-SHA256': hash,

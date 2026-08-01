@@ -28,6 +28,8 @@ const history = ref([])
 const payloadBase = shallowRef(null)
 const rowsByBook = ref(Object.fromEntries(BOOKS.map(book => [book.key, []])))
 const locations = ref([])
+const editableProfiles = ref(null)
+const canManageProfiles = ref(false)
 const appendProfiles = ref(['0', '1'])
 const version = ref('')
 const activeKey = ref('i2i')
@@ -112,9 +114,13 @@ const allProfiles = computed(() => {
         return a.localeCompare(b, undefined, { numeric: true })
     })
 })
+const profileChoices = computed(() => editableProfiles.value === null
+    ? allProfiles.value
+    : allProfiles.value.filter(profile => editableProfiles.value.includes(profile)))
+const canEditActiveProfile = computed(() => canManageProfiles.value || editableProfiles.value?.includes(activeProfile.value))
 const filteredProfiles = computed(() => {
     const needle = profileSearch.value.trim().toLowerCase()
-    return allProfiles.value.filter(profile => !needle || profile.toLowerCase().includes(needle))
+    return profileChoices.value.filter(profile => !needle || profile.toLowerCase().includes(needle))
 })
 const activeProfileCounts = computed(() => Object.fromEntries(
     BOOKS.map(book => [book.key, rowsByBook.value[book.key].filter(row => row.profile === activeProfile.value).length])
@@ -205,7 +211,7 @@ function applyState(state, mark = true) {
     rowSequence = Math.max(0, ...Object.values(rowsByBook.value).flat().map(row => Number(row.id) || 0))
     loadingState = false
     selectedIds.value = new Set()
-    if (!allProfiles.value.includes(activeProfile.value)) activeProfile.value = allProfiles.value[0] || ''
+    if (!profileChoices.value.includes(activeProfile.value)) activeProfile.value = profileChoices.value[0] || ''
     if (mark) {
         dirty.value = true
         scheduleDraftSave()
@@ -317,6 +323,8 @@ async function load() {
         ])
         current.value = response.data.active
         history.value = response.data.history || []
+        editableProfiles.value = response.data.permissions?.editable_profiles ?? null
+        canManageProfiles.value = Boolean(response.data.permissions?.can_manage_profiles)
         locations.value = Array.isArray(catalogResponse.data?.locations)
             ? catalogResponse.data.locations
             : []
@@ -325,7 +333,7 @@ async function load() {
         rowsByBook.value = rowsFromPayload(payloadBase.value)
         appendProfiles.value = (payloadBase.value.appendProfiles || ['0', '1']).map(String)
         version.value = nextVersionName(response.data.active.version)
-        activeProfile.value = allProfiles.value.find(profile => !appendProfiles.value.includes(profile)) || allProfiles.value[0] || ''
+        activeProfile.value = profileChoices.value.find(profile => !appendProfiles.value.includes(profile)) || profileChoices.value[0] || ''
         testProfiles.value = defaultTestProfiles(activeProfile.value)
         loadingState = false
         dirty.value = false
@@ -372,6 +380,10 @@ function addProfile() {
     if (name == null) return
     const clean = name.trim()
     if (!clean) return
+    if (!canManageProfiles.value && !editableProfiles.value?.includes(clean)) {
+        error.value = '只能新增已獲授權地點所對應的規則組'
+        return
+    }
     if (allProfiles.value.includes(clean)) {
         error.value = `規則組「${clean}」已存在`
         return
@@ -384,6 +396,7 @@ function addProfile() {
 }
 
 function renameProfile() {
+    if (!canManageProfiles.value) return
     const from = activeProfile.value
     const name = window.prompt(`把規則組「${from}」改名為：`, from)
     if (name == null || name.trim() === from) return
@@ -404,6 +417,7 @@ function renameProfile() {
 }
 
 function deleteProfile() {
+    if (!canEditActiveProfile.value) return
     const profile = activeProfile.value
     const counts = BOOKS.map(book => `${book.label} ${profileCounts.value[profile]?.[book.key] || 0}`).join('、')
     const publicWarning = appendProfiles.value.includes(profile) ? '\n這是公共規則組，刪除後也會從追加規則列表移除。' : ''
@@ -412,7 +426,7 @@ function deleteProfile() {
         rowsByBook.value[key] = rowsByBook.value[key].filter(row => row.profile !== profile)
     }
     appendProfiles.value = appendProfiles.value.filter(value => value !== profile)
-    activeProfile.value = allProfiles.value[0] || ''
+    activeProfile.value = profileChoices.value[0] || ''
     scheduleSnapshot()
 }
 
@@ -839,6 +853,9 @@ onBeforeUnmount(() => {
 
         <p v-if="error" class="border-l-4 border-red-500 bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{{ error }}</p>
         <p v-if="success" class="border-l-4 border-emerald-500 bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">{{ success }}</p>
+        <p v-if="editableProfiles !== null" class="border-l-4 border-blue-500 bg-blue-50 p-3 text-xs text-blue-700 dark:bg-blue-950/30 dark:text-blue-300">
+            編纂者只能修改已獲授權地點的規則組；公共規則和其他地點規則由管理員維護。
+        </p>
 
         <div v-if="recoveryDraft" class="flex flex-wrap items-center gap-2 border-l-4 border-amber-500 bg-amber-50 p-3 text-sm dark:bg-amber-950/30">
             <span class="mr-auto">找到 {{ new Date(recoveryDraft.savedAt).toLocaleString() }} 保存的本機草稿。</span>
@@ -864,7 +881,7 @@ onBeforeUnmount(() => {
             <div class="lg:hidden">
                 <label class="text-xs font-bold text-slate-500">規則組</label>
                 <select :value="activeProfile" class="mt-1 w-full border-2 border-slate-200 p-2 dark:border-slate-700 dark:bg-slate-900" @change="setActiveProfile($event.target.value)">
-                    <option v-for="profile in allProfiles" :key="profile" :value="profile">{{ profile }}{{ appendProfiles.includes(profile) ? '（公共）' : '' }}</option>
+                    <option v-for="profile in profileChoices" :key="profile" :value="profile">{{ profile }}{{ appendProfiles.includes(profile) ? '（公共）' : '' }}</option>
                 </select>
             </div>
 
@@ -873,7 +890,7 @@ onBeforeUnmount(() => {
                     <div class="border-b border-slate-200 p-2.5 dark:border-slate-700">
                         <div class="flex items-center justify-between">
                             <h3 class="font-bold">規則組</h3>
-                            <button class="bg-accent px-2 py-1 text-xs font-bold text-white" @click="addProfile">新增</button>
+                            <button v-if="canManageProfiles || editableProfiles?.some(profile => !allProfiles.includes(profile))" class="bg-accent px-2 py-1 text-xs font-bold text-white" @click="addProfile">新增</button>
                         </div>
                         <input v-model="profileSearch" placeholder="搜尋規則組" class="mt-1.5 w-full border p-1.5 text-sm dark:border-slate-700 dark:bg-slate-900" />
                     </div>
@@ -904,8 +921,8 @@ onBeforeUnmount(() => {
                             <h3 class="font-mono text-lg font-bold">{{ activeProfile }}</h3>
                             <p class="text-xs text-slate-400">{{ appendProfiles.includes(activeProfile) ? '公共規則組：會成為 Excel 導入預設啟用的規則組。' : '規則組' }}</p>
                         </div>
-                        <button class="toolbar-button" @click="renameProfile">全局改名</button>
-                        <button class="border border-red-300 px-3 py-2 text-xs font-bold text-red-600" @click="deleteProfile">刪除規則組</button>
+                        <button v-if="canManageProfiles" class="toolbar-button" @click="renameProfile">全局改名</button>
+                        <button v-if="activeProfile && canEditActiveProfile" class="border border-red-300 px-3 py-2 text-xs font-bold text-red-600" @click="deleteProfile">刪除規則組</button>
                     </div>
 
                     <nav class="overflow-x-auto border-b-2 border-slate-200 dark:border-slate-700">
@@ -1022,7 +1039,7 @@ onBeforeUnmount(() => {
                                 <button class="toolbar-button" @click="exportCurrentCsv">匯出本書 CSV</button>
                                 <button class="toolbar-button" @click="csvInput?.click()">匯入 CSV 並取代本書</button>
                                 <button class="toolbar-button" @click="exportFullJson">匯出整包 JSON</button>
-                                <button class="toolbar-button" @click="jsonInput?.click()">匯入整包 JSON</button>
+                                <button v-if="canManageProfiles" class="toolbar-button" @click="jsonInput?.click()">匯入整包 JSON</button>
                                 <input ref="csvInput" type="file" accept=".csv,text/csv" class="hidden" @change="importCurrentCsv" />
                                 <input ref="jsonInput" type="file" accept=".json,application/json" class="hidden" @change="importFullJson" />
                             </div>

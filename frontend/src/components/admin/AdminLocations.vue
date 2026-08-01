@@ -26,7 +26,7 @@ const form = ref(emptyForm())
 
 const activeLocations = computed(() => locations.value.filter((item) => !item.archived_at))
 const canReorderView = computed(() => filter.value === 'active' && search.value.trim() === '')
-const canDrag = computed(() => canReorderView.value && !creating.value && !editing.value)
+const canDrag = computed(() => authStore.isAdmin && canReorderView.value && !creating.value && !editing.value)
 const displayed = computed(() => {
     let rows = locations.value
     if (filter.value === 'active') rows = rows.filter((item) => !item.archived_at)
@@ -147,7 +147,11 @@ const submitForm = async () => {
     error.value = ''
     try {
         if (creating.value) await adminApi.createCatalogLocation(form.value)
-        else await adminApi.updateCatalogLocation(form.value)
+        else {
+            const payload = { ...form.value }
+            if (!authStore.isAdmin) delete payload.is_visible
+            await adminApi.updateCatalogLocation(payload)
+        }
         closeForm()
         await load()
     } catch (e) {
@@ -220,7 +224,7 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
                 <option value="active">全部未歸檔</option><option value="visible">公開</option>
                 <option value="hidden">隱藏</option><option value="pending">待首次同步</option><option value="archived">已歸檔</option>
             </select>
-            <button v-if="authStore.isOwner" @click="openCreate" class="bg-accent text-white px-4 py-2 text-sm">新增地點</button>
+            <button v-if="authStore.isAdmin" @click="openCreate" class="bg-accent text-white px-4 py-2 text-sm">新增地點</button>
         </div>
         <p v-if="!canReorderView && filter !== 'archived'" class="text-xs text-amber-600 mb-2">清除搜尋並選擇「全部未歸檔」後可拖拽排序。</p>
         <p v-if="error" class="p-2 mb-3 text-sm text-red-700 bg-red-50 border-l-4 border-red-500">{{ error }}</p>
@@ -243,8 +247,8 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
                         class="location-row border-b border-slate-100 dark:border-slate-700/50"
                         :class="editing?.id === item.id ? 'bg-accent/[0.06]' : ''"
                     >
-                        <td class="p-2"><button v-if="!item.archived_at" :class="canDrag ? 'cursor-grab' : 'opacity-30'" class="drag-handle text-lg" title="拖拽排序">⋮⋮</button></td>
-                        <td class="p-2 whitespace-nowrap">{{ item.sort_order }} <button v-if="!item.archived_at" @click="move(item,-1)" class="ml-1">↑</button><button v-if="!item.archived_at" @click="move(item,1)" class="ml-1">↓</button></td>
+                        <td class="p-2"><button v-if="authStore.isAdmin && !item.archived_at" :class="canDrag ? 'cursor-grab' : 'opacity-30'" class="drag-handle text-lg" title="拖拽排序">⋮⋮</button></td>
+                        <td class="p-2 whitespace-nowrap">{{ item.sort_order }} <button v-if="authStore.isAdmin && !item.archived_at" @click="move(item,-1)" class="ml-1">↑</button><button v-if="authStore.isAdmin && !item.archived_at" @click="move(item,1)" class="ml-1">↓</button></td>
                         <td class="p-2"><span class="inline-block w-3 h-3 mr-1" :style="{background:item.color}"></span>{{ locationName(item) }}</td>
                         <td class="p-2 font-mono text-xs">{{ item.sheetname }}</td>
                         <td class="p-2"><span :class="item.archived_at ? 'text-slate-400' : item.is_visible ? 'text-green-600' : 'text-amber-600'">{{ statusLabel(item) }}</span></td>
@@ -258,7 +262,7 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
                         <td class="p-2 text-xs" :class="item.queue_status === 'failed' ? 'text-red-600' : ''">{{ item.queue_status || '—' }}</td>
                         <td class="p-2"><div class="flex flex-wrap gap-2 text-xs">
                             <button @click="openEdit(item)" class="text-blue-600">編輯</button>
-                            <button v-if="!item.archived_at && item.current_release_id" @click="toggleVisible(item)" class="text-amber-600">{{ item.is_visible ? '隱藏' : '顯示' }}</button>
+                            <button v-if="authStore.isAdmin && !item.archived_at && item.current_release_id" @click="toggleVisible(item)" class="text-amber-600">{{ item.is_visible ? '隱藏' : '顯示' }}</button>
                             <template v-if="authStore.isOwner">
                                 <button v-if="!item.archived_at && item.physical_table_exists" @click="rename(item)" class="text-purple-600">改表名</button>
                                 <button v-if="!item.archived_at && item.current_release_id" @click="archive(item)" class="text-slate-600">歸檔</button>
@@ -274,6 +278,7 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
                                     v-model="form"
                                     editing
                                     embedded
+                                    :can-change-visibility="authStore.isAdmin"
                                     :saving="saving"
                                     @submit="submitForm"
                                     @cancel="closeForm"
