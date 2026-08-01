@@ -1,16 +1,17 @@
 <?php
-/** Owner-only resumable browser import for complete common-sheet workbooks. */
+/** Location-scoped resumable browser import for complete common-sheet workbooks. */
 
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/helpers.php';
 require_once __DIR__ . '/../../core/CommonImport.php';
+require_once __DIR__ . '/../../core/EditorAreaAccess.php';
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../middleware/role.php';
 require_once __DIR__ . '/../../middleware/csrf.php';
 
-requireRole('owner');
+requireRole('editor');
 
 try {
     jyutdictCommonImportRequireSchema($dbh);
@@ -31,7 +32,7 @@ function commonImportOutputError(Throwable $error) {
     outputJson(['error' => $message], $status);
 }
 
-function commonImportCatalog(PDO $dbh) {
+function commonImportCatalog(PDO $dbh, $userId, $role) {
     $rows = $dbh->query(
         "SELECT a.`id`, a.`first`, a.`second`, a.`third`, a.`detailed_name`, a.`sheet_author`,
                 a.`sheetname`, a.`color`, a.`current_release_id`, a.`current_phonology_id`,
@@ -46,6 +47,12 @@ function commonImportCatalog(PDO $dbh) {
          LEFT JOIN `phonology_reports` AS p ON p.`id` = a.`current_phonology_id`
          ORDER BY a.`archived_at` IS NOT NULL, a.`sort_order`, a.`id`"
     )->fetchAll(PDO::FETCH_ASSOC);
+    $editableIds = jyutdictEditableAreaIds($dbh, $userId, $role);
+    if ($editableIds !== null) {
+        $rows = array_values(array_filter($rows, function ($row) use ($editableIds) {
+            return isset($editableIds[(int)$row['id']]);
+        }));
+    }
     foreach ($rows as &$row) {
         foreach ([
             'id', 'current_release_id', 'current_phonology_id', 'release_no', 'entry_count',
@@ -59,7 +66,7 @@ function commonImportCatalog(PDO $dbh) {
     return $rows;
 }
 
-function commonImportSavedConfigs(PDO $dbh, $ownerId) {
+function commonImportSavedConfigs(PDO $dbh, $ownerId, $editableIds = null) {
     $stmt = $dbh->prepare(
         "SELECT j.`area_id`, j.`rule_profile`, j.`config_json`, j.`source_filename`,
                 j.`source_sheet`, j.`published_at`
@@ -83,6 +90,10 @@ function commonImportSavedConfigs(PDO $dbh, $ownerId) {
     $stmt->execute([$ownerId]);
     $configs = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        if ($editableIds !== null &&
+            ($row['area_id'] === null || !isset($editableIds[(int)$row['area_id']]))) {
+            continue;
+        }
         $config = json_decode((string)$row['config_json'], true);
         if (!is_array($config)) {
             continue;
@@ -97,6 +108,16 @@ function commonImportSavedConfigs(PDO $dbh, $ownerId) {
         ];
     }
     return $configs;
+}
+
+function commonImportRequireJobTargetAccess(PDO $dbh, array $job, $userId, $role) {
+    if ($job['area_id'] === null) {
+        if (!jyutdictRoleHasAllAreaAccess($role)) {
+            outputJson(['error' => 'Only administrators may import a new location'], 403);
+        }
+        return;
+    }
+    jyutdictRequireEditableArea($dbh, $userId, $role, (int)$job['area_id']);
 }
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -146,9 +167,14 @@ try {
             $job['rule_bundle_hash'] = strtolower($job['rule_bundle_hash']);
             $jobs[] = jyutdictCommonImportPublicJob($job);
         }
+        $editableIds = jyutdictEditableAreaIds($dbh, $currentUserId, $currentUserRole);
         outputJson([
-            'locations' => commonImportCatalog($dbh),
-            'saved_configs' => commonImportSavedConfigs($dbh, $currentUserId),
+            'locations' => commonImportCatalog($dbh, $currentUserId, $currentUserRole),
+            'saved_configs' => commonImportSavedConfigs($dbh, $currentUserId, $editableIds),
+            'permissions' => [
+                'can_create_location' => jyutdictRoleHasAllAreaAccess($currentUserRole),
+                'force_phonology_rebuild' => $currentUserRole === 'editor',
+            ],
             'rule_bundle' => [
                 'id' => $bundle['id'],
                 'version' => $bundle['version'],
@@ -172,6 +198,13 @@ try {
         $action = (string)($input['action'] ?? 'create');
         if ($action === 'publish') {
             $jobId = jyutdictCommonImportValidateUuid($input['job_id'] ?? '');
+            $job = jyutdictCommonImportGetJob($dbh, $jobId, $currentUserId);
+            commonImportRequireJobTargetAccess(
+                $dbh,
+                $job,
+                $currentUserId,
+                $currentUserRole
+            );
             $result = jyutdictCommonImportPublish($dbh, $jobId, $currentUserId);
             outputJson(['success' => true, 'publication' => $result]);
         }
@@ -192,6 +225,7 @@ try {
             ? (int)$input['area_id'] : null;
         $newArea = $input['new_area'] ?? null;
         if ($areaId !== null) {
+            jyutdictRequireEditableArea($dbh, $currentUserId, $currentUserRole, $areaId);
             $stmt = $dbh->prepare(
                 "SELECT COUNT(*) FROM `i_area_list` WHERE `id` = ? AND `archived_at` IS NULL"
             );
@@ -203,6 +237,7 @@ try {
         } elseif (!is_array($newArea)) {
             throw new RuntimeException('Choose an existing location or supply new location metadata');
         } else {
+            requireRole('admin');
             jyutdictMaintenanceValidateSheetname($newArea['sheetname'] ?? '');
             jyutdictMaintenanceValidateMetadata($newArea, [
                 'first' => '', 'second' => '', 'third' => '',
@@ -351,6 +386,13 @@ try {
 
     if ($method === 'PUT') {
         $jobId = jyutdictCommonImportValidateUuid($_GET['job'] ?? '');
+        $accessJob = jyutdictCommonImportGetJob($dbh, $jobId, $currentUserId);
+        commonImportRequireJobTargetAccess(
+            $dbh,
+            $accessJob,
+            $currentUserId,
+            $currentUserRole
+        );
         $chunkNo = isset($_GET['chunk']) ? (int)$_GET['chunk'] : -1;
         $claimedHash = jyutdictCommonImportValidateHash(
             $_SERVER['HTTP_X_CHUNK_SHA256'] ?? '',

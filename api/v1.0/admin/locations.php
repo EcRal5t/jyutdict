@@ -6,11 +6,12 @@ header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/helpers.php';
 require_once __DIR__ . '/../../core/LocationMaintenance.php';
+require_once __DIR__ . '/../../core/EditorAreaAccess.php';
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../middleware/role.php';
 require_once __DIR__ . '/../../middleware/csrf.php';
 
-requireRole('admin');
+requireRole('editor');
 
 try {
     jyutdictMaintenanceRequireSchema($dbh);
@@ -82,6 +83,12 @@ if ($method === 'GET') {
               AND t.`TABLE_TYPE` = 'BASE TABLE'
          ORDER BY a.`archived_at` IS NOT NULL, a.`sort_order`, a.`id`"
     )->fetchAll(PDO::FETCH_ASSOC);
+    $editableIds = jyutdictEditableAreaIds($dbh, $currentUserId, $currentUserRole);
+    if ($editableIds !== null) {
+        $rows = array_values(array_filter($rows, function ($row) use ($editableIds) {
+            return isset($editableIds[(int)$row['id']]);
+        }));
+    }
     foreach ($rows as &$row) {
         foreach (['id', 'is_visible', 'sort_order', 'release_no', 'entry_count', 'character_count',
                   'syllable_count', 'toneless_syllable_count', 'skipped_row_count',
@@ -109,7 +116,7 @@ try {
     $input = locationAdminInput();
 
     if ($method === 'POST') {
-        locationAdminRequireOwner();
+        requireRole('admin');
         $action = 'location_create';
         $sheetname = jyutdictMaintenanceValidateSheetname($input['sheetname'] ?? '');
         if (jyutdictMaintenanceTableExists($dbh, $sheetname)) {
@@ -149,6 +156,10 @@ try {
         if ($areaId < 1) {
             throw new RuntimeException('Location id is required');
         }
+        jyutdictRequireEditableArea($dbh, $currentUserId, $currentUserRole, $areaId);
+        if ($currentUserRole === 'editor' && array_key_exists('is_visible', $input)) {
+            outputJson(['error' => 'Only administrators may change location visibility'], 403);
+        }
         $dbh->beginTransaction();
         $before = jyutdictMaintenanceGetArea($dbh, $areaId, true);
         $sheetname = $before['sheetname'];
@@ -181,6 +192,7 @@ try {
     }
 
     if ($method === 'PUT') {
+        requireRole('admin');
         $action = 'location_reorder';
         $ids = $input['ordered_ids'] ?? null;
         if (!is_array($ids) || !$ids) {

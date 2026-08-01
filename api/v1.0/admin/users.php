@@ -32,7 +32,12 @@ if ($method === 'GET') {
     if (isset($_GET['id'])) {
         $targetId = (int) $_GET['id'];
         try {
-            $stmt = $dbh->prepare("SELECT `id`, `email`, `nickname`, `role`, `created_at` FROM `users` WHERE `id` = :id");
+            $stmt = $dbh->prepare(
+                "SELECT `id`,
+                        CASE WHEN `role` IN ('admin', 'owner') THEN `email` ELSE NULL END AS `email`,
+                        `nickname`, `role`, `created_at`
+                 FROM `users` WHERE `id` = :id"
+            );
             $stmt->execute([':id' => $targetId]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -99,7 +104,9 @@ if ($method === 'GET') {
 
         // 分页查询
         $stmt = $dbh->prepare("
-            SELECT `id`, `email`, `nickname`, `role`, `created_at`
+            SELECT `id`,
+                   CASE WHEN `role` IN ('admin', 'owner') THEN `email` ELSE NULL END AS `email`,
+                   `nickname`, `role`, `created_at`
             FROM `users`
             $whereClause
             ORDER BY `created_at` DESC

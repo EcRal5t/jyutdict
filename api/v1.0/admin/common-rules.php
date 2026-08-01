@@ -1,20 +1,84 @@
 <?php
-/** Owner-only versioned conversion-rule bundles. */
+/** Location-scoped versioned conversion-rule bundles. */
 
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/helpers.php';
 require_once __DIR__ . '/../../core/CommonImport.php';
+require_once __DIR__ . '/../../core/EditorAreaAccess.php';
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../middleware/role.php';
 require_once __DIR__ . '/../../middleware/csrf.php';
 
-requireRole('owner');
+requireRole('editor');
+
+function commonRulesIsList(array $value) {
+    return !$value || array_keys($value) === range(0, count($value) - 1);
+}
+
+function commonRulesCanonicalValue($value) {
+    if (!is_array($value)) {
+        return $value;
+    }
+    if (commonRulesIsList($value)) {
+        return array_map('commonRulesCanonicalValue', $value);
+    }
+    ksort($value, SORT_STRING);
+    foreach ($value as $key => $item) {
+        $value[$key] = commonRulesCanonicalValue($item);
+    }
+    return $value;
+}
+
+function commonRulesValuesEqual($left, $right) {
+    return json_encode(commonRulesCanonicalValue($left), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ===
+        json_encode(commonRulesCanonicalValue($right), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+
+function commonRulesRequireEditorScope(array $active, array $submitted, array $editableProfiles, $role) {
+    if ((string)$role !== 'editor') {
+        return;
+    }
+    $allowed = array_fill_keys($editableProfiles, true);
+    $activeMeta = $active;
+    $submittedMeta = $submitted;
+    unset($activeMeta['rules'], $activeMeta['tones'], $activeMeta['bundleVersion']);
+    unset($submittedMeta['rules'], $submittedMeta['tones'], $submittedMeta['bundleVersion']);
+    if (!commonRulesValuesEqual($activeMeta, $submittedMeta)) {
+        outputJson(['error' => 'Editors cannot change global rule-bundle settings'], 403);
+    }
+    foreach ([['rules', 'i2i'], ['rules', 'i2j'], ['rules', 'j2i'], ['rules', 'j2j'],
+              ['tones', 'j2i'], ['tones', 'j2j']] as $path) {
+        [$section, $book] = $path;
+        $before = $active[$section][$book] ?? [];
+        $after = $submitted[$section][$book] ?? [];
+        $profiles = array_unique(array_merge(array_keys($before), array_keys($after)));
+        foreach ($profiles as $profile) {
+            if (isset($allowed[$profile])) {
+                continue;
+            }
+            if (!commonRulesValuesEqual($before[$profile] ?? null, $after[$profile] ?? null)) {
+                outputJson([
+                    'error' => 'Editors may only change rule profiles for assigned locations',
+                    'profile' => $profile,
+                ], 403);
+            }
+        }
+    }
+}
 
 try {
     jyutdictCommonImportRequireSchema($dbh);
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    $editableProfiles = jyutdictEditableRuleProfiles(
+        $dbh,
+        $currentUserId,
+        $currentUserRole
+    );
+    if ($currentUserRole === 'editor' && !$editableProfiles) {
+        outputJson(['error' => 'No editable locations are assigned to this editor'], 403);
+    }
     if ($method === 'GET') {
         if (($_GET['active_only'] ?? '') === '1') {
             $active = $dbh->query(
@@ -81,6 +145,10 @@ try {
                 'payload' => $payload,
             ],
             'history' => $history,
+            'permissions' => [
+                'editable_profiles' => $editableProfiles,
+                'can_manage_profiles' => jyutdictRoleHasAllAreaAccess($currentUserRole),
+            ],
         ]);
     }
     if ($method !== 'POST') {
@@ -99,6 +167,17 @@ try {
         !is_array($payload['tones'] ?? null)) {
         throw new RuntimeException('Invalid rule bundle structure');
     }
+    $activeBundle = jyutdictCommonImportActiveBundle($dbh);
+    $activePayload = json_decode((string)$activeBundle['payload_json'], true);
+    if (!is_array($activePayload)) {
+        throw new RuntimeException('Active rule bundle is invalid JSON');
+    }
+    commonRulesRequireEditorScope(
+        $activePayload,
+        $payload,
+        $editableProfiles ?? [],
+        $currentUserRole
+    );
     $cleanRuleText = static function ($value, string $field, int $maxLength = 128): string {
         if (!is_string($value)) {
             throw new RuntimeException("{$field} must be a string");

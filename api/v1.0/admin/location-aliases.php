@@ -35,9 +35,16 @@ function locationAliasNormalizeAliases($aliases, $canonical) {
     foreach ($aliases as $alias) {
         $alias = jyutdictValidateLocationIdentityName($alias, 'alias_name');
         if ($alias === $canonical) {
-            throw new RuntimeException('An alias may not equal the abstract location name');
+            // A real source may have the same name as the abstract identity.
+            // It already resolves to itself, so no redirect row is required.
+            continue;
         }
         $result[$alias] = true;
+    }
+    if (!$result) {
+        throw new RuntimeException(
+            'At least one source alias different from the abstract location name is required'
+        );
     }
     return array_keys($result);
 }
