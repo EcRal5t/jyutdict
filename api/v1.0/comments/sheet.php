@@ -12,7 +12,8 @@
  *        Body: { "comment_id": 1, "content": "修改后内容" }
  *
  * DELETE /api/v1.0/comments/sheet
- *        Body: { "comment_id": 1 }
+ *        Body: { "comment_id": 1, "hard_delete": false }
+ *        hard_delete=true 仅管理员可用，会永久删除评论及版本历史
  *
  * GET    /api/v1.0/comments/sheet?comment_id={id}&versions=1
  *        → 版本历史
@@ -62,6 +63,7 @@ if ($method === 'GET') {
             FROM `sheet_comments` c
             JOIN `users` u ON c.`user_id` = u.`id`
             WHERE c.`sheet_key` = :skey
+              AND c.`is_deleted` = 0
             ORDER BY c.`created_at` ASC
         ");
         $stmt->execute([':skey' => $sheetKey]);
@@ -70,7 +72,7 @@ if ($method === 'GET') {
         foreach ($comments as &$c) {
             $c['id'] = (int) $c['id'];
             $c['user_id'] = (int) $c['user_id'];
-            if ($c['is_deleted']) $c['content'] = null;
+            $c['is_deleted'] = (bool)(int) $c['is_deleted'];
         }
 
         outputJson(['comments' => $comments]);
@@ -164,14 +166,32 @@ if ($method === 'DELETE') {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $commentId = (int) ($input['comment_id'] ?? 0);
+    $hardDelete = !empty($input['hard_delete']);
     if (!$commentId) outputJson(['error' => 'Missing comment_id'], 400);
 
     try {
-        $stmt = $dbh->prepare("SELECT `user_id` FROM `sheet_comments` WHERE `id` = :cid AND `is_deleted` = 0");
+        $stmt = $dbh->prepare("SELECT `user_id`, `is_deleted` FROM `sheet_comments` WHERE `id` = :cid");
         $stmt->execute([':cid' => $commentId]);
         $comment = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$comment) outputJson(['error' => 'Comment not found or already deleted'], 404);
+        if (!$comment) outputJson(['error' => 'Comment not found'], 404);
+
+        if ($hardDelete) {
+            if (getRoleLevel($currentUserRole) < getRoleLevel('admin')) {
+                outputJson(['error' => 'Only administrators can permanently delete comments'], 403);
+            }
+            $dbh->beginTransaction();
+            $stmt = $dbh->prepare("DELETE FROM `sheet_comment_versions` WHERE `comment_id` = :cid");
+            $stmt->execute([':cid' => $commentId]);
+            $stmt = $dbh->prepare("DELETE FROM `sheet_comments` WHERE `id` = :cid");
+            $stmt->execute([':cid' => $commentId]);
+            $dbh->commit();
+            outputJson(['success' => true, 'hard_deleted' => true]);
+        }
+
+        if ((int)$comment['is_deleted'] !== 0) {
+            outputJson(['error' => 'Comment already deleted'], 404);
+        }
 
         if ((int)$comment['user_id'] !== $currentUserId && getRoleLevel($currentUserRole) < getRoleLevel('admin')) {
             outputJson(['error' => 'Cannot delete others\' comments'], 403);
@@ -181,6 +201,7 @@ if ($method === 'DELETE') {
         $stmt->execute([':cid' => $commentId]);
         outputJson(['success' => true]);
     } catch (PDOException $e) {
+        if ($dbh->inTransaction()) $dbh->rollBack();
         outputJson(['error' => 'Database error'], 500);
     }
 }
