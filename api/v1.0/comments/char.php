@@ -15,7 +15,8 @@
  *
  * DELETE /api/v1.0/comments/char
  *        → 删除评论（自己的或管理员可删任何人的）
- *        Body: { "comment_id": 1 }
+ *        Body: { "comment_id": 1, "hard_delete": false }
+ *        hard_delete=true 仅管理员可用，会永久删除评论及版本历史
  *
  * GET    /api/v1.0/comments/char?comment_id={id}&versions=1
  *        → 获取某条评论的版本历史
@@ -66,18 +67,16 @@ if ($method === 'GET') {
             FROM `char_comments` c
             JOIN `users` u ON c.`user_id` = u.`id`
             WHERE c.`chara` = :chara
+              AND c.`is_deleted` = 0
             ORDER BY c.`created_at` ASC
         ");
         $stmt->execute([':chara' => $chara]);
         $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // 对已删除的评论隐藏内容
         foreach ($comments as &$c) {
             $c['id'] = (int) $c['id'];
             $c['user_id'] = (int) $c['user_id'];
-            if ($c['is_deleted']) {
-                $c['content'] = null; // 前端显示"该评论已删除"
-            }
+            $c['is_deleted'] = (bool)(int) $c['is_deleted'];
         }
 
         outputJson(['comments' => $comments]);
@@ -196,18 +195,36 @@ if ($method === 'DELETE') {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $commentId = (int) ($input['comment_id'] ?? 0);
+    $hardDelete = !empty($input['hard_delete']);
 
     if (!$commentId) {
         outputJson(['error' => 'Missing comment_id'], 400);
     }
 
     try {
-        $stmt = $dbh->prepare("SELECT `user_id` FROM `char_comments` WHERE `id` = :cid AND `is_deleted` = 0");
+        $stmt = $dbh->prepare("SELECT `user_id`, `is_deleted` FROM `char_comments` WHERE `id` = :cid");
         $stmt->execute([':cid' => $commentId]);
         $comment = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$comment) {
-            outputJson(['error' => 'Comment not found or already deleted'], 404);
+            outputJson(['error' => 'Comment not found'], 404);
+        }
+
+        if ($hardDelete) {
+            if (getRoleLevel($currentUserRole) < getRoleLevel('admin')) {
+                outputJson(['error' => 'Only administrators can permanently delete comments'], 403);
+            }
+            $dbh->beginTransaction();
+            $stmt = $dbh->prepare("DELETE FROM `char_comment_versions` WHERE `comment_id` = :cid");
+            $stmt->execute([':cid' => $commentId]);
+            $stmt = $dbh->prepare("DELETE FROM `char_comments` WHERE `id` = :cid");
+            $stmt->execute([':cid' => $commentId]);
+            $dbh->commit();
+            outputJson(['success' => true, 'hard_deleted' => true]);
+        }
+
+        if ((int)$comment['is_deleted'] !== 0) {
+            outputJson(['error' => 'Comment already deleted'], 404);
         }
 
         // 只有作者自己或管理员+可以删除
@@ -221,6 +238,7 @@ if ($method === 'DELETE') {
 
         outputJson(['success' => true]);
     } catch (PDOException $e) {
+        if ($dbh->inTransaction()) $dbh->rollBack();
         outputJson(['error' => 'Database error'], 500);
     }
 }

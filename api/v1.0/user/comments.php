@@ -3,7 +3,7 @@
  * 当前用户的评论列表
  *
  * GET /api/v1.0/user/comments?page=1&per_page=20
- * → 返回当前用户的所有评论（字评论 + 字表评论合并，按时间倒序）
+ * → 返回当前用户未删除的评论（字评论 + 字表评论合并，按时间倒序）
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -22,21 +22,25 @@ try {
     // 合并查询字评论和字表评论
     $stmt = $dbh->prepare("
         (SELECT 'char' AS type, `id`, `chara` AS target, `content`, `is_deleted`, `created_at`, `updated_at`
-         FROM `char_comments` WHERE `user_id` = :uid1)
+         FROM `char_comments` WHERE `user_id` = :uid1 AND `is_deleted` = 0)
         UNION ALL
         (SELECT 'sheet' AS type, `id`, `sheet_key` AS target, `content`, `is_deleted`, `created_at`, `updated_at`
-         FROM `sheet_comments` WHERE `user_id` = :uid2)
+         FROM `sheet_comments` WHERE `user_id` = :uid2 AND `is_deleted` = 0)
         ORDER BY `created_at` DESC
         LIMIT $perPage OFFSET $offset
     ");
     $stmt->execute([':uid1' => $currentUserId, ':uid2' => $currentUserId]);
     $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($comments as &$comment) {
+        $comment['id'] = (int)$comment['id'];
+        $comment['is_deleted'] = (bool)(int)$comment['is_deleted'];
+    }
 
     // 总数
     $stmt = $dbh->prepare("
         SELECT
-            (SELECT COUNT(*) FROM `char_comments` WHERE `user_id` = :uid1) +
-            (SELECT COUNT(*) FROM `sheet_comments` WHERE `user_id` = :uid2) AS total
+            (SELECT COUNT(*) FROM `char_comments` WHERE `user_id` = :uid1 AND `is_deleted` = 0) +
+            (SELECT COUNT(*) FROM `sheet_comments` WHERE `user_id` = :uid2 AND `is_deleted` = 0) AS total
     ");
     $stmt->execute([':uid1' => $currentUserId, ':uid2' => $currentUserId]);
     $total = (int) $stmt->fetchColumn();

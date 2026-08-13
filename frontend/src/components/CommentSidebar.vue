@@ -115,13 +115,16 @@ const saveEdit = async () => {
 }
 
 // ===== 刪除 =====
-const deleteComment = async (commentId) => {
-    if (!confirm('確認刪除此評論？')) return
+const deleteComment = async (commentId, hardDelete = false) => {
+    const prompt = hardDelete
+        ? '確認永久刪除此評論？評論及其版本記錄將無法恢復。'
+        : '確認刪除此評論？'
+    if (!confirm(prompt)) return
     try {
         if (props.type === 'char') {
-            await commentsApi.deleteCharComment(commentId)
+            await commentsApi.deleteCharComment(commentId, hardDelete)
         } else {
-            await commentsApi.deleteSheetComment(commentId)
+            await commentsApi.deleteSheetComment(commentId, hardDelete)
         }
         await loadComments()
     } catch (e) {
@@ -215,6 +218,8 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
                                 class="text-[10px] text-slate-400 hover:text-accent">修改</button>
                             <button v-if="canDeleteComment(comment)" @click="deleteComment(comment.id)"
                                 class="text-[10px] text-slate-400 hover:text-red-500">刪除</button>
+                            <button v-if="authStore.isAdmin" @click="deleteComment(comment.id, true)"
+                                class="text-[10px] text-red-400 hover:text-red-600">永久刪除</button>
                         </div>
                     </template>
                 </div>

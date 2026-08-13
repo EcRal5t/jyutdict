@@ -32,8 +32,10 @@ export default {
     editCharComment(commentId, content) {
         return apiClient.put('/char', { comment_id: commentId, content });
     },
-    deleteCharComment(commentId) {
-        return apiClient.delete('/char', { data: { comment_id: commentId } });
+    deleteCharComment(commentId, hardDelete = false) {
+        return apiClient.delete('/char', {
+            data: { comment_id: commentId, hard_delete: hardDelete }
+        });
     },
     getCharCommentVersions(commentId) {
         return apiClient.get('/char', { params: { comment_id: commentId, versions: 1 } });
@@ -49,8 +51,10 @@ export default {
     editSheetComment(commentId, content) {
         return apiClient.put('/sheet', { comment_id: commentId, content });
     },
-    deleteSheetComment(commentId) {
-        return apiClient.delete('/sheet', { data: { comment_id: commentId } });
+    deleteSheetComment(commentId, hardDelete = false) {
+        return apiClient.delete('/sheet', {
+            data: { comment_id: commentId, hard_delete: hardDelete }
+        });
     },
 
     // 批量获取评论数量
