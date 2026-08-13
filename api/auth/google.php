@@ -19,6 +19,7 @@
 include_once(__DIR__ . '/../core/db.php');
 include_once(__DIR__ . '/../core/helpers.php');
 include_once(__DIR__ . '/../core/session.php');
+include_once(__DIR__ . '/../core/GoogleUserAuth.php');
 $config = require(__DIR__ . '/../config/oauth.php');
 
 function redirectToCanonicalOAuthOrigin($config) {
@@ -54,9 +55,8 @@ function httpPost($url, $data, $proxy = '') {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
-    // SSL 配置（开发环境）
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
     // 代理配置
     if (!empty($proxy)) {
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
@@ -78,8 +78,8 @@ function httpPost($url, $data, $proxy = '') {
 function httpGet($url, $headers = [], $proxy = '') {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
     if (!empty($headers)) {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     }
@@ -190,34 +190,15 @@ if ($action === 'callback') {
 
     // 5. 查找或创建用户
     try {
-        $stmt = $dbh->prepare("SELECT `id`, `nickname`, `role` FROM `users` WHERE `google_id` = :google_id");
-        $stmt->execute([':google_id' => $googleId]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user) {
-            // 已有用户，更新登录信息
-            $userId = $user['id'];
-        } else {
-            // 新用户，自动注册
-            $stmt = $dbh->prepare("INSERT INTO `users` (`google_id`, `email`, `nickname`, `role`) VALUES (:google_id, :email, :nickname, 'user')");
-            $stmt->execute([
-                ':google_id' => $googleId,
-                ':email'     => $email,
-                ':nickname'  => $name ?: null,
-            ]);
-            $userId = $dbh->lastInsertId();
-
-            // 重新查询获取完整用户信息
-            $stmt = $dbh->prepare("SELECT `id`, `nickname`, `role` FROM `users` WHERE `id` = :id");
-            $stmt->execute([':id' => $userId]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        }
-    } catch (PDOException $e) {
+        $user = jyutdictFindOrCreateGoogleUser($dbh, $googleId, $email, $name);
+        $userId = $user['id'];
+    } catch (Throwable $e) {
         outputJson(['error' => 'Database error during user lookup/creation'], 500);
     }
 
     // 6. 设置 Session
     session_regenerate_id(true); // 防 Session Fixation
+    unset($_SESSION['csrf_token']);
     $_SESSION['user_id'] = $userId;
     $_SESSION['user_role'] = $user['role'];
     $_SESSION['login_time'] = time();
