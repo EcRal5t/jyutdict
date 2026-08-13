@@ -71,6 +71,7 @@ ErrorDocument 404 /index.html
 
   # Auth API
   RewriteRule ^api/auth/google$ api/auth/google.php [L]
+  RewriteRule ^api/auth/mobile$ api/auth/mobile.php [L]
   RewriteRule ^api/auth/me$ api/auth/me.php [L]
   RewriteRule ^api/auth/logout$ api/auth/logout.php [L]
 
