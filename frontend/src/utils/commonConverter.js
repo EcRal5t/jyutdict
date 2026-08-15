@@ -550,6 +550,37 @@ function parseMeaning(values) {
     return meaning.trim()
 }
 
+export function validateJppSyllable(raw) {
+    const syllable = String(raw || '').trim()
+    if (!syllable) throw new Error('讀音為空')
+    const parts = splitJpp(syllable)
+    if (parts.initial !== '') {
+        const baseInitial = parts.initial.endsWith('w') && parts.initial.length > 1
+            ? parts.initial.slice(0, -1)
+            : parts.initial
+        if (JPP_TO_IPA_INITIAL[parts.initial] === undefined && JPP_TO_IPA_INITIAL[baseInitial] === undefined) {
+            throw new Error(`聲母不存在或不合法：${parts.initial}`)
+        }
+    }
+    if (!parts.nuclei) {
+        throw new Error(`未能解析出韻核：${syllable}`)
+    }
+    let remaining = parts.nuclei
+    if (!['ǀ', 'ǂ', 'ǀʷ', 'ǂʷ'].includes(remaining)) {
+        while (remaining) {
+            const token = vowelTokens.find(candidate => remaining.endsWith(candidate))
+            if (!token) {
+                throw new Error(`韻核不合法：${parts.nuclei}`)
+            }
+            remaining = remaining.slice(0, -token.length)
+        }
+    }
+    if (JPP_TO_IPA_CODA[parts.coda] === undefined) {
+        throw new Error(`韻尾不存在或不合法：${parts.coda}`)
+    }
+    return parts
+}
+
 export function convertGrid(rows, config, ruleBundle) {
     const warnings = []
     const entries = []
@@ -598,8 +629,10 @@ export function convertGrid(rows, config, ruleBundle) {
     for (const entry of entries) {
         if (hasJpp) entry.groups = mergeDuplicateGroups(entry.groups)
     }
-    const rules = selectRules(ruleBundle, config)
-    normalizeGroups(entries, rules, hasJpp, hasIpa, warnings)
+    if (!config.ignoreNormalization) {
+        const rules = selectRules(ruleBundle, config)
+        normalizeGroups(entries, rules, hasJpp, hasIpa, warnings)
+    }
     if (config.s2tMode !== 'off') {
         applyLegacyS2t(entries, Boolean(config.keepS2tCollision), Boolean(config.convertMeanings))
     }
@@ -623,22 +656,41 @@ export function convertGrid(rows, config, ruleBundle) {
         for (const group of groups) {
             const count = Math.max(group.prons.length, group.ipas.length)
             for (let item = 0; item < count; item += 1) {
-                const pron = splitJpp(group.prons[item] || '')
-                if (!pron.nuclei) {
-                    const sourceRow = group.sourceRows[0] || null
-                    throw new Error(
-                        `第 ${sourceRow || '未知'} 行「${entry.chara}」的 J++ 未能解析出韻核`
-                    )
+                const rawPron = group.prons[item] || ''
+                const rawIpa = group.ipas[item] || ''
+                let initial = ''
+                let nuclei = ''
+                let coda = ''
+                let tone = ''
+                if (hasJpp || rawPron) {
+                    try {
+                        const pron = validateJppSyllable(rawPron)
+                        initial = pron.initial
+                        nuclei = pron.nuclei
+                        coda = pron.coda
+                        tone = pron.tone
+                    } catch (err) {
+                        const sourceRow = group.sourceRows[0] || null
+                        throw new Error(
+                            `第 ${sourceRow || '未知'} 行「${entry.chara}」的 J++ 未能解析出韻核：${err.message}`
+                        )
+                    }
+                } else if (hasIpa) {
+                    const ipaParts = splitIpa(rawIpa)
+                    initial = ipaParts.initial
+                    nuclei = ipaParts.nuclei
+                    coda = ipaParts.coda
+                    tone = ipaParts.tone
                 }
                 output.push({
                     row_no: output.length + 1,
                     display_order: displayOrder,
                     chara: entry.chara,
-                    initial: pron.initial,
-                    nuclei: pron.nuclei,
-                    coda: pron.coda,
-                    tone: pron.tone,
-                    ipa: group.ipas[item] || '',
+                    initial,
+                    nuclei,
+                    coda,
+                    tone,
+                    ipa: rawIpa,
                     note: group.mean,
                     alt_group: count === 1 ? null : altGroup,
                     source_row: group.sourceRows[0] || null,

@@ -52,6 +52,7 @@ const DEFAULT_IMPORT_CONFIG = {
     convertMeanings: false,
     removeRedundantMeaning: false,
     sortPronunciations: false,
+    ignoreNormalization: false,
 }
 const freshImportConfig = () => ({ ...DEFAULT_IMPORT_CONFIG, ruleProfiles: [] })
 const config = reactive(freshImportConfig())
@@ -334,7 +335,7 @@ function validateBeforeParse() {
         throw new Error('活頁簿超過 20 MB 上限')
     }
     if (!config.localeName.trim()) throw new Error('請填寫規則地點名')
-    if (!Array.isArray(config.ruleProfiles) || !config.ruleProfiles.length) {
+    if (!config.ignoreNormalization && (!Array.isArray(config.ruleProfiles) || !config.ruleProfiles.length)) {
         throw new Error('請至少選擇一個規則組')
     }
     if (!config.charColumn.trim()) throw new Error('請填寫字頭欄')
@@ -571,7 +572,10 @@ onMounted(load)
                 </div>
                 <div class="border p-3 text-xs dark:border-slate-700">
                     <div class="flex items-center justify-between gap-2">
-                        <label class="font-bold">啟用規則組（首項負責聲調）</label>
+                        <label class="font-bold">
+                            啟用規則組（首項負責聲調）
+                            <span v-if="config.ignoreNormalization" class="ml-1 font-normal text-slate-400">（無視正則化時不套用）</span>
+                        </label>
                         <button type="button" class="border px-2 py-1 text-slate-500 hover:border-accent hover:text-accent" @click="resetRuleProfiles">
                             恢復預設
                         </button>
@@ -622,6 +626,7 @@ onMounted(load)
                     <label><input v-model="config.convertMeanings" type="checkbox" /> 釋義轉繁體（--cc-mean）</label>
                     <label><input v-model="config.removeRedundantMeaning" type="checkbox" /> 單音字刪除釋義（-RM）</label>
                     <label><input v-model="config.sortPronunciations" type="checkbox" /> 讀音排序（--sort-pron）</label>
+                    <label><input v-model="config.ignoreNormalization" type="checkbox" /> 無視正則化</label>
                 </div>
                 <button :disabled="busy || !selectedFile" class="w-full bg-accent px-4 py-2 text-sm font-bold text-white disabled:opacity-40">解析並預覽</button>
             </form>
