@@ -199,3 +199,127 @@ function jyutdictLocationIdentityMeta(PDO $dbh, $requestedName) {
         'redirected' => $resolved !== (string)$requestedName,
     ];
 }
+
+/**
+ * Cascade location rename to location_name_redirects, articles, and editor_locations.
+ *
+ * @param PDO $dbh
+ * @param string $oldName Old source location name (e.g. second + third)
+ * @param string $newName New source location name (e.g. second + third)
+ * @param int|null $userId User ID performing the action
+ */
+function jyutdictCascadeLocationRename(PDO $dbh, $oldName, $newName, $userId = null) {
+    $oldName = trim((string)$oldName);
+    $newName = trim((string)$newName);
+    if ($oldName === '' || $newName === '' || $oldName === $newName) {
+        return;
+    }
+
+    $validUserId = null;
+    if ($userId !== null && (int)$userId > 0) {
+        $userCheck = $dbh->prepare("SELECT COUNT(*) FROM `users` WHERE `id` = ?");
+        $userCheck->execute([(int)$userId]);
+        if ((int)$userCheck->fetchColumn() > 0) {
+            $validUserId = (int)$userId;
+        }
+    }
+
+    $redirectTableExists = jyutdictLocationRedirectTableExists($dbh);
+
+    if ($redirectTableExists) {
+        // 1. If oldName was an alias_name in location_name_redirects
+        $stmt = $dbh->prepare("SELECT `canonical_name` FROM `location_name_redirects` WHERE `alias_name` = ?");
+        $stmt->execute([$oldName]);
+        $targetCanonical = $stmt->fetchColumn();
+
+        if ($targetCanonical !== false) {
+            $targetCanonical = (string)$targetCanonical;
+            if ($newName === $targetCanonical) {
+                // If the new name is identical to the canonical name, self-redirect is unnecessary
+                $del = $dbh->prepare("DELETE FROM `location_name_redirects` WHERE `alias_name` = ?");
+                $del->execute([$oldName]);
+            } else {
+                // Check if newName already exists in location_name_redirects
+                $stmtCheck = $dbh->prepare("SELECT `canonical_name` FROM `location_name_redirects` WHERE `alias_name` = ?");
+                $stmtCheck->execute([$newName]);
+                $existingNewTarget = $stmtCheck->fetchColumn();
+
+                if ($existingNewTarget !== false) {
+                    // newName already exists as an alias; remove the oldName alias row
+                    $del = $dbh->prepare("DELETE FROM `location_name_redirects` WHERE `alias_name` = ?");
+                    $del->execute([$oldName]);
+                } else {
+                    // Update the alias_name to newName
+                    $upd = $dbh->prepare(
+                        "UPDATE `location_name_redirects`
+                         SET `alias_name` = ?, `updated_by` = ?
+                         WHERE `alias_name` = ?"
+                    );
+                    $upd->execute([$newName, $validUserId, $oldName]);
+                }
+            }
+        }
+
+        // 2. If oldName was a canonical_name in location_name_redirects
+        $stmtCanonical = $dbh->prepare(
+            "SELECT COUNT(*) FROM `location_name_redirects` WHERE `canonical_name` = ?"
+        );
+        $stmtCanonical->execute([$oldName]);
+        if ((int)$stmtCanonical->fetchColumn() > 0) {
+            $updCanonical = $dbh->prepare(
+                "UPDATE `location_name_redirects`
+                 SET `canonical_name` = ?, `updated_by` = ?
+                 WHERE `canonical_name` = ?"
+            );
+            $updCanonical->execute([$newName, $validUserId, $oldName]);
+
+            // If there's an alias matching newName now pointing to newName (self-loop), clean it up
+            $delLoop = $dbh->prepare(
+                "DELETE FROM `location_name_redirects` WHERE `alias_name` = ? AND `canonical_name` = ?"
+            );
+            $delLoop->execute([$newName, $newName]);
+        }
+    }
+
+    // 3. Migrate articles table (where location_name is oldName and article_type = 'location')
+    $stmtArticleNew = $dbh->prepare(
+        "SELECT `id` FROM `articles` WHERE `location_name` = ? AND `article_type` = 'location' LIMIT 1"
+    );
+    $stmtArticleNew->execute([$newName]);
+    $newArticleId = $stmtArticleNew->fetchColumn();
+
+    if ($newArticleId === false) {
+        $updArticle = $dbh->prepare(
+            "UPDATE `articles` SET `location_name` = ?
+             WHERE `location_name` = ? AND `article_type` = 'location'"
+        );
+        $updArticle->execute([$newName, $oldName]);
+    }
+
+    // 4. Migrate editor_locations table (from oldName to newName)
+    $stmtEditors = $dbh->prepare(
+        "SELECT `editor_id`, `assigned_by`, `assigned_at`
+         FROM `editor_locations` WHERE `location_name` = ?"
+    );
+    $stmtEditors->execute([$oldName]);
+    $editorRows = $stmtEditors->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($editorRows) {
+        $insertEditor = $dbh->prepare(
+            "INSERT IGNORE INTO `editor_locations`
+             (`editor_id`, `location_name`, `assigned_by`, `assigned_at`)
+             VALUES (?, ?, ?, ?)"
+        );
+        foreach ($editorRows as $row) {
+            $insertEditor->execute([
+                (int)$row['editor_id'],
+                $newName,
+                (int)$row['assigned_by'],
+                $row['assigned_at'],
+            ]);
+        }
+        $deleteOldEditor = $dbh->prepare("DELETE FROM `editor_locations` WHERE `location_name` = ?");
+        $deleteOldEditor->execute([$oldName]);
+    }
+}
+

@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import Sortable from 'sortablejs'
 import adminApi from '@/api/admin.js'
+import articlesApi from '@/api/articles.js'
 import { useAuthStore } from '@/stores/auth.js'
 import AdminLocationEditor from './AdminLocationEditor.vue'
 
@@ -152,6 +153,7 @@ const submitForm = async () => {
             if (!authStore.isAdmin) delete payload.is_visible
             await adminApi.updateCatalogLocation(payload)
         }
+        articlesApi.clearArticleLocationCache()
         closeForm()
         await load()
     } catch (e) {
