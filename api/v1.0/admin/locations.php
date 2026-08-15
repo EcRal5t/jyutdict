@@ -6,6 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/helpers.php';
 require_once __DIR__ . '/../../core/LocationMaintenance.php';
+require_once __DIR__ . '/../../core/LocationArticleIdentity.php';
 require_once __DIR__ . '/../../core/EditorAreaAccess.php';
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../middleware/role.php';
@@ -185,6 +186,13 @@ try {
             $updated['third'], $updated['detailed_name'] ?: null, $updated['sheet_author'] ?: null,
             $updated['color'], $isVisible, $areaId,
         ]);
+
+        $oldName = (string)$before['second'] . (string)($before['third'] ?? '');
+        $newName = (string)$updated['second'] . (string)($updated['third'] ?? '');
+        if ($oldName !== '' && $newName !== '' && $oldName !== $newName) {
+            jyutdictCascadeLocationRename($dbh, $oldName, $newName, $currentUserId);
+        }
+
         $after = jyutdictMaintenanceGetArea($dbh, $areaId);
         jyutdictMaintenanceAudit($dbh, $currentUserId, $requestId, $action, 'success', $areaId, $sheetname, $before, $after);
         $dbh->commit();
