@@ -47,16 +47,14 @@ $action = $_GET['action'] ?? 'login';
 
 // ========== 辅助函数 ==========
 
-
-
-function httpPost($url, $data, $proxy = '') {
+function httpPost($url, $data, $proxy = '', $sslVerify = true) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool)$sslVerify);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify ? 2 : 0);
     // 代理配置
     if (!empty($proxy)) {
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
@@ -75,11 +73,11 @@ function httpPost($url, $data, $proxy = '') {
     return $decoded;
 }
 
-function httpGet($url, $headers = [], $proxy = '') {
+function httpGet($url, $headers = [], $proxy = '', $sslVerify = true) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, (bool)$sslVerify);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify ? 2 : 0);
     if (!empty($headers)) {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     }
@@ -159,13 +157,14 @@ if ($action === 'callback') {
     }
 
     $proxy = $config['proxy'] ?? '';
+    $sslVerify = $config['ssl_verify'] ?? true;
     $tokenResponse = httpPost('https://oauth2.googleapis.com/token', [
         'code'          => $code,
         'client_id'     => $config['client_id'],
         'client_secret' => $config['client_secret'],
         'redirect_uri'  => $config['redirect_uri'],
         'grant_type'    => 'authorization_code',
-    ], $proxy);
+    ], $proxy, $sslVerify);
 
     if (!isset($tokenResponse['access_token'])) {
         outputJson(['error' => 'Failed to exchange code for token', 'detail' => $tokenResponse], 500);
@@ -177,7 +176,8 @@ if ($action === 'callback') {
     $userInfo = httpGet(
         'https://www.googleapis.com/oauth2/v2/userinfo',
         ['Authorization: Bearer ' . $accessToken],
-        $proxy
+        $proxy,
+        $sslVerify
     );
 
     if (!isset($userInfo['id'])) {
