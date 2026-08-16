@@ -119,6 +119,15 @@ if (!$isRandomReturn) { // 常規檢索
     }
 
     if ($isUsingRegex) {
+        $pcreToPosix = [
+            '/(?<!\\\\)\\\\d/' => '[0-9]',
+            '/(?<!\\\\)\\\\D/' => '[^0-9]',
+            '/(?<!\\\\)\\\\w/' => '[a-zA-Z0-9_]',
+            '/(?<!\\\\)\\\\W/' => '[^a-zA-Z0-9_]',
+            '/(?<!\\\\)\\\\s/' => '[[:space:]]',
+            '/(?<!\\\\)\\\\S/' => '[^[:space:]]',
+        ];
+        $queryString = preg_replace(array_keys($pcreToPosix), array_values($pcreToPosix), $queryString);
         if ($isFuzzyQuery) {
             $inCharaSheet_sql = "SELECT * FROM `j_faamjyut` WHERE `$queryCol` REGEXP :str LIMIT 50";
         } else {
