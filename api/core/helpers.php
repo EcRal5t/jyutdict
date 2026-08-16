@@ -36,7 +36,7 @@ function outputPublicJson($data, $code = 200, $maxAge = 300) {
 function printApiRootJson() {
     echo json_encode([
         "name" => "泛粵大典 API",
-        "version" => [0, 6, 7],
+        "version" => [0, 8, 4],
         "description" => "泛粵大典數據查詢接口",
         "endpoints" => [
             "v1.0" => [
