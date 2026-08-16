@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "generate:phonology-data": "node scripts/generate-phonology-data.mjs",
+    "check:phonology-data": "node scripts/generate-phonology-data.mjs --check",
     "postbuild": "node scripts/deploy.js",
     "preview": "vite preview"
   },
