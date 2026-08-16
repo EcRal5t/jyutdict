@@ -8,36 +8,36 @@ import ResultCard from '@/components/ResultCard.vue';
 import CommentSidebar from '@/components/CommentSidebar.vue';
 
 // 評論側邊欄
-const commentSidebarVisible = ref(false)
-const commentTarget = ref('')
+const commentSidebarVisible = ref(false);
+const commentTarget = ref('');
 
 const openSheetComments = (sheetKey) => {
     if (!sheetKey) {
-        alert('此條目暫無評論標識（鍵）')
-        return
+        alert('此條目暫無評論標識（鍵）');
+        return;
     }
-    commentTarget.value = sheetKey
-    commentSidebarVisible.value = true
-}
+    commentTarget.value = sheetKey;
+    commentSidebarVisible.value = true;
+};
 
 // 評論數量
-const commentCounts = ref({})
+const commentCounts = ref({});
 
 const loadCommentCounts = async () => {
-    const keys = results.value.map(r => r['鍵']).filter(Boolean)
-    if (keys.length === 0) return
+    const keys = results.value.map(r => r['鍵']).filter(Boolean);
+    if (keys.length === 0) return;
 
     try {
-        const res = await commentsApi.getCounts('sheet', keys)
-        commentCounts.value = res.data.counts || {}
+        const res = await commentsApi.getCounts('sheet', keys);
+        commentCounts.value = res.data.counts || {};
     } catch (e) {
-        console.error('Failed to load comment counts', e)
+        console.error('Failed to load comment counts', e);
     }
-}
+};
 
 const getCommentCount = (key) => {
-    return commentCounts.value[key] || 0
-}
+    return commentCounts.value[key] || 0;
+};
 
 const router = useRouter();
 const route = useRoute();
@@ -48,6 +48,7 @@ const isFuzzy = ref(true);
 const isTrim = ref(true);
 const isRegex = ref(false);
 const isDef = ref(false);
+const isDefClean = ref(true);
 
 const results = ref([]);
 const headerInfo = reactive({ cities: [], foreign: [], all: [] });
@@ -65,6 +66,7 @@ const initFromUrl = () => {
     if (q.trim !== undefined) isTrim.value = q.trim === '1';
     if (q.regex !== undefined) isRegex.value = q.regex === '1';
     if (q.def !== undefined) isDef.value = q.def === '1';
+    if (q.clean !== undefined) isDefClean.value = q.clean !== '0';
 };
 
 // Sync state to URL
@@ -76,7 +78,8 @@ const syncToUrl = () => {
             fuzzy: isFuzzy.value ? '1' : undefined,
             trim: isTrim.value ? '1' : undefined,
             regex: isRegex.value ? '1' : undefined,
-            def: isDef.value ? '1' : undefined
+            def: isDef.value ? '1' : undefined,
+            clean: (isDef.value && !isDefClean.value) ? '0' : undefined
         }
     });
 };
@@ -113,16 +116,7 @@ const performSearch = async () => {
         const q = query.value.trim();
 
         // 更新 URL
-        router.replace({
-            query: {
-                q: q || undefined,
-                col: location.value || undefined,
-                fuzzy: isFuzzy.value ? '1' : undefined,
-                trim: isTrim.value ? '1' : undefined,
-                regex: isRegex.value ? '1' : undefined,
-                def: isDef.value ? '1' : undefined
-            }
-        });
+        syncToUrl();
 
         let data;
         if (!q) {
@@ -138,7 +132,7 @@ const performSearch = async () => {
             // 構建查詢模式
             let mode = 'auto';
             if (isDef.value) {
-                mode = 'meaning';
+                mode = isDefClean.value ? 'concise' : 'meaning';
             } else if (isRegex.value) {
                 mode = 'regex';
             } else if (isTrim.value && !isHan) {
@@ -186,7 +180,6 @@ const performSearch = async () => {
 
 const calculateDensityScore = (rowData) => {
     let score = 0;
-    // We can use the already loaded headerInfo.cities
     const cities = headerInfo.cities;
     const len = cities.length;
     for (let i = 0; i < len; i++) {
@@ -209,9 +202,7 @@ onMounted(async () => {
 
 // Watch query for external changes (back button)
 watch(() => route.query, (newQ) => {
-    if (newQ.q !== query.value) { // avoid loop
-        // initFromUrl();
-        // performSearch(); 
+    if (newQ.q !== query.value) {
         // We might not want to auto-search on every route change if it's internal
     }
 });
@@ -311,6 +302,20 @@ watch(() => route.query, (newQ) => {
                             </svg>
                         </div>
                         <span class="group-hover:text-accent transition-colors">反查釋義</span>
+                    </label>
+
+                    <label v-if="isDef"
+                        class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none animate-fadeIn">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" v-model="isDefClean"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                viewBox="0 0 14 14" fill="none">
+                                <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <span class="group-hover:text-accent transition-colors" title="去除例句與冗餘干擾，精確匹配核心義項">僅搜簡釋 (去例句)</span>
                     </label>
                 </div>
             </div>

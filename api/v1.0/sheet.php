@@ -207,7 +207,11 @@ $col = isset($_REQUEST['col']) ? $_REQUEST['col'] : null;
 $mode = isset($_REQUEST['mode']) ? $_REQUEST['mode'] : 'auto';
 
 // 如果是釋義查詢
-if ($mode === 'meaning' || isset($_REQUEST['meaning'])) {
+// 默認查詢「釋義」（含例句）；若指定 concise=1 / meaning=concise / mode=concise / col=釋 則查詢「釋」（精簡關鍵詞）
+if ($col === '釋' || $mode === 'concise' || isset($_REQUEST['concise']) || (isset($_REQUEST['meaning']) && $_REQUEST['meaning'] === 'concise')) {
+    $col = '釋';
+    $mode = 'fuzzy';
+} elseif ($mode === 'meaning' || isset($_REQUEST['meaning'])) {
     $col = '釋義';
     $mode = 'fuzzy';
 }
@@ -259,6 +263,15 @@ switch ($mode) {
         break;
 
     case 'regex':
+        $pcreToPosix = [
+            '/(?<!\\\\)\\\\d/' => '[0-9]',
+            '/(?<!\\\\)\\\\D/' => '[^0-9]',
+            '/(?<!\\\\)\\\\w/' => '[a-zA-Z0-9_]',
+            '/(?<!\\\\)\\\\W/' => '[^a-zA-Z0-9_]',
+            '/(?<!\\\\)\\\\s/' => '[[:space:]]',
+            '/(?<!\\\\)\\\\S/' => '[^[:space:]]',
+        ];
+        $queryString = preg_replace(array_keys($pcreToPosix), array_values($pcreToPosix), $queryString);
         $sql = "SELECT * FROM `j_faamjyut` WHERE `$col` REGEXP :str LIMIT $limit";
         break;
 
