@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import {
     LOCATION_NAMES,
     LOCATION_COLOR,
+    SIMPLIFIED_CHARACTERISTIC_INDICES,
     CHARACTERISTIC_PAIRS,
     CHARACTERISTICS_MATRIX
 } from '../data/characteristics_matrix.js';
@@ -15,8 +16,20 @@ const userVector = ref(new Array(CHARACTERISTIC_PAIRS.length).fill(0));
 const featureSearch = ref('');
 const isSidenavOpen = ref(false);
 const isInfoExpanded = ref(false);
+const mode = ref('simplified');
 
-const progressCount = computed(() => userVector.value.filter(v => v !== 0).length);
+const isSimplifiedMode = computed(() => mode.value === 'simplified');
+const visibleCharacteristicIndices = computed(() => isSimplifiedMode.value
+    ? SIMPLIFIED_CHARACTERISTIC_INDICES
+    : CHARACTERISTIC_PAIRS.map((_, index) => index)
+);
+const visibleCharacteristics = computed(() => visibleCharacteristicIndices.value.map(index => ({
+    index,
+    name: CHARACTERISTIC_PAIRS[index]
+})));
+const progressCount = computed(() => visibleCharacteristicIndices.value
+    .filter(index => userVector.value[index] !== 0).length
+);
 
 const getBarColor = (name) => {
     return LOCATION_COLOR[name] || '#0d1014';
@@ -28,9 +41,7 @@ const rankings = computed(() => {
         let dotProduct = 0;
         let activeUserFeatures = 0;
 
-        for (let i = 0; i < dialectVector.length; i++) {
-            // userVector is ref, use .value if accessing inside JS logic, but here inside computed it's auto-unwrapped if we use it correctly? 
-            // Wait, userVector is an array inside a ref. userVector.value[i]
+        for (const i of visibleCharacteristicIndices.value) {
             if (userVector.value[i] !== 0) {
                 activeUserFeatures++;
                 if (dialectVector[i] === userVector.value[i]) {
@@ -47,7 +58,7 @@ const rankings = computed(() => {
             similarity = ((rawScore + 1) / 2) * 100;
         }
 
-        const completeCharacteristicThreshold = CHARACTERISTIC_PAIRS.length / 3;
+        const completeCharacteristicThreshold = visibleCharacteristicIndices.value.length / 3;
         const activeUserFeatureSquare = activeUserFeatures * activeUserFeatures;
         const similarityCoefficient = 1 / (completeCharacteristicThreshold / (activeUserFeatureSquare || 1) + 1);
 
@@ -119,8 +130,12 @@ const resetAll = () => {
 };
 
 const loadDialectData = (index, name) => {
-    if (confirm(`確定要將所有選項重置爲【${name}】的數據嗎？`)) {
-        userVector.value = [...CHARACTERISTICS_MATRIX[index]];
+    if (confirm(`確定要將目前模式的選項重置爲【${name}】的數據嗎？`)) {
+        const next = new Array(CHARACTERISTIC_PAIRS.length).fill(0);
+        for (const featureIndex of visibleCharacteristicIndices.value) {
+            next[featureIndex] = CHARACTERISTICS_MATRIX[index][featureIndex];
+        }
+        userVector.value = next;
     }
 };
 
@@ -138,13 +153,25 @@ const loadDialectData = (index, name) => {
                 <div
                     class="text-sm bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-500 dark:text-slate-300">
                     <span class="font-bold text-blue-600 dark:text-blue-400">{{ progressCount }}</span>
-                    <span class="hidden sm:inline"> / {{ CHARACTERISTIC_PAIRS.length }}</span>
+                    <span class="hidden sm:inline"> / {{ visibleCharacteristicIndices.length }}</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
+                <div class="inline-flex rounded-md bg-slate-100 p-0.5 dark:bg-slate-700" role="group" aria-label="特徵顯示模式">
+                    <button type="button" class="rounded px-2 py-1 text-xs font-medium transition-colors"
+                        :class="isSimplifiedMode ? 'bg-accent text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white'"
+                        :aria-pressed="isSimplifiedMode" @click="mode = 'simplified'">
+                        簡化
+                    </button>
+                    <button type="button" class="rounded px-2 py-1 text-xs font-medium transition-colors"
+                        :class="!isSimplifiedMode ? 'bg-accent text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white'"
+                        :aria-pressed="!isSimplifiedMode" @click="mode = 'complete'">
+                        完整
+                    </button>
+                </div>
                 <input v-model="featureSearch" type="text" placeholder="搜特徵..."
-                    class="pl-3 pr-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 w-32 sm:w-48 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                    class="pl-3 pr-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 w-24 sm:w-48 bg-slate-50 dark:bg-slate-700 dark:text-white">
                 <button @click="resetAll"
                     class="px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-md">
                     重置
@@ -158,32 +185,32 @@ const loadDialectData = (index, name) => {
             <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-100/50 dark:bg-slate-900/50">
                 <div class="flex-1 overflow-y-auto p-2 scroll-smooth">
                     <div class="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-7 gap-2 m-2">
-                        <template v-for="(name, index) in CHARACTERISTIC_PAIRS" :key="index">
-                            <div v-if="!featureSearch || name.includes(featureSearch)"
+                        <template v-for="(item, displayIndex) in visibleCharacteristics" :key="item.index">
+                            <div v-if="!featureSearch || item.name.includes(featureSearch)"
                                 class="border dark:border-slate-700 rounded-md p-2 flex flex-col justify-between gap-2 transition-colors"
                                 :class="{
-                                    'bg-white dark:bg-slate-800': userVector[index] === 0,
-                                    'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': userVector[index] === 1,
-                                    'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': userVector[index] === -1
+                                    'bg-white dark:bg-slate-800': userVector[item.index] === 0,
+                                    'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': userVector[item.index] === 1,
+                                    'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': userVector[item.index] === -1
                                 }">
                                 <div class="flex justify-between items-start">
-                                    <span class="text-sm font-medium truncate w-full" :title="name">{{ name }}</span>
-                                    <span class="text-[10px] text-slate-400 font-mono shrink-0">#{{ index + 1 }}</span>
+                                    <span class="text-sm font-medium truncate w-full" :title="item.name">{{ item.name }}</span>
+                                    <span class="text-[10px] text-slate-400 font-mono shrink-0">#{{ displayIndex + 1 }}</span>
                                 </div>
                                 <div class="grid grid-cols-3 gap-1">
-                                    <button @click="handleOptionChange(index, 1)"
+                                    <button @click="handleOptionChange(item.index, 1)"
                                         class="h-6 rounded text-xs flex items-center justify-center transition-colors"
-                                        :class="userVector[index] === 1 ? 'bg-green-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-green-100 dark:hover:bg-green-900 hover:text-green-600'">
+                                        :class="userVector[item.index] === 1 ? 'bg-green-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-green-100 dark:hover:bg-green-900 hover:text-green-600'">
                                         ✓
                                     </button>
-                                    <button @click="handleOptionChange(index, -1)"
+                                    <button @click="handleOptionChange(item.index, -1)"
                                         class="h-6 rounded text-xs flex items-center justify-center transition-colors"
-                                        :class="userVector[index] === -1 ? 'bg-red-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600'">
+                                        :class="userVector[item.index] === -1 ? 'bg-red-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600'">
                                         ✗
                                     </button>
-                                    <button @click="handleOptionChange(index, 0)"
+                                    <button @click="handleOptionChange(item.index, 0)"
                                         class="h-6 rounded text-xs flex items-center justify-center transition-colors"
-                                        :class="userVector[index] === 0 ? 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300' : 'bg-slate-50 dark:bg-slate-700 text-slate-300 hover:bg-slate-200'">
+                                        :class="userVector[item.index] === 0 ? 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300' : 'bg-slate-50 dark:bg-slate-700 text-slate-300 hover:bg-slate-200'">
                                         -
                                     </button>
                                 </div>
@@ -213,6 +240,7 @@ const loadDialectData = (index, name) => {
                                 :style="{ backgroundColor: mixedColor }"></div>
                             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                                 成對的兩個字，只要一者較另一者多出了一個音，即爲不同；少數情況下，二字都有多音，則要求讀音分別相同，沒有多出來的音。
+                                簡化模式以本站及 MCPDict 粵語字表共同篩選的 {{ SIMPLIFIED_CHARACTERISTIC_INDICES.length }} 對去冗餘特徵，覆蓋樣本中所有可區分的地點組合。
                             </p>
                         </div>
 
