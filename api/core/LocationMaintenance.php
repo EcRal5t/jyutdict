@@ -148,11 +148,22 @@ function jyutdictMaintenanceValidateMetadata(array $input, array $base = []) {
         throw new RuntimeException('latitude must be between -90 and 90');
     }
     if (array_key_exists('color', $input)) {
-        $color = strtoupper(trim((string)$input['color']));
-        if (!preg_match('/\A#[0-9A-F]{6}\z/', $color)) {
+        $raw = trim((string)$input['color']);
+        $parts = array_filter(array_map('trim', explode(',', $raw)), function ($p) {
+            return $p !== '';
+        });
+        if (empty($parts)) {
             throw new RuntimeException('color must use #RRGGBB format');
         }
-        $result['color'] = $color;
+        $normalized = [];
+        foreach ($parts as $part) {
+            $c = strtoupper($part);
+            if (!preg_match('/\A#[0-9A-F]{6}\z/', $c)) {
+                throw new RuntimeException('color must use #RRGGBB format');
+            }
+            $normalized[] = $c;
+        }
+        $result['color'] = implode(',', $normalized);
     }
     return $result;
 }
