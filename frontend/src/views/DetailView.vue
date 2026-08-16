@@ -8,39 +8,41 @@ import AreaTable from '@/components/detail/AreaTable.vue';
 import DetailMap from '@/components/detail/DetailMap.vue';
 import RelativeLinks from '@/components/detail/RelativeLinks.vue';
 import CommentSidebar from '@/components/CommentSidebar.vue';
+import AreaColorBadge from '@/components/common/AreaColorBadge.vue';
+import { parseAreaColors } from '@/utils/areaColor.js';
 
 // 評論側邊欄
-const commentSidebarVisible = ref(false)
-const commentTarget = ref('')
+const commentSidebarVisible = ref(false);
+const commentTarget = ref('');
 
 const openComments = (chara) => {
-    commentTarget.value = chara
-    commentSidebarVisible.value = true
-}
+    commentTarget.value = chara;
+    commentSidebarVisible.value = true;
+};
 
 // 評論數量
-const commentCounts = ref({})
-const commentCountsLoading = ref(false)
+const commentCounts = ref({});
+const commentCountsLoading = ref(false);
 
 const loadCommentCounts = async () => {
-    if (!resultData.value || resultData.value.length === 0) return
-    const charas = resultData.value.map(e => e.chara).filter(Boolean)
-    if (charas.length === 0) return
+    if (!resultData.value || resultData.value.length === 0) return;
+    const charas = resultData.value.map(e => e.chara).filter(Boolean);
+    if (charas.length === 0) return;
 
-    commentCountsLoading.value = true
+    commentCountsLoading.value = true;
     try {
-        const res = await commentsApi.getCounts('char', charas)
-        commentCounts.value = res.data.counts || {}
+        const res = await commentsApi.getCounts('char', charas);
+        commentCounts.value = res.data.counts || {};
     } catch (e) {
-        console.error('Failed to load comment counts', e)
+        console.error('Failed to load comment counts', e);
     } finally {
-        commentCountsLoading.value = false
+        commentCountsLoading.value = false;
     }
-}
+};
 
 const getCommentCount = (chara) => {
-    return commentCounts.value[chara] || 0
-}
+    return commentCounts.value[chara] || 0;
+};
 
 const route = useRoute();
 const router = useRouter();
@@ -77,8 +79,6 @@ const loadHeaders = async () => {
     try {
         const res = await DetailApi.getLocationList();
         if (res.data && Array.isArray(res.data)) {
-            // Map header list to object for easy lookup by ID
-            // iarealist: { id, first, second, third, ... }
             const map = {};
             res.data.forEach(item => {
                 map[item.id] = item;
@@ -110,12 +110,8 @@ const loadData = async (queryChara, areaIds = []) => {
             // Process data to enrich Location IDs with Names
             const enrichedData = res.data.map(charEntry => {
                 if (charEntry['各地']) {
-                    // Map '各地' array items
                     charEntry.location = charEntry['各地'].map(loc => {
                         const headerInfo = headerData.value[loc.id] || {};
-                        // Construct display name or pass info
-                        // v0.9 had: division_adm, city, district...
-                        // iarealist has: first (div), second (city), third (district)
                         return {
                             ...loc,
                             city: headerInfo.second || '',
@@ -129,19 +125,13 @@ const loadData = async (queryChara, areaIds = []) => {
                             hasPhonology: Boolean(headerInfo.has_phonology)
                         };
                     });
-                    // Use legacy key 'location' for compatibility with template or update template?
-                    // Template uses `entry.location` (from my view_file output of DetailView Step 59, line 128: `entry.location`)
-                    // So mapping `各地` to `location` is good.
                     delete charEntry['各地'];
 
-                    // Map '韻書' to 'ancient' if needed?
-                    // Step 59 line 118: `entry.ancient`.
                     if (charEntry['韻書']) {
                         charEntry.ancient = charEntry['韻書'];
                         delete charEntry['韻書'];
                     }
 
-                    // Map '字' to 'chara'
                     if (charEntry['字']) {
                         charEntry.chara = charEntry['字'];
                         delete charEntry['字'];
@@ -218,10 +208,7 @@ const leaveAreaMode = () => {
     router.push({ query });
 };
 
-const getAreaColors = (color) => String(color || '#999999')
-    .split(',')
-    .map(value => value.trim())
-    .filter(Boolean);
+const getAreaColors = (color) => parseAreaColors(color);
 
 onMounted(async () => {
     await loadHeaders();
@@ -235,23 +222,20 @@ onMounted(async () => {
 const activeIndex = ref(0);
 
 // Use IntersectionObserver to highlight active character
-// When a character section comes into view, set activeIndex.
 let observer = null;
 
 const setupObserver = () => {
-    // Cleanup previous
     if (observer) observer.disconnect();
 
     const options = {
         root: null,
-        rootMargin: '-20% 0px -60% 0px', // Trigger when element is near top but not too far
+        rootMargin: '-20% 0px -60% 0px',
         threshold: 0
     };
 
     observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                // ID format: 'char-INDEX'
                 const id = entry.target.id;
                 if (id && id.startsWith('char-')) {
                     const idx = parseInt(id.replace('char-', ''), 10);
@@ -263,8 +247,6 @@ const setupObserver = () => {
         });
     }, options);
 
-    // Observe all character sections
-    // Wait for DOM
     setTimeout(() => {
         resultData.value?.forEach((_, idx) => {
             const el = document.getElementById(`char-${idx}`);
@@ -273,11 +255,9 @@ const setupObserver = () => {
     }, 500);
 };
 
-// Also scroll logic
 const scrollToChar = (idx) => {
     const el = document.getElementById(`char-${idx}`);
     if (el) {
-        // Offset for header (approx 80px)
         const headerOffset = 100;
         const elementPosition = el.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
@@ -287,13 +267,11 @@ const scrollToChar = (idx) => {
             behavior: "smooth"
         });
 
-        // Setup active index immediately
         activeIndex.value = idx;
     }
-}
+};
 
 watch(resultData, () => {
-    // Re-setup observer when data changes
     if (resultData.value && resultData.value.length > 0) {
         setupObserver();
         if (isAreaMode.value) {
@@ -354,10 +332,7 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
                             : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-400'">
                         <input type="checkbox" class="sr-only" :checked="draftAreaIdSet.has(area.id)"
                             @change="toggleDraftArea(area.id)">
-                        <span class="flex h-4 w-4 flex-shrink-0 overflow-hidden border border-black/10" aria-hidden="true">
-                            <span v-for="color in getAreaColors(area.color)" :key="color" class="h-full flex-1"
-                                :style="{ backgroundColor: color }"></span>
-                        </span>
+                        <AreaColorBadge :color="area.color" badge-class="w-4 h-4" />
                         <span class="truncate text-sm">{{ area.second }}{{ area.third }}</span>
                         <span v-if="draftAreaIdSet.has(area.id)" class="ml-auto text-accent text-xs">✓</span>
                     </label>
@@ -473,7 +448,7 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
                                     <!-- Flat Map is handled in JS logic in template or separate component,
                                         here we assume entry.location is already an array of location objects.
                                         AreaTable expects flat array.
-                                   -->
+                                    -->
                                     <AreaTable :data="entry.location.flat()" :show-i-p-a="showIPA" :compact="isAreaMode">
                                         <template v-if="isAreaMode" #actions>
                                             <RelativeLinks :chara="entry.chara" compact compact-label="查" />

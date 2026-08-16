@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import adminApi from '@/api/admin.js'
 import { convertRuleText } from '@/utils/commonConverter.js'
+import AreaColorBadge from '@/components/common/AreaColorBadge.vue'
 
 const BOOKS = [
     { key: 'i2i', short: 'I→I', label: 'IPA → IPA', input: 'IPA', output: 'IPA', file: 'rule_i2i.csv' },
@@ -899,9 +900,9 @@ onBeforeUnmount(() => {
                             :class="activeProfile === profile ? 'bg-accent/10 shadow-[inset_4px_0_0_#D32913]' : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'"
                             @click="setActiveProfile(profile)">
                             <div class="flex items-center gap-1.5">
-                                <span v-if="locationForProfile(profile)" class="h-2.5 w-2.5 shrink-0 border border-black/20"
-                                    :style="{ backgroundColor: locationForProfile(profile).color || '#cccccc' }"
-                                    :title="`地點目錄：${locationLabel(locationForProfile(profile))}`"></span>
+                                <AreaColorBadge v-if="locationForProfile(profile)" :color="locationForProfile(profile).color || '#cccccc'"
+                                    badge-class="h-2.5 w-2.5 shrink-0"
+                                    :title="`地點目錄：${locationLabel(locationForProfile(profile))}`" />
                                 <span v-else-if="!appendProfiles.includes(profile)" class="h-2.5 w-2.5 shrink-0 border border-dashed border-slate-300 dark:border-slate-600"
                                     title="未匹配地點目錄"></span>
                                 <span v-else class="h-2.5 w-2.5 shrink-0"></span>

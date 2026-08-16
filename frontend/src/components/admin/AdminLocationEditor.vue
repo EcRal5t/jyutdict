@@ -1,4 +1,6 @@
 <script setup>
+import MultiColorPicker from './MultiColorPicker.vue'
+
 defineProps({
     editing: { type: Boolean, default: false },
     canChangeVisibility: { type: Boolean, default: false },
@@ -25,7 +27,7 @@ const model = defineModel({ type: Object, required: true })
         <textarea v-model.trim="model.sheet_author" rows="2" placeholder="字表作者／署名" class="p-2 border dark:bg-slate-900 sm:col-span-2"></textarea>
         <input v-model.number="model.longitude" type="number" step="any" required placeholder="经度" class="p-2 border dark:bg-slate-900" />
         <input v-model.number="model.latitude" type="number" step="any" required placeholder="纬度" class="p-2 border dark:bg-slate-900" />
-        <label class="flex items-center gap-2 p-2 border"><input v-model="model.color" type="color" /> {{ model.color }}</label>
+        <MultiColorPicker v-model="model.color" class="sm:col-span-2" />
         <label v-if="editing && canChangeVisibility" class="flex items-center gap-2 p-2"><input v-model="model.is_visible" type="checkbox" /> 對外顯示</label>
         <div class="flex gap-2">
             <button :disabled="saving" class="bg-accent text-white px-4 py-2 text-sm disabled:opacity-50">儲存</button>

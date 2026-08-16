@@ -3,6 +3,8 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { parsePronunciationQuery } from '@/utils/pronunciationQuery.js';
+import AreaColorBadge from '@/components/common/AreaColorBadge.vue';
+import { getPrimaryAreaColor } from '@/utils/areaColor.js';
 
 const form = reactive({
     pron: '',
@@ -113,12 +115,6 @@ const groupedLocations = computed(() => {
 });
 
 // 解析輸入
-// 規則：
-// - 空格在音節中間表示該位置模糊匹配
-// - 沒有輸入的部分是精確匹配（空字符串）
-// - 例如 "gwaa" -> 精確匹配 gwaa
-// - 例如 "gwaa " -> 模糊匹配韻尾
-// - 例如 "j t6" -> 模糊匹配韻核
 const analyzeInput = () => {
     const parsed = parsePronunciationQuery(form.pron);
     Object.assign(parsedComponents, parsed.components);
@@ -161,7 +157,6 @@ const fetchResults = async () => {
             wanshyuSelected.push('jingwaa');
         }
         // 始终发送 wanshyu 参数
-        // 空数组时发送 wanshyu=none 表示不查询任何韵书
         if (wanshyuSelected.length === 0) {
             params.append('wanshyu', 'none');
         } else {
@@ -187,7 +182,6 @@ const hasResults = computed(() => {
     if (!results.value) return false;
     const ancient = results.value['韻書'] || [];
     const locs = results.value['各地'] || [];
-    // 检查是否有非 __ 开头的 key（即音节数据）
     const hasAncientData = ancient.some(a => Object.keys(a).some(k => !k.startsWith('__')));
     const hasLocationData = locs.some(l => Object.keys(l).some(k => !k.startsWith('__')));
     return hasAncientData || hasLocationData;
@@ -200,9 +194,8 @@ const getLocationById = (id) => {
 
 // 根据颜色生成选中状态的样式
 const getSelectedStyle = (color) => {
-    if (!color) color = '#999999';
-    // 将颜色转换为 RGB
-    const hex = color.replace('#', '');
+    const primary = getPrimaryAreaColor(color, '#999999');
+    const hex = primary.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
@@ -230,8 +223,6 @@ onMounted(async () => {
     <div class="container mx-auto px-4 pt-20 pb-12 flex flex-col items-center">
         <!-- Input Section -->
         <div class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-5 w-full max-w-2xl border border-gray-100 dark:border-slate-700">
-            <!-- <h1 class="text-3xl font-bold mb-6 text-center text-slate-800 dark:text-slate-100 font-serif">粵語檢音</h1> -->
-
             <div class="flex flex-col sm:flex-row gap-2 mb-4">
                 <input v-model="form.pron" @input="analyzeInput" type="text"
                     class="flex-1 p-2 text-lg font-mono border-2 rounded-none outline-none transition-colors dark:bg-slate-900 dark:text-white"
@@ -307,11 +298,14 @@ onMounted(async () => {
                     <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 pl-2 border-b border-slate-200 dark:border-slate-700 pb-1">{{ division }}</h3>
                     <div class="flex flex-wrap gap-2">
                         <label v-for="loc in locs" :key="loc.id"
-                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-all text-sm border-l-4 hover:-translate-y-0.5 hover:shadow-sm location-label"
-                            :style="selectedLocations.has(loc.id) ? { borderColor: loc.color || '#999', ...getSelectedStyle(loc.color) } : { borderColor: loc.color || '#999' }"
-                            :class="selectedLocations.has(loc.id) ? 'selected' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">
+                            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-none cursor-pointer transition-all text-sm border hover:-translate-y-0.5 hover:shadow-sm location-label"
+                            :style="selectedLocations.has(loc.id) ? getSelectedStyle(loc.color) : {}"
+                            :class="selectedLocations.has(loc.id)
+                                ? 'selected border-accent/40 dark:border-red-500/40'
+                                : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">
                             <input type="checkbox" :checked="selectedLocations.has(loc.id)" @change="toggleLocation(loc.id)" class="w-3 h-3">
-                            {{ loc.second }}{{ loc.third ? ' ' + loc.third : '' }}
+                            <AreaColorBadge :color="loc.color" badge-class="w-3.5 h-3.5" />
+                            <span>{{ loc.second }}{{ loc.third ? ' ' + loc.third : '' }}</span>
                         </label>
                     </div>
                 </div>
@@ -346,7 +340,7 @@ onMounted(async () => {
                     <div v-for="loc in results['各地']" :key="loc.__id"
                         class="p-3 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-[4px_4px_0_rgba(0,0,0,0.06)] dark:hover:shadow-[4px_4px_0_rgba(0,0,0,0.3)] hover:-translate-y-0.5 transition-all">
                         <div class="flex items-center gap-2 mb-1 border-b border-slate-100 dark:border-slate-700 pb-1">
-                            <div class="w-3 h-3 rounded-none" :style="{ backgroundColor: getLocationById(loc.__id).color || '#999' }"></div>
+                            <AreaColorBadge :color="getLocationById(loc.__id).color" badge-class="w-3.5 h-3.5" />
                             <span class="font-bold text-slate-800 dark:text-slate-200">{{ getLocationById(loc.__id).second }}</span>
                             <span v-if="getLocationById(loc.__id).third" class="text-sm text-slate-500">{{ getLocationById(loc.__id).third }}</span>
                         </div>

@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import adminApi from '@/api/admin.js'
 import { rebuildLocationPhonology } from '@/utils/phonologyRebuild.js'
+import AreaColorBadge from '@/components/common/AreaColorBadge.vue'
 
 const locations = ref([])
 const loading = ref(true)
@@ -70,7 +71,7 @@ onMounted(load)
                 <tbody>
                     <tr v-if="loading"><td colspan="4" class="p-8 text-center text-slate-400">載入中…</td></tr>
                     <tr v-for="area in displayed" :key="area.id" class="border-t border-slate-200 dark:border-slate-700">
-                        <td class="p-2"><span class="mr-2 inline-block h-3 w-3" :style="{ background: area.color }"></span>{{ areaName(area) }}<span class="ml-2 font-mono text-xs text-slate-400">{{ area.sheetname }}</span></td>
+                        <td class="p-2"><AreaColorBadge :color="area.color" badge-class="w-3 h-3 mr-2 inline-flex align-middle" />{{ areaName(area) }}<span class="ml-2 font-mono text-xs text-slate-400">{{ area.sheetname }}</span></td>
                         <td>r{{ area.release_no }} · {{ area.entry_count }} 行</td>
                         <td>
                             <span v-if="area.has_current_phonology" class="text-emerald-600">已與目前字表同步</span>

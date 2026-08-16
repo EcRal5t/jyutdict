@@ -14,6 +14,7 @@ import {
     normalizeLocationName,
 } from '@/utils/locationMatch.js'
 import { rebuildLocationPhonology } from '@/utils/phonologyRebuild.js'
+import MultiColorPicker from './MultiColorPicker.vue'
 
 const metadata = shallowRef(null)
 const ruleBundle = shallowRef(null)
@@ -542,7 +543,7 @@ onMounted(load)
                     <input v-model.trim="newArea.first" placeholder="片區" class="border p-2 text-sm dark:bg-slate-900" />
                     <input v-model.trim="newArea.second" placeholder="城市" class="border p-2 text-sm dark:bg-slate-900" />
                     <input v-model.trim="newArea.third" placeholder="地點短名" class="border p-2 text-sm dark:bg-slate-900" />
-                    <label class="flex items-center gap-2 border p-2 text-xs"><input v-model="newArea.color" type="color" />{{ newArea.color }}</label>
+                    <MultiColorPicker v-model="newArea.color" class="col-span-2" />
                     <input v-model.number="newArea.longitude" type="number" step="any" placeholder="經度" class="border p-2 text-sm dark:bg-slate-900" />
                     <input v-model.number="newArea.latitude" type="number" step="any" placeholder="緯度" class="border p-2 text-sm dark:bg-slate-900" />
                     <label class="col-span-2 grid gap-1 text-xs text-slate-500 dark:text-slate-400">

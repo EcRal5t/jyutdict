@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, reactive, ref } from 'vue';
 import { Jyutping } from '@/utils/jyutping.js';
 import articlesApi from '@/api/articles.js';
 import LocationArticleModal from '@/components/LocationArticleModal.vue';
+import { parseAreaColors } from '@/utils/areaColor.js';
 
 const props = defineProps({
   data: {
@@ -162,7 +163,7 @@ const tableRows = computed(() => {
                     detailedName: loc.detailedName || '',
                     sheetInfo: loc.sheetInfo || '',
                     hasPhonology: Boolean(loc.hasPhonology),
-                    color: getColors(loc.color || '#999999'),
+                    color: parseAreaColors(loc.color || '#999999'),
                     span: senses.length
                 } : null,
                 prons: sense.prons,
@@ -173,15 +174,6 @@ const tableRows = computed(() => {
 
     return rows;
 });
-
-const getColors = (colorStr) => {
-    if (!colorStr) return [];
-    // User: "API returns comma separated #7F7F7F,#FFFFFF". Ignore #000000.
-    // colorStr = colorStr + ",#FF7300";
-    return colorStr.split(',')
-        .map(c => c.trim())
-        .filter(c => c && c !== '#000000');
-};
 
 onBeforeUnmount(() => {
     if (hideTimer) clearTimeout(hideTimer)

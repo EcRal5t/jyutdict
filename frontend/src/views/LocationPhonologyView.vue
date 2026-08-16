@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import phonologyApi from '@/api/phonology.js'
 import { splitJpp } from '@/utils/commonConverter.js'
 import { normaliseCheckedFinal, phonologyColourFor } from '@/utils/phonologyDisplay.js'
+import AreaColorBadge from '@/components/common/AreaColorBadge.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -241,7 +242,7 @@ onMounted(loadLocations)
                             ? 'border-accent bg-accent/5 dark:bg-accent/10'
                             : 'border-transparent hover:border-slate-300 hover:bg-slate-50 dark:hover:border-slate-600 dark:hover:bg-slate-800'"
                         @click="loadReport(area.id, true)">
-                        <span class="mr-2 inline-block h-2.5 w-2.5" :style="{ background: area.color }"></span>
+                        <AreaColorBadge :color="area.color" badge-class="w-2.5 h-2.5 mr-2" />
                         <span class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ areaName(area) }}</span>
                         <span v-if="!area.has_phonology" class="mt-0.5 block pl-5 text-[11px] text-slate-400">尚無音系表</span>
                     </button>

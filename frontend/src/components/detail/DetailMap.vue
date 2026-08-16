@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
+import { getPrimaryAreaColor, getAreaColorGradient, getContrastTextColor } from '@/utils/areaColor.js';
 
 const props = defineProps({
   locations: {
@@ -10,18 +11,6 @@ const props = defineProps({
 
 const mapContainer = ref(null);
 let map = null;
-
-const getFontColorArr = (color) => {
-  const hex = color.replace('#', '');
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  if ((r + g + b) < 384) {
-    return "#F4F4EE";
-  } else {
-    return "#2F2F2F";
-  }
-};
 
 const initMap = () => {
     if (!window.L || !mapContainer.value) return;
@@ -64,9 +53,10 @@ const initMap = () => {
         // Render base circle if needed (just once per location?)
         // Or for each entry? If same location, maybe just one cycle?
         // Let's draw one circle per unique location to avoid Z-fighting opacity
+        const primaryColor = getPrimaryAreaColor(entries[0].color);
         L.circle([baseLat, baseLng], {
-             color: entries[0].color,
-             fillColor: entries[0].color,
+             color: primaryColor,
+             fillColor: primaryColor,
              fillOpacity: 0.5,
              radius: 1000
         }).addTo(map);
@@ -90,9 +80,11 @@ const initMap = () => {
             }
 
             const prons = (entry['粵拼'] || []).join('<br>');
+            const bgGradient = getAreaColorGradient(entry.color);
+            const textColor = getContrastTextColor(entry.color);
             const html = `
-                <div class='locale-label' style='background-color: ${entry.color};'>
-                    <span style='color: ${getFontColorArr(entry.color)}'>${prons}</span>
+                <div class='locale-label' style='background: ${bgGradient};'>
+                    <span style='color: ${textColor}'>${prons}</span>
                 </div>
             `;
             
@@ -112,7 +104,7 @@ const initMap = () => {
                 if (curLatLng.lat !== baseLat || curLatLng.lng !== baseLng) {
                      if (polyline) map.removeLayer(polyline);
                      polyline = L.polyline([[baseLat, baseLng], curLatLng], {
-                         color: entry.color,
+                         color: getPrimaryAreaColor(entry.color),
                          weight: 2.5,
                          dashArray: '5, 5',
                          opacity: 0.6

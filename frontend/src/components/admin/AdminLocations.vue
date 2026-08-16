@@ -5,6 +5,7 @@ import adminApi from '@/api/admin.js'
 import articlesApi from '@/api/articles.js'
 import { useAuthStore } from '@/stores/auth.js'
 import AdminLocationEditor from './AdminLocationEditor.vue'
+import AreaColorBadge from '@/components/common/AreaColorBadge.vue'
 
 const authStore = useAuthStore()
 const locations = ref([])
@@ -251,7 +252,7 @@ onBeforeUnmount(() => { sortable?.destroy(); sortable = null })
                     >
                         <td class="p-2"><button v-if="authStore.isAdmin && !item.archived_at" :class="canDrag ? 'cursor-grab' : 'opacity-30'" class="drag-handle text-lg" title="拖拽排序">⋮⋮</button></td>
                         <td class="p-2 whitespace-nowrap">{{ item.sort_order }} <button v-if="authStore.isAdmin && !item.archived_at" @click="move(item,-1)" class="ml-1">↑</button><button v-if="authStore.isAdmin && !item.archived_at" @click="move(item,1)" class="ml-1">↓</button></td>
-                        <td class="p-2"><span class="inline-block w-3 h-3 mr-1" :style="{background:item.color}"></span>{{ locationName(item) }}</td>
+                        <td class="p-2"><AreaColorBadge :color="item.color" badge-class="w-3 h-3 mr-1 inline-flex align-middle" />{{ locationName(item) }}</td>
                         <td class="p-2 font-mono text-xs">{{ item.sheetname }}</td>
                         <td class="p-2"><span :class="item.archived_at ? 'text-slate-400' : item.is_visible ? 'text-green-600' : 'text-amber-600'">{{ statusLabel(item) }}</span></td>
                         <td class="p-2 text-xs">
