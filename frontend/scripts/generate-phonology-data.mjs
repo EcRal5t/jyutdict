@@ -33,6 +33,12 @@ const efficientPcaComponentCount = 20
 const efficientPrimaryDistanceWeight = 0.85
 const efficientDistanceDecay = 0.55
 const efficientMaximumPrimaryPartitionAgreement = 0.95
+const simplifiedFeatureCount = 50
+const simplifiedPrimaryDistanceWeight = 0.80
+const simplifiedDistanceDecay = 0.75
+const simplifiedLocalDistanceWeight = 0.70
+const simplifiedLocalUtilityDecay = 0.15
+const simplifiedLocalSwapLimit = 20
 
 const unreliableReadingNotePattern = /(?:^|[\s（(\[【〈＜<，,；;])(?:訓(?:讀|音)?|训(?:读|音)?|錯(?:讀|音)?|错(?:读|音)?|存疑|推導音?|推导音?|文(?:讀|音)?|白(?:讀|音)?|俗(?:讀|音)?|書(?:讀|音)?|书(?:读|音)?|語(?:讀|音)?|语(?:读|音)?|官話調|官话调|[＊*]?變調|[＊*]?变调|習讀|习读|姓氏?|地名|人名)(?=$|[\s）)\]】〉＞>，,；;:：])/u
 const externalReliableReadingAnnotations = new Set(['-', '=', '?', '*', '@', '\\', '/'])
@@ -128,22 +134,33 @@ function loadPronunciations(areaIds) {
     return readings
 }
 
-function pronunciationSet(rows, ignoreTone) {
-    return new Set((rows || []).map(({ initial, nuclei, coda, tone }) =>
-        `${initial}\u001f${nuclei}\u001f${coda}${ignoreTone ? '' : `\u001f${tone}`}`
-    ))
-}
-
 function equalSets(left, right) {
     return left.size === right.size && [...left].every(value => right.has(value))
 }
 
+function summarisePronunciationRows(rows) {
+    if (!rows?.length) return null
+    const readings = rows.map(({ initial, nuclei, coda, tone }) => {
+        const segmentalPronunciation = `${initial}\u001f${nuclei}\u001f${coda}`
+        return {
+            pronunciation: `${segmentalPronunciation}\u001f${tone}`,
+            segmentalPronunciation,
+            tone,
+        }
+    })
+    return {
+        readings,
+        pronunciations: new Set(readings.map(reading => reading.pronunciation)),
+        segmentalPronunciations: new Set(readings.map(reading => reading.segmentalPronunciation)),
+        tones: new Set(readings.map(reading => reading.tone)),
+    }
+}
+
 function buildVector(areaReadings) {
     return pairDefinitions.map(({ pair: [leftCharacter, rightCharacter], ignoreTone }) => {
-        const left = pronunciationSet(areaReadings?.get(leftCharacter), ignoreTone)
-        const right = pronunciationSet(areaReadings?.get(rightCharacter), ignoreTone)
-        if (!left.size || !right.size) return 0
-        return equalSets(left, right) ? 1 : -1
+        const left = summarisePronunciationRows(areaReadings?.get(leftCharacter))
+        const right = summarisePronunciationRows(areaReadings?.get(rightCharacter))
+        return compareReliableReadings(left, right, ignoreTone)
     })
 }
 
@@ -246,18 +263,29 @@ function cleanExternalReading(value) {
     return reading
 }
 
-function externalPronunciationSet(rows, ignoreTone) {
-    return new Set([...(rows || [])].map(reading =>
-        ignoreTone ? reading.replace(/[0-9]+[a-z]?$/u, '') : reading
-    ).filter(Boolean))
+function summariseExternalPronunciations(rows) {
+    if (!rows?.size) return null
+    const readings = [...rows].map((pronunciation) => {
+        const tone = pronunciation.match(/[0-9]+[a-z]?$/u)?.[0] || ''
+        return {
+            pronunciation,
+            segmentalPronunciation: tone ? pronunciation.slice(0, -tone.length) : pronunciation,
+            tone,
+        }
+    })
+    return {
+        readings,
+        pronunciations: new Set(readings.map(reading => reading.pronunciation)),
+        segmentalPronunciations: new Set(readings.map(reading => reading.segmentalPronunciation)),
+        tones: new Set(readings.map(reading => reading.tone)),
+    }
 }
 
 function buildExternalVector(characterReadings) {
     return pairDefinitions.map(({ pair: [leftCharacter, rightCharacter], ignoreTone }) => {
-        const left = externalPronunciationSet(characterReadings.get(leftCharacter), ignoreTone)
-        const right = externalPronunciationSet(characterReadings.get(rightCharacter), ignoreTone)
-        if (!left.size || !right.size) return 0
-        return equalSets(left, right) ? 1 : -1
+        const left = summariseExternalPronunciations(characterReadings.get(leftCharacter))
+        const right = summariseExternalPronunciations(characterReadings.get(rightCharacter))
+        return compareReliableReadings(left, right, ignoreTone)
     })
 }
 
@@ -338,7 +366,7 @@ function comparableCount(vector) {
     return vector.filter(value => value !== 0).length
 }
 
-function selectSimplifiedFeatureIndices(matrix) {
+function buildSimplifiedPairCoverage(matrix) {
     const coverageByFeature = Array.from({ length: pairDefinitions.length }, () => [])
     let totalPairCount = 0
     let distinguishablePairCount = 0
@@ -359,41 +387,222 @@ function selectSimplifiedFeatureIndices(matrix) {
         }
     }
 
-    const uncovered = new Uint8Array(distinguishablePairCount)
+    return { coverageByFeature, distinguishablePairCount, totalPairCount }
+}
+
+function selectSimplifiedFeatureIndices(primaryMatrix, externalMatrix) {
+    const primary = buildSimplifiedPairCoverage(primaryMatrix)
+    const external = buildSimplifiedPairCoverage(externalMatrix)
+    const primaryDistances = new Uint16Array(primary.distinguishablePairCount)
+    const externalDistances = new Uint16Array(external.distinguishablePairCount)
+
+    const uncovered = new Uint8Array(primary.distinguishablePairCount)
     uncovered.fill(1)
-    let uncoveredCount = distinguishablePairCount
+    let uncoveredCount = primary.distinguishablePairCount
     const selected = []
     const selectedSet = new Set()
-    const knownCounts = pairDefinitions.map((_, feature) =>
-        matrix.reduce((count, vector) => count + Number(vector[feature] !== 0), 0)
+    const primaryKnownRates = pairDefinitions.map((_, feature) =>
+        primaryMatrix.reduce((count, vector) => count + Number(vector[feature] !== 0), 0) /
+        Math.max(1, primaryMatrix.length)
     )
+    const externalKnownRates = pairDefinitions.map((_, feature) =>
+        externalMatrix.reduce((count, vector) => count + Number(vector[feature] !== 0), 0) /
+        Math.max(1, externalMatrix.length)
+    )
+
+    const distanceGain = (coverage, distances, feature) => {
+        let gain = 0
+        for (const pairIndex of coverage.coverageByFeature[feature]) {
+            gain += Math.exp(-simplifiedDistanceDecay * distances[pairIndex])
+        }
+        return gain / Math.max(1, coverage.totalPairCount)
+    }
+    const generalScore = (feature) => {
+        const primaryGain = distanceGain(primary, primaryDistances, feature)
+        const externalGain = distanceGain(external, externalDistances, feature)
+        const distanceScore = simplifiedPrimaryDistanceWeight * primaryGain +
+            (1 - simplifiedPrimaryDistanceWeight) * externalGain
+        const knownScore = simplifiedPrimaryDistanceWeight * primaryKnownRates[feature] +
+            (1 - simplifiedPrimaryDistanceWeight) * externalKnownRates[feature]
+        return distanceScore * knownScore * knownScore
+    }
+    const addFeature = (feature) => {
+        selected.push(feature)
+        selectedSet.add(feature)
+        for (const pairIndex of primary.coverageByFeature[feature]) primaryDistances[pairIndex]++
+        for (const pairIndex of external.coverageByFeature[feature]) externalDistances[pairIndex]++
+    }
+
+    // First preserve the original simplified-mode promise: every pair of site
+    // locations that the full matrix can distinguish remains distinguishable.
     while (uncoveredCount) {
         let bestFeature = -1
         let bestGain = 0
-        let bestKnownCount = 0
+        let bestScore = -Infinity
         for (let feature = 0; feature < pairDefinitions.length; feature++) {
             if (selectedSet.has(feature)) continue
             let gain = 0
-            for (const pairIndex of coverageByFeature[feature]) gain += uncovered[pairIndex]
-            const knownCount = knownCounts[feature]
-            if (gain > bestGain || (gain === bestGain && knownCount > bestKnownCount)) {
+            for (const pairIndex of primary.coverageByFeature[feature]) gain += uncovered[pairIndex]
+            const score = generalScore(feature)
+            if (gain > bestGain || (gain === bestGain && score > bestScore)) {
                 bestFeature = feature
                 bestGain = gain
-                bestKnownCount = knownCount
+                bestScore = score
             }
         }
         if (bestFeature < 0 || bestGain === 0) break
-        selected.push(bestFeature)
-        selectedSet.add(bestFeature)
-        for (const pairIndex of coverageByFeature[bestFeature]) {
+        addFeature(bestFeature)
+        for (const pairIndex of primary.coverageByFeature[bestFeature]) {
             if (uncovered[pairIndex]) {
                 uncovered[pairIndex] = 0
                 uncoveredCount--
             }
         }
     }
-    if (uncoveredCount) throw new Error(`Failed to cover ${uncoveredCount} distinguishable corpus pairs.`)
-    return { indices: selected, distinguishablePairCount, totalPairCount }
+    if (uncoveredCount) throw new Error(`Failed to cover ${uncoveredCount} distinguishable site pairs.`)
+
+    // The remaining reserve features improve distance with diminishing returns.
+    // High-coverage features are favoured so a rare extra reading does not turn
+    // too much of the simplified matrix into unknown values.
+    while (selected.length < Math.min(simplifiedFeatureCount, pairDefinitions.length)) {
+        let bestFeature = -1
+        let bestScore = -Infinity
+        for (let feature = 0; feature < pairDefinitions.length; feature++) {
+            if (selectedSet.has(feature)) continue
+            const score = generalScore(feature)
+            if (score > bestScore) {
+                bestFeature = feature
+                bestScore = score
+            }
+        }
+        if (bestFeature < 0 || bestScore <= 0) break
+        addFeature(bestFeature)
+    }
+
+    const coverageFlags = (coverage) => coverage.coverageByFeature.map((pairIndices) => {
+        const flags = new Uint8Array(coverage.distinguishablePairCount)
+        for (const pairIndex of pairIndices) flags[pairIndex] = 1
+        return flags
+    })
+    const primaryFlags = coverageFlags(primary)
+    const externalFlags = coverageFlags(external)
+    const distanceUtility = distance => 1 - Math.exp(-simplifiedLocalUtilityDecay * distance)
+    const utilitySum = distances => distances.reduce((sum, distance) => sum + distanceUtility(distance), 0)
+    let primaryUtilitySum = utilitySum(primaryDistances)
+    let externalUtilitySum = utilitySum(externalDistances)
+    let primaryKnownSum = selected.reduce((sum, feature) => sum + primaryKnownRates[feature], 0)
+    let externalKnownSum = selected.reduce((sum, feature) => sum + externalKnownRates[feature], 0)
+    const selectionScore = (primaryUtility, externalUtility, primaryKnown, externalKnown) => {
+        const primaryScore = simplifiedLocalDistanceWeight *
+            primaryUtility / Math.max(1, primary.totalPairCount) +
+            (1 - simplifiedLocalDistanceWeight) * primaryKnown / selected.length
+        const externalScore = simplifiedLocalDistanceWeight *
+            externalUtility / Math.max(1, external.totalPairCount) +
+            (1 - simplifiedLocalDistanceWeight) * externalKnown / selected.length
+        return simplifiedPrimaryDistanceWeight * primaryScore +
+            (1 - simplifiedPrimaryDistanceWeight) * externalScore
+    }
+    const swapUtilityDelta = (coverage, flags, distances, droppedFeature, addedFeature, requireCoverage) => {
+        let delta = 0
+        for (const pairIndex of coverage.coverageByFeature[droppedFeature]) {
+            if (flags[addedFeature][pairIndex]) continue
+            const currentDistance = distances[pairIndex]
+            if (requireCoverage && currentDistance <= 1) return null
+            delta += distanceUtility(currentDistance - 1) - distanceUtility(currentDistance)
+        }
+        for (const pairIndex of coverage.coverageByFeature[addedFeature]) {
+            if (flags[droppedFeature][pairIndex]) continue
+            const currentDistance = distances[pairIndex]
+            delta += distanceUtility(currentDistance + 1) - distanceUtility(currentDistance)
+        }
+        return delta
+    }
+
+    // A short deterministic swap search repairs greedy choices while retaining
+    // complete site-pair coverage and still scoring MCPDict as an external corpus.
+    let localSwapCount = 0
+    for (let iteration = 0; iteration < simplifiedLocalSwapLimit; iteration++) {
+        const currentScore = selectionScore(
+            primaryUtilitySum,
+            externalUtilitySum,
+            primaryKnownSum,
+            externalKnownSum
+        )
+        let bestSwap = null
+        for (let selectedPosition = 0; selectedPosition < selected.length; selectedPosition++) {
+            const droppedFeature = selected[selectedPosition]
+            for (let addedFeature = 0; addedFeature < pairDefinitions.length; addedFeature++) {
+                if (selectedSet.has(addedFeature)) continue
+                const primaryDelta = swapUtilityDelta(
+                    primary,
+                    primaryFlags,
+                    primaryDistances,
+                    droppedFeature,
+                    addedFeature,
+                    true
+                )
+                if (primaryDelta === null) continue
+                const externalDelta = swapUtilityDelta(
+                    external,
+                    externalFlags,
+                    externalDistances,
+                    droppedFeature,
+                    addedFeature,
+                    false
+                )
+                const nextPrimaryKnown = primaryKnownSum - primaryKnownRates[droppedFeature] +
+                    primaryKnownRates[addedFeature]
+                const nextExternalKnown = externalKnownSum - externalKnownRates[droppedFeature] +
+                    externalKnownRates[addedFeature]
+                const score = selectionScore(
+                    primaryUtilitySum + primaryDelta,
+                    externalUtilitySum + externalDelta,
+                    nextPrimaryKnown,
+                    nextExternalKnown
+                )
+                if (score > currentScore + 1e-12 && (!bestSwap || score > bestSwap.score + 1e-12)) {
+                    bestSwap = {
+                        selectedPosition,
+                        droppedFeature,
+                        addedFeature,
+                        primaryDelta,
+                        externalDelta,
+                        nextPrimaryKnown,
+                        nextExternalKnown,
+                        score,
+                    }
+                }
+            }
+        }
+        if (!bestSwap) break
+
+        const { selectedPosition, droppedFeature, addedFeature } = bestSwap
+        selected[selectedPosition] = addedFeature
+        selectedSet.delete(droppedFeature)
+        selectedSet.add(addedFeature)
+        for (let pairIndex = 0; pairIndex < primaryDistances.length; pairIndex++) {
+            primaryDistances[pairIndex] += primaryFlags[addedFeature][pairIndex] -
+                primaryFlags[droppedFeature][pairIndex]
+        }
+        for (let pairIndex = 0; pairIndex < externalDistances.length; pairIndex++) {
+            externalDistances[pairIndex] += externalFlags[addedFeature][pairIndex] -
+                externalFlags[droppedFeature][pairIndex]
+        }
+        primaryUtilitySum += bestSwap.primaryDelta
+        externalUtilitySum += bestSwap.externalDelta
+        primaryKnownSum = bestSwap.nextPrimaryKnown
+        externalKnownSum = bestSwap.nextExternalKnown
+        localSwapCount++
+    }
+
+    return {
+        indices: selected,
+        primaryDistinguishablePairCount: primary.distinguishablePairCount,
+        primaryTotalPairCount: primary.totalPairCount,
+        externalDistinguishablePairCount: external.distinguishablePairCount,
+        externalTotalPairCount: external.totalPairCount,
+        localSwapCount,
+    }
 }
 
 function compareStrings(left, right) {
@@ -796,7 +1005,8 @@ function summariseEfficientMultiReadingComparisons(samples, selectedFeatures) {
 }
 
 function calculateModeNeighbourhoods(matrix, featureCount, names) {
-    const counts = matrix.map((sourceVector) => matrix.reduce((count, targetVector) => {
+    const counts = matrix.map((sourceVector, sourceIndex) => matrix.reduce((count, targetVector, targetIndex) => {
+        if (sourceIndex === targetIndex) return count
         let comparableCount = 0
         let matchCount = 0
         for (let feature = 0; feature < featureCount; feature++) {
@@ -814,6 +1024,52 @@ function calculateModeNeighbourhoods(matrix, featureCount, names) {
         averageOver80: counts.reduce((sum, count) => sum + count, 0) / Math.max(1, counts.length),
         maximumOver80: Math.max(...counts),
         guangzhouOver80: guangzhouIndex >= 0 ? counts[guangzhouIndex] : null,
+    }
+}
+
+function calculateSelectedFeatureMetrics(matrix, featureIndices, names) {
+    let knownCellCount = 0
+    let totalDistance = 0
+    let totalPairCount = 0
+    const neighbourhoodCounts = []
+    for (const vector of matrix) {
+        for (const feature of featureIndices) knownCellCount += Number(vector[feature] !== 0)
+    }
+    for (let left = 0; left < matrix.length; left++) {
+        let neighbourhoodCount = 0
+        for (let right = 0; right < matrix.length; right++) {
+            if (left === right) continue
+            let comparableCount = 0
+            let matchCount = 0
+            let distance = 0
+            for (const feature of featureIndices) {
+                const leftValue = matrix[left][feature]
+                const rightValue = matrix[right][feature]
+                if (leftValue === 0 || rightValue === 0) continue
+                comparableCount++
+                if (leftValue === rightValue) matchCount++
+                else distance++
+            }
+            if (left < right) {
+                totalPairCount++
+                totalDistance += distance
+            }
+            if (!comparableCount) continue
+            const rawSimilarity = matchCount / comparableCount * 100
+            const confidence = 1 / (featureIndices.length / 3 /
+                (comparableCount * comparableCount) + 1)
+            if (rawSimilarity * confidence > 80) neighbourhoodCount++
+        }
+        neighbourhoodCounts.push(neighbourhoodCount)
+    }
+    const guangzhouIndex = names?.indexOf('廣州') ?? -1
+    return {
+        knownRate: knownCellCount / Math.max(1, matrix.length * featureIndices.length),
+        meanDistance: totalDistance / Math.max(1, totalPairCount),
+        averageOver80: neighbourhoodCounts.reduce((sum, count) => sum + count, 0) /
+            Math.max(1, neighbourhoodCounts.length),
+        maximumOver80: Math.max(...neighbourhoodCounts),
+        guangzhouOver80: guangzhouIndex >= 0 ? neighbourhoodCounts[guangzhouIndex] : null,
     }
 }
 
@@ -877,9 +1133,20 @@ const generatedRows = areas
 const rows = [...generatedRows, ...preservedRows]
 const mcpCorpus = await loadMcpCorpus()
 const mcpRows = mcpCorpus.cantoneseRows
-const selectionCorpus = [...rows, ...mcpRows]
-const simplifiedSelection = selectSimplifiedFeatureIndices(selectionCorpus.map(row => row.vector))
+const simplifiedSelection = selectSimplifiedFeatureIndices(
+    generatedRows.map(row => row.vector),
+    mcpRows.map(row => row.vector)
+)
 const simplifiedFeatureIndices = simplifiedSelection.indices
+const simplifiedSiteMetrics = calculateSelectedFeatureMetrics(
+    generatedRows.map(row => row.vector),
+    simplifiedFeatureIndices,
+    generatedRows.map(row => row.name)
+)
+const simplifiedExternalMetrics = calculateSelectedFeatureMetrics(
+    mcpRows.map(row => row.vector),
+    simplifiedFeatureIndices
+)
 
 if (!mcpCorpus.mandarinRow) throw new Error(`Missing MCPDict ${mandarinMcpTitle} sample.`)
 const reliableSiteReadings = loadReliableSiteReadings(generatedRows.map(row => row.areaId))
@@ -977,8 +1244,10 @@ if (checkOnly) {
     console.log(`Efficient tone agreement range: ${Math.min(...efficientFeatures.map(feature => feature.toneAgreement)) * 100}%–${Math.max(...efficientFeatures.map(feature => feature.toneAgreement)) * 100}%.`)
     console.log(`Efficient multi-reading comparisons: ${JSON.stringify(efficientMultiReadingDiagnostics.counts)}.`)
     console.log(`Efficient multi-reading examples: ${JSON.stringify(efficientMultiReadingDiagnostics.examples)}.`)
-    console.log(`Selected ${simplifiedFeatureIndices.length} simplified characteristic pairs using ${rows.length} site locations + ${mcpRows.length} MCPDict Cantonese tables.`)
-    console.log(`Covered ${simplifiedSelection.distinguishablePairCount}/${simplifiedSelection.distinguishablePairCount} distinguishable corpus pairs (${simplifiedSelection.totalPairCount} total sample pairs).`)
+    console.log(`Selected ${simplifiedFeatureIndices.length} simplified characteristic pairs using ${generatedRows.length} site locations + ${mcpRows.length} MCPDict Cantonese tables.`)
+    console.log(`Covered all ${simplifiedSelection.primaryDistinguishablePairCount} distinguishable site pairs (${simplifiedSelection.primaryTotalPairCount} total site pairs); MCPDict supplied robustness and reserve-feature ranking across ${simplifiedSelection.externalDistinguishablePairCount}/${simplifiedSelection.externalTotalPairCount} distinguishable/total pairs.`)
+    console.log(`Simplified local improvements: ${simplifiedSelection.localSwapCount}; site known rate ${(simplifiedSiteMetrics.knownRate * 100).toFixed(2)}%, mean Hamming distance ${simplifiedSiteMetrics.meanDistance.toFixed(2)}, over-80 neighbourhood average ${simplifiedSiteMetrics.averageOver80.toFixed(2)}, maximum ${simplifiedSiteMetrics.maximumOver80}, Guangzhou ${simplifiedSiteMetrics.guangzhouOver80}.`)
+    console.log(`Simplified MCPDict known rate ${(simplifiedExternalMetrics.knownRate * 100).toFixed(2)}%, mean Hamming distance ${simplifiedExternalMetrics.meanDistance.toFixed(2)}.`)
     console.log(`Historical inclusion threshold: ${historicalMinimum} comparable pairs.`)
     console.log(`Included historical locations: ${includedHistoricalAreas.map(displayName).join(', ') || 'none'}.`)
     console.log(`Preserved matrix-only locations: ${preservedRows.map(row => row.name).join(', ') || 'none'}.`)
