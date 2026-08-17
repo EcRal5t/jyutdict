@@ -1089,18 +1089,10 @@ const areas = parseAreas()
 const areaById = new Map(areas.map(area => [area.id, area]))
 const currentAreaIds = legacyAreaIds()
 const existingNameByAreaId = new Map()
-const preservedRows = []
 
 for (let index = 0; index < currentData.LOCATION_NAMES.length; index++) {
     const areaId = currentAreaIds[index]
     if (areaId === null || areaId === undefined || !areaById.has(Number(areaId))) {
-        preservedRows.push({
-            areaId: areaId === null || areaId === undefined ? null : Number(areaId),
-            name: currentData.LOCATION_NAMES[index],
-            position: currentData.LOCATION_POSITION[currentData.LOCATION_NAMES[index]],
-            color: currentData.LOCATION_COLOR[currentData.LOCATION_NAMES[index]],
-            vector: currentData.CHARACTERISTICS_MATRIX[index],
-        })
         continue
     }
     existingNameByAreaId.set(Number(areaId), currentData.LOCATION_NAMES[index])
@@ -1130,7 +1122,7 @@ const generatedRows = areas
         color: area.color,
         vector: vectorByAreaId.get(area.id),
     }))
-const rows = [...generatedRows, ...preservedRows]
+const rows = generatedRows
 const mcpCorpus = await loadMcpCorpus()
 const mcpRows = mcpCorpus.cantoneseRows
 const simplifiedSelection = selectSimplifiedFeatureIndices(
@@ -1185,9 +1177,7 @@ const efficientFeatures = efficientSelection.selected
 const efficientPairs = efficientFeatures.map(feature => feature.label)
 const efficientOutputSamples = rows.map(row => ({
     title: row.name,
-    reliableReadings: row.areaId === null || row.areaId === undefined
-        ? (row.name === mandarinMcpTitle ? mcpCorpus.mandarinRow.reliableReadings : null)
-        : reliableSiteReadings.get(row.areaId),
+    reliableReadings: reliableSiteReadings.get(row.areaId),
 }))
 const efficientMatrix = efficientOutputSamples.map(sample =>
     buildEfficientVector(sample.reliableReadings, efficientFeatures)
@@ -1250,5 +1240,4 @@ if (checkOnly) {
     console.log(`Simplified MCPDict known rate ${(simplifiedExternalMetrics.knownRate * 100).toFixed(2)}%, mean Hamming distance ${simplifiedExternalMetrics.meanDistance.toFixed(2)}.`)
     console.log(`Historical inclusion threshold: ${historicalMinimum} comparable pairs.`)
     console.log(`Included historical locations: ${includedHistoricalAreas.map(displayName).join(', ') || 'none'}.`)
-    console.log(`Preserved matrix-only locations: ${preservedRows.map(row => row.name).join(', ') || 'none'}.`)
 }
