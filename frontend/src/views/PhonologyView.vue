@@ -1,66 +1,78 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import {
     LOCATION_NAMES,
     LOCATION_COLOR,
+    EFFICIENT_CHARACTERISTIC_PAIRS,
+    EFFICIENT_CHARACTERISTICS_MATRIX,
     SIMPLIFIED_CHARACTERISTIC_INDICES,
     CHARACTERISTIC_PAIRS,
     CHARACTERISTICS_MATRIX
 } from '../data/characteristics_matrix.js';
 
-// Icons replacement (Using simple SVGs or just text for simplicity if lucide is not available, 
-// but since we are in Vue SFC, we can just inline SVGs for the few we need)
-// Icons: Check, X, Minus, Menu, Search, Upload, Download, RotateCcw, Info, ChevronUp, ChevronDown, BarChart3, ArrowUp
-
-const userVector = ref(new Array(CHARACTERISTIC_PAIRS.length).fill(0));
+const efficientUserVector = ref(new Array(EFFICIENT_CHARACTERISTIC_PAIRS.length).fill(0));
+const traditionalUserVector = ref(new Array(CHARACTERISTIC_PAIRS.length).fill(0));
 const featureSearch = ref('');
-const isSidenavOpen = ref(false);
 const isInfoExpanded = ref(false);
-const mode = ref('simplified');
+const mode = ref('efficient');
 
+const isEfficientMode = computed(() => mode.value === 'efficient');
 const isSimplifiedMode = computed(() => mode.value === 'simplified');
-const visibleCharacteristicIndices = computed(() => isSimplifiedMode.value
-    ? SIMPLIFIED_CHARACTERISTIC_INDICES
-    : CHARACTERISTIC_PAIRS.map((_, index) => index)
+const activeCharacteristicPairs = computed(() => isEfficientMode.value
+    ? EFFICIENT_CHARACTERISTIC_PAIRS
+    : CHARACTERISTIC_PAIRS
 );
+const activeCharacteristicsMatrix = computed(() => isEfficientMode.value
+    ? EFFICIENT_CHARACTERISTICS_MATRIX
+    : CHARACTERISTICS_MATRIX
+);
+const activeUserVector = computed(() => isEfficientMode.value
+    ? efficientUserVector.value
+    : traditionalUserVector.value
+);
+const visibleCharacteristicIndices = computed(() => {
+    if (isEfficientMode.value) return EFFICIENT_CHARACTERISTIC_PAIRS.map((_, index) => index);
+    if (isSimplifiedMode.value) return SIMPLIFIED_CHARACTERISTIC_INDICES;
+    return CHARACTERISTIC_PAIRS.map((_, index) => index);
+});
 const visibleCharacteristics = computed(() => visibleCharacteristicIndices.value.map(index => ({
     index,
-    name: CHARACTERISTIC_PAIRS[index]
+    name: activeCharacteristicPairs.value[index]
 })));
 const progressCount = computed(() => visibleCharacteristicIndices.value
-    .filter(index => userVector.value[index] !== 0).length
+    .filter(index => activeUserVector.value[index] !== 0).length
 );
 
-const getBarColor = (name) => {
-    return LOCATION_COLOR[name] || '#0d1014';
+const setActiveUserVector = (next) => {
+    if (isEfficientMode.value) efficientUserVector.value = next;
+    else traditionalUserVector.value = next;
 };
+
+const getBarColor = (name) => LOCATION_COLOR[name] || '#0d1014';
 
 const rankings = computed(() => {
     const results = LOCATION_NAMES.map((dialectName, index) => {
-        const dialectVector = CHARACTERISTICS_MATRIX[index];
+        const dialectVector = activeCharacteristicsMatrix.value[index];
         let dotProduct = 0;
-        let activeUserFeatures = 0;
+        let comparableUserFeatures = 0;
 
-        for (const i of visibleCharacteristicIndices.value) {
-            if (userVector.value[i] !== 0) {
-                activeUserFeatures++;
-                if (dialectVector[i] === userVector.value[i]) {
-                    dotProduct += 1;
-                } else if (dialectVector[i] !== 0) {
-                    dotProduct -= 1;
-                }
-            }
+        for (const featureIndex of visibleCharacteristicIndices.value) {
+            const userValue = activeUserVector.value[featureIndex];
+            const dialectValue = dialectVector[featureIndex];
+            if (userValue === 0 || dialectValue === 0) continue;
+            comparableUserFeatures++;
+            dotProduct += dialectValue === userValue ? 1 : -1;
         }
 
         let similarity = 0;
-        if (activeUserFeatures > 0) {
-            const rawScore = dotProduct / activeUserFeatures;
+        if (comparableUserFeatures > 0) {
+            const rawScore = dotProduct / comparableUserFeatures;
             similarity = ((rawScore + 1) / 2) * 100;
         }
 
         const completeCharacteristicThreshold = visibleCharacteristicIndices.value.length / 3;
-        const activeUserFeatureSquare = activeUserFeatures * activeUserFeatures;
-        const similarityCoefficient = 1 / (completeCharacteristicThreshold / (activeUserFeatureSquare || 1) + 1);
+        const comparableFeatureSquare = comparableUserFeatures * comparableUserFeatures;
+        const similarityCoefficient = 1 / (completeCharacteristicThreshold / (comparableFeatureSquare || 1) + 1);
 
         return {
             id: index,
@@ -69,14 +81,13 @@ const rankings = computed(() => {
         };
     });
 
-    return results.sort((a, b) => b.similarity - a.similarity);
+    return results.sort((left, right) => right.similarity - left.similarity);
 });
 
 const topRankName = computed(() =>
     rankings.value.length > 0 && rankings.value[0].similarity > 80 ? rankings.value[0].name : ''
 );
 
-// Helper for color mixing (simplified port)
 const hexToRgb = (hex) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -85,60 +96,54 @@ const hexToRgb = (hex) => {
         b: parseInt(result[3], 16)
     } : null;
 };
-const rgbToHex = (r, g, b) => {
-    return "#" + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1);
-};
+const rgbToHex = (r, g, b) =>
+    "#" + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1);
 const mixedColor = computed(() => {
     const topCandidates = rankings.value.slice(0, 5);
-    if (!topCandidates || topCandidates.length === 0) return 'transparent';
-
     let totalWeight = 0, totalR = 0, totalG = 0, totalB = 0;
     const similarityThreshold = 80;
-    const validCandidates = topCandidates.filter(c => c.similarity > similarityThreshold);
+    const validCandidates = topCandidates.filter(candidate => candidate.similarity > similarityThreshold);
 
-    if (validCandidates.length === 0) return 'transparent';
+    for (const item of validCandidates) {
+        const rgb = hexToRgb(getBarColor(item.name));
+        if (!rgb) continue;
+        const normSimilarity = (item.similarity - similarityThreshold) / (100 - similarityThreshold);
+        const weight = Math.pow(normSimilarity, 3);
+        totalR += rgb.r * weight;
+        totalG += rgb.g * weight;
+        totalB += rgb.b * weight;
+        totalWeight += weight;
+    }
 
-    validCandidates.forEach(item => {
-        const colorHex = getBarColor(item.name);
-        if (!colorHex) return;
-        const rgb = hexToRgb(colorHex);
-        if (rgb) {
-            const normSimilarity = (item.similarity - similarityThreshold) / (100 - similarityThreshold);
-            const weight = Math.pow(normSimilarity, 3);
-            totalR += rgb.r * weight;
-            totalG += rgb.g * weight;
-            totalB += rgb.b * weight;
-            totalWeight += weight;
-        }
-    });
-
-    if (totalWeight === 0) return 'transparent';
-    return rgbToHex(totalR / totalWeight, totalG / totalWeight, totalB / totalWeight);
+    return totalWeight === 0
+        ? 'transparent'
+        : rgbToHex(totalR / totalWeight, totalG / totalWeight, totalB / totalWeight);
 });
 
-
 const handleOptionChange = (index, value) => {
-    const next = [...userVector.value];
+    const next = [...activeUserVector.value];
     next[index] = value;
-    userVector.value = next;
+    setActiveUserVector(next);
 };
 
 const resetAll = () => {
-    if (confirm("確定要清空所有選擇嗎？")) {
-        userVector.value = new Array(CHARACTERISTIC_PAIRS.length).fill(0);
+    if (confirm("確定要清空目前模式的所有選擇嗎？")) {
+        setActiveUserVector(new Array(activeCharacteristicPairs.value.length).fill(0));
     }
 };
 
 const loadDialectData = (index, name) => {
-    if (confirm(`確定要將目前模式的選項重置爲【${name}】的數據嗎？`)) {
-        const next = new Array(CHARACTERISTIC_PAIRS.length).fill(0);
-        for (const featureIndex of visibleCharacteristicIndices.value) {
-            next[featureIndex] = CHARACTERISTICS_MATRIX[index][featureIndex];
-        }
-        userVector.value = next;
+    if (!confirm(`確定要將目前模式的選項重置爲【${name}】的數據嗎？`)) return;
+    if (isEfficientMode.value) {
+        efficientUserVector.value = [...EFFICIENT_CHARACTERISTICS_MATRIX[index]];
+        return;
     }
+    const next = new Array(CHARACTERISTIC_PAIRS.length).fill(0);
+    for (const featureIndex of visibleCharacteristicIndices.value) {
+        next[featureIndex] = CHARACTERISTICS_MATRIX[index][featureIndex];
+    }
+    traditionalUserVector.value = next;
 };
-
 </script>
 
 <template>
@@ -147,7 +152,7 @@ const loadDialectData = (index, name) => {
 
         <!-- Toolbar -->
         <div
-            class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-2 flex items-center justify-between shadow-sm z-20 h-14 shrink-0">
+            class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-2 sm:px-4 py-2 flex items-center justify-between shadow-sm z-20 h-14 shrink-0">
             <div class="flex items-center gap-3">
                 <h1 class="text-xl font-bold hidden sm:block">粵語探針</h1>
                 <div
@@ -157,23 +162,28 @@ const loadDialectData = (index, name) => {
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 sm:gap-2 min-w-0">
                 <div class="inline-flex rounded-md bg-slate-100 p-0.5 dark:bg-slate-700" role="group" aria-label="特徵顯示模式">
-                    <button type="button" class="rounded px-2 py-1 text-xs font-medium transition-colors"
+                    <button type="button" class="rounded px-1.5 sm:px-2 py-1 text-xs font-medium transition-colors"
+                        :class="isEfficientMode ? 'bg-accent text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white'"
+                        :aria-pressed="isEfficientMode" @click="mode = 'efficient'">
+                        高效
+                    </button>
+                    <button type="button" class="rounded px-1.5 sm:px-2 py-1 text-xs font-medium transition-colors"
                         :class="isSimplifiedMode ? 'bg-accent text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white'"
                         :aria-pressed="isSimplifiedMode" @click="mode = 'simplified'">
                         簡化
                     </button>
-                    <button type="button" class="rounded px-2 py-1 text-xs font-medium transition-colors"
-                        :class="!isSimplifiedMode ? 'bg-accent text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white'"
-                        :aria-pressed="!isSimplifiedMode" @click="mode = 'complete'">
+                    <button type="button" class="rounded px-1.5 sm:px-2 py-1 text-xs font-medium transition-colors"
+                        :class="mode === 'complete' ? 'bg-accent text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white'"
+                        :aria-pressed="mode === 'complete'" @click="mode = 'complete'">
                         完整
                     </button>
                 </div>
                 <input v-model="featureSearch" type="text" placeholder="搜特徵..."
-                    class="pl-3 pr-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 w-24 sm:w-48 bg-slate-50 dark:bg-slate-700 dark:text-white">
+                    class="pl-2 sm:pl-3 pr-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 w-20 sm:w-48 bg-slate-50 dark:bg-slate-700 dark:text-white">
                 <button @click="resetAll"
-                    class="px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-md">
+                    class="px-2 sm:px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-md">
                     重置
                 </button>
             </div>
@@ -189,9 +199,9 @@ const loadDialectData = (index, name) => {
                             <div v-if="!featureSearch || item.name.includes(featureSearch)"
                                 class="border dark:border-slate-700 rounded-md p-2 flex flex-col justify-between gap-2 transition-colors"
                                 :class="{
-                                    'bg-white dark:bg-slate-800': userVector[item.index] === 0,
-                                    'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': userVector[item.index] === 1,
-                                    'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': userVector[item.index] === -1
+                                    'bg-white dark:bg-slate-800': activeUserVector[item.index] === 0,
+                                    'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': activeUserVector[item.index] === 1,
+                                    'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': activeUserVector[item.index] === -1
                                 }">
                                 <div class="flex justify-between items-start">
                                     <span class="text-sm font-medium truncate w-full" :title="item.name">{{ item.name }}</span>
@@ -200,17 +210,17 @@ const loadDialectData = (index, name) => {
                                 <div class="grid grid-cols-3 gap-1">
                                     <button @click="handleOptionChange(item.index, 1)"
                                         class="h-6 rounded text-xs flex items-center justify-center transition-colors"
-                                        :class="userVector[item.index] === 1 ? 'bg-green-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-green-100 dark:hover:bg-green-900 hover:text-green-600'">
+                                        :class="activeUserVector[item.index] === 1 ? 'bg-green-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-green-100 dark:hover:bg-green-900 hover:text-green-600'">
                                         ✓
                                     </button>
                                     <button @click="handleOptionChange(item.index, -1)"
                                         class="h-6 rounded text-xs flex items-center justify-center transition-colors"
-                                        :class="userVector[item.index] === -1 ? 'bg-red-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600'">
+                                        :class="activeUserVector[item.index] === -1 ? 'bg-red-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600'">
                                         ✗
                                     </button>
                                     <button @click="handleOptionChange(item.index, 0)"
                                         class="h-6 rounded text-xs flex items-center justify-center transition-colors"
-                                        :class="userVector[item.index] === 0 ? 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300' : 'bg-slate-50 dark:bg-slate-700 text-slate-300 hover:bg-slate-200'">
+                                        :class="activeUserVector[item.index] === 0 ? 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300' : 'bg-slate-50 dark:bg-slate-700 text-slate-300 hover:bg-slate-200'">
                                         -
                                     </button>
                                 </div>
@@ -238,9 +248,14 @@ const loadDialectData = (index, name) => {
                         <div class="flex items-center gap-3">
                             <div class="w-6 h-6 rounded-full shadow-sm ring-2 ring-white dark:ring-slate-700"
                                 :style="{ backgroundColor: mixedColor }"></div>
-                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                            <p v-if="isEfficientMode" class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                高效模式從本站及普通話中篩選 {{ EFFICIENT_CHARACTERISTIC_PAIRS.length }} 對高區分度常用字。
+                                以主成分分析降低特徵冗餘，再優先拉開本站各點的特徵距離。
+                                每對均比較包含聲調的完整讀音；訓讀、錯讀、存疑、推導音、又音及標明層次的文白讀音不參與，多音仍有歧義時則不計該地。
+                            </p>
+                            <p v-else class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                                 成對的兩個字，只要一者較另一者多出了一個音，即爲不同；少數情況下，二字都有多音，則要求讀音分別相同，沒有多出來的音。
-                                簡化模式以本站及 MCPDict 粵語字表共同篩選的 {{ SIMPLIFIED_CHARACTERISTIC_INDICES.length }} 對去冗餘特徵，覆蓋樣本中所有可區分的地點組合。
+                                簡化模式以本站粵語字表篩選的 {{ SIMPLIFIED_CHARACTERISTIC_INDICES.length }} 對去冗餘特徵，覆蓋樣本中所有可區分的地點組合。
                             </p>
                         </div>
 
