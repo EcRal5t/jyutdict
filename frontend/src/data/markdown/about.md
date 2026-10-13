@@ -107,10 +107,10 @@ II. 點真少 / 怎麼都是ｘｘ的點
 底表可於下方 B 站號置頂動態下載。
 
 # 五、聯繫
-[嶺南粵音的 bilibili](https://space.bilibili.com/410568594)
+[嶺南粵音 B 站](https://space.bilibili.com/410568594)
 
 <del>嶺南粵音 Q 群：</del>
 
 泛粵大典 Q 群：837607356
 
-個人 QQ：526438991
+個人 B 站：[杋糖](https://space.bilibili.com/75879)
