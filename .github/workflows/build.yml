@@ -130,5 +130,6 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: ${{ secrets.DEPLOY_PORT }}
           script: |
-            cd ${{ secrets.DEPLOY_PATH }}
-            git pull origin dist
+            set -e
+            cd "${{ secrets.DEPLOY_PATH }}"
+            git pull --ff-only origin dist
