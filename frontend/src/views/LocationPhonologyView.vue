@@ -5,6 +5,7 @@ import phonologyApi from '@/api/phonology.js'
 import { splitJpp } from '@/utils/commonConverter.js'
 import { normaliseCheckedFinal, phonologyColourFor } from '@/utils/phonologyDisplay.js'
 import AreaColorBadge from '@/components/common/AreaColorBadge.vue'
+import { updateCurrentSeo } from '@/utils/seo.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -165,6 +166,11 @@ async function loadReport(areaId, updateRoute = false) {
     if (updateRoute) {
         await router.replace({ name: 'location-phonology', params: { areaId: area.id } })
     }
+    updateCurrentSeo({
+        title: `${areaName(area)}粵語音系｜泛粵大典 Jyutdict`,
+        description: `查閱${areaName(area)}目前發布字表所生成的音系四表及例字。`,
+        noindex: !area.has_phonology,
+    }, `/location-phonology/${area.id}`)
     if (!area.has_phonology) return
     reportLoading.value = true
     try {

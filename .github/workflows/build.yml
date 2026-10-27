@@ -85,6 +85,11 @@ jobs:
           else
             git fetch origin dist
             git archive origin/dist assets index.html favicon.ico | tar -x -C /tmp/dist
+            # Generated public data (including the SEO catalog) must survive
+            # backend-only deployments which skip the frontend build.
+            if git cat-file -e origin/dist:data 2>/dev/null; then
+              git archive origin/dist data | tar -x -C /tmp/dist
+            fi
           fi
 
           cat > /tmp/dist/.gitignore << 'EOF'

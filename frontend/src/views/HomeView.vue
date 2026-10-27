@@ -252,6 +252,8 @@ onUnmounted(() => {
 
       <!-- Minimalist Search -->
       <div class="w-full max-w-xl flex flex-col gap-6 animate-fade-in-up mt-10">
+        <h1 class="text-center font-serif text-3xl text-slate-800 dark:text-slate-100">泛粵大典</h1>
+        <p class="text-center text-sm leading-relaxed text-slate-600 dark:text-slate-400">查詢各地粵語讀音、擴展粵拼與 IPA，對照歷史韻書。</p>
         <div class="relative group">
           <input v-model="inputChara" @keypress.enter="goToDetail" type="text" placeholder="在此輸入…"
             class="w-full bg-transparent border-b-2 border-gray-300 dark:border-slate-600 focus:border-[#D32913] dark:focus:border-[#D32913] py-4 text-center text-3xl font-light tracking-widest outline-none transition-colors duration-300 placeholder-gray-300 dark:placeholder-slate-700 text-slate-800 dark:text-slate-100">

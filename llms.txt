@@ -1,0 +1,25 @@
+# 泛粵大典 Jyutdict
+
+> 各地粵語字音、擴展粵拼（J++）、IPA 與歷史韻書的公開查詢網站。Canonical origin: https://jyutdict.org
+
+## 公開內容與入口
+
+- [粵語檢字](https://jyutdict.org/detail): 使用 `?chara=漢字` 查詢；單字有穩定的規範網址。
+- [例：粵](https://jyutdict.org/detail?chara=%E7%B2%B5): 各地讀音與歷史韻書對照。
+- [泛粵字表](https://jyutdict.org/sheet): 特色用字、釋義、各地讀音及語義場。
+- [粵語檢音](https://jyutdict.org/pronunciation): 以音節或聲母、韻核、韻尾、聲調查字。
+- [地點介紹](https://jyutdict.org/locations): 各地粵語介紹及公開文章的入口。
+- [各地音系](https://jyutdict.org/location-phonology): 由目前發布的字表生成的音系資料。
+- [本站與資料來源](https://jyutdict.org/about/intro): 資料背景、記音約定與參與者。
+- [擴展粵拼說明](https://jyutdict.org/about/jpp)
+- [聲調總表](https://jyutdict.org/about/tone)
+- [網站地圖](https://jyutdict.org/sitemap.xml): 公開頁面及單字網址；不包含管理頁面或查詢參數的任意排列組合。
+- [公開 API 說明](https://jyutdict.org/api/): 各端點以 `?help` 說明參數，例如 `/api/v1.0/detail?help`。
+
+## 資料理解與引用
+
+讀音依地點與資料來源而異。J++ 與 IPA 是不同的記音方式；泛粵字表的綜合音是人工整合的音系，不等於某地正音。錔字不代表本字或正字，本站不指定統一的正音或正字。
+
+字條及地點資料中的地點、字表作者、來源與備註是解讀資料的一部分。引用時可連結相應規範網址並保留來源與地點資訊。資料授權依各來源及其標示，不由網站程式的 MIT 授權推定。
+
+公開頁面可直接讀取 HTML；JSON API 提供查詢結果。請遵守 robots.txt、HTTP 快取標頭及服務端限流，避免高併發和重複抓取篩選條件的排列組合。

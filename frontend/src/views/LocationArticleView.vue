@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth.js'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import articlesApi from '@/api/articles.js'
+import { updateCurrentSeo } from '@/utils/seo.js'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -53,8 +54,15 @@ const loadArticle = async () => {
         const res = await articlesApi.getArticle(locationName.value)
         article.value = res.data.article
         resolvedLocationName.value = res.data.resolved_location_name || locationName.value
+        const name = resolvedLocationName.value
+        updateCurrentSeo({
+            title: `${name}粵語介紹｜泛粵大典 Jyutdict`,
+            url: `https://jyutdict.org/location-article/${encodeURIComponent(name)}`,
+            noindex: !article.value,
+        }, route.path)
     } catch (e) {
         error.value = '載入文章失敗'
+        if (e.response?.status === 404) updateCurrentSeo({ noindex: true }, route.path)
         console.error(e)
     } finally {
         isLoading.value = false

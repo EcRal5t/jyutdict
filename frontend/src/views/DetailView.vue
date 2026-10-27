@@ -10,6 +10,7 @@ import RelativeLinks from '@/components/detail/RelativeLinks.vue';
 import CommentSidebar from '@/components/CommentSidebar.vue';
 import AreaColorBadge from '@/components/common/AreaColorBadge.vue';
 import { parseAreaColors } from '@/utils/areaColor.js';
+import { updateCurrentSeo } from '@/utils/seo.js';
 
 // 評論側邊欄
 const commentSidebarVisible = ref(false);
@@ -161,6 +162,8 @@ const loadData = async (queryChara, areaIds = []) => {
         error.value = "Failed to load details.";
     } finally {
         isLoading.value = false;
+        const hasData = resultData.value?.some(entry => entry.location?.length || entry.ancient?.length);
+        if (!error.value && resultData.value && !hasData) updateCurrentSeo({ noindex: true }, '/detail');
     }
 };
 
