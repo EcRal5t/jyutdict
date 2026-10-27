@@ -1,5 +1,5 @@
 # 泛粵大典 robots.txt
-# https://jyutdict.com
+# https://jyutdict.org
 
 User-agent: *
 # 允許所有公開內容
@@ -9,6 +9,13 @@ Allow: /
 Disallow: /api/auth/
 Disallow: /api/v1.0/user/
 Disallow: /api/v1.0/admin/
+Disallow: /api/seo/
+Disallow: /frontend/
+Disallow: /node_modules/
+
+# Keep public data APIs and JavaScript readable for rendering.
+# Search engines and AI crawlers may read public pages under this same policy.
+# Private pages return noindex; do not block them here so crawlers can see it.
 
 # Sitemap
 Sitemap: https://jyutdict.org/sitemap.xml

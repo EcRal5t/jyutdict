@@ -1,8 +1,10 @@
 # ============================================
 # 錯誤頁面導向
 # ============================================
-ErrorDocument 403 /index.html
-ErrorDocument 404 /index.html
+ErrorDocument 403 "Forbidden"
+ErrorDocument 404 "Not Found"
+DirectoryIndex disabled
+DirectoryIndex index.html
 
 # Compress JSON at the web-server layer; PHP should not buffer/compress it.
 <IfModule mod_deflate.c>
@@ -24,7 +26,7 @@ ErrorDocument 404 /index.html
   RewriteRule ^(\.env|\.htaccess|\.htpasswd|composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js)$ - [F,L]
 
   # 阻止敏感目錄
-  RewriteRule ^(docs|frontend|node_modules|api/core)/ - [F,L]
+  RewriteRule ^(docs|frontend|node_modules|deploy|api/core)/ - [F,L]
 
   # 阻止 SQL 和 Markdown 檔案
   RewriteRule \.(sql|md)$ - [F,L]
@@ -75,6 +77,13 @@ ErrorDocument 404 /index.html
   RewriteRule ^api/auth/me$ api/auth/me.php [L]
   RewriteRule ^api/auth/logout$ api/auth/logout.php [L]
 
+  # Public HTML and sitemap entry points, before the static-file shortcut.
+  RewriteRule ^sitemap\.xml$ api/seo/sitemap.php [END]
+  RewriteRule ^sitemaps/(?:pages|characters-[1-9][0-9]*)\.xml$ api/seo/sitemap.php [END]
+  RewriteRule ^(?:index\.html)?$ api/seo/page.php [END]
+  # Internal renderers are not public API endpoints.
+  RewriteRule ^api/seo/ - [F,L]
+
   # ============================================
   # 靜態資源：允許存在的檔案和目錄
   # ============================================
@@ -83,8 +92,7 @@ ErrorDocument 404 /index.html
   RewriteRule ^ - [L]
 
   # ============================================
-  # Vue Router - 其他所有請求轉向 index.html
+  # Vue Router shell with public HTML, metadata and real 404 status.
   # ============================================
-  RewriteRule ^index\.html$ - [L]
-  RewriteRule . /index.html [L]
+  RewriteRule . api/seo/page.php [END]
 </IfModule>
