@@ -26,6 +26,11 @@ const activeNotes = ref(new Set());
 const parsedNotes = computed(() => {
     try {
         const notesString = props.rowData['附'] || '{}';
+        try {
+            return JSON.parse(notesString);
+        } catch {
+            // Older imports stored Python-style dictionaries instead of JSON.
+        }
         const jsonStr = notesString.replace(/\n/g, '\\n').replace(/\t/g, '\\t').replace(/'/g, '"');
         return JSON.parse(jsonStr);
     } catch(e) {
