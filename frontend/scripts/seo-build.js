@@ -12,7 +12,7 @@ export async function createSeoManifest() {
   const pages = {}
   for (const [path, page] of Object.entries(config.pages)) {
     pages[path] = { ...page, title: path === '/' ? page.title : `${page.title}｜${config.name}`, canonical: path,
-      html: `<h1>${escape(page.heading || page.title.split('｜')[0])}</h1><p>${escape(page.text)}</p>` }
+      html: path === '/' ? '' : `<h1>${escape(page.heading || page.title.split('｜')[0])}</h1>` }
   }
   for (const page of await readJson('about_pages.json')) {
     const markdown = await readFile(`${source}/markdown/${page.file}`, 'utf8')

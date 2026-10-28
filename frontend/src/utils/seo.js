@@ -1,3 +1,5 @@
+import { sheetDirectoryPath } from './sheetEntry.js'
+
 export function resolveSeo(route, catalog) {
   const page = catalog.pages[route.path]
   let meta = page ? { ...page, noindex: false } : {
@@ -12,6 +14,12 @@ export function resolveSeo(route, catalog) {
       canonical: `/detail?chara=${encodeURIComponent(chara)}`,
       noindex: !/^[\p{Script=Han}〇]$/u.test(chara) || contentQueryKeys.some(key => key !== 'chara'),
     }
+  } else if (route.name === 'sheet-entry') {
+    const key = String(route.params.key || '')
+    meta = { title: `泛粵字表詞條｜${catalog.name}`, description: '泛粵字表的完整釋義、例詞與各地讀音記錄。', canonical: `/sheet/entry/${key}`, noindex: true }
+  } else if (route.name === 'sheet-directory') {
+    const page = Number(route.params.page || 1)
+    meta = { title: `泛粵詞條目錄 · 第 ${page} 頁｜${catalog.name}`, description: `瀏覽泛粵特色字、釋義與方音的固定詞條頁，第 ${page} 頁。`, canonical: sheetDirectoryPath(page), noindex: true }
   } else if (route.name === 'location-article') {
     const name = String(route.params.locationName || '')
     meta = { title: `${name}粵語介紹｜${catalog.name}`, description: `閱讀${name}的粵語地點介紹、語音特點及相關資料。`, canonical: `/location-article/${encodeURIComponent(name)}`, noindex: false }
@@ -52,5 +60,14 @@ export function updateSeo(meta) {
   for (const [name, content] of Object.entries({ 'twitter:card': 'summary', 'twitter:title': meta.title, 'twitter:description': meta.description })) tag(`meta[name="${name}"]`, { name, content })
   // The server's entry-specific JSON-LD must not linger after a client-side navigation.
   const structured = document.getElementById('jyutdict-structured-data')
-  if (structured && structured.dataset.url !== meta.url) structured.remove()
+  if (structured && (structured.dataset.url !== meta.url || meta.noindex)) structured.remove()
+  if (meta.term && !meta.noindex) {
+    const script = document.getElementById('jyutdict-structured-data') || document.createElement('script')
+    script.id = 'jyutdict-structured-data'
+    script.type = 'application/ld+json'
+    script.dataset.url = meta.url
+    script.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'DefinedTerm', '@id': meta.url, url: meta.url, name: meta.term, description: meta.description,
+      inDefinedTermSet: { '@type': 'DefinedTermSet', name: '泛粵字表', url: new URL('/sheet/entries', meta.url).href } })
+    if (!script.isConnected) document.head.appendChild(script)
+  }
 }

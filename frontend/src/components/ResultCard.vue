@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { darkenColor, formatCharacter, formatUnicode, formatPronunciation, formatMeanings } from '@/utils/formatters.js';
 import articlesApi from '@/api/articles.js';
 import LocationArticleModal from '@/components/LocationArticleModal.vue';
+import { sheetEntryPath } from '@/utils/sheetEntry.js';
 
 const props = defineProps({
   rowData: {
@@ -349,6 +350,8 @@ const closeModal = () => {
                     </div>
                 </div>
             </div>
+
+            <RouterLink v-if="sheetEntryPath(rowData['鍵'])" :to="sheetEntryPath(rowData['鍵'])" class="inline-block mt-3 text-sm text-accent underline">詞條固定連結</RouterLink>
 
             <!-- Footer: Classification -->
             <div v-if="classification" class="mt-4 flex justify-end">

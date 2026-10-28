@@ -79,7 +79,7 @@ DirectoryIndex index.html
 
   # Public HTML and sitemap entry points, before the static-file shortcut.
   RewriteRule ^sitemap\.xml$ api/seo/sitemap.php [END]
-  RewriteRule ^sitemaps/(?:pages|characters-[1-9][0-9]*)\.xml$ api/seo/sitemap.php [END]
+  RewriteRule ^sitemaps/(?:pages|(?:characters|entries)-[1-9][0-9]*)\.xml$ api/seo/sitemap.php [END]
   RewriteRule ^(?:index\.html)?$ api/seo/page.php [END]
   # Internal renderers are not public API endpoints.
   RewriteRule ^api/seo/ - [F,L]

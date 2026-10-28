@@ -41,6 +41,10 @@ export default {
         return apiClient.get('/sheet', { params: { key } });
     },
 
+    getEntries(page = 1) {
+        return apiClient.get('/sheet', { params: { entries: page } });
+    },
+
     /**
      * 隨機返回
      * @param {number} count - 返回條數（1-30）

@@ -12,6 +12,7 @@
 
 include_once(__DIR__ . '/../core/db.php');
 include_once(__DIR__ . '/../core/helpers.php');
+require_once __DIR__ . '/../core/SheetEntries.php';
 
 header('Content-type: application/json');
 
@@ -75,6 +76,10 @@ if (isset($_REQUEST['help'])) {
             "GET /api/v1.0/sheet?key={key}" => [
                 "description" => "按鍵精確查詢（用於锚定特定條目）",
                 "params" => ["key"]
+            ],
+            "GET /api/v1.0/sheet?entries={page}" => [
+                "description" => "可索引詞條的分頁目錄，每頁 100 條，按固定鍵排序",
+                "params" => ["entries"]
             ]
         ],
         "params" => [
@@ -133,6 +138,16 @@ if (isset($_REQUEST['help'])) {
 // =====================================================
 // 按 key 查詢（優先級最高）
 // =====================================================
+if (isset($_REQUEST['entries'])) {
+    $page = $_REQUEST['entries'];
+    if (!is_string($page) || !preg_match('/\A[1-9][0-9]{0,6}\z/', $page)) {
+        outputJson(['error' => 'Invalid entry directory page'], 400);
+    }
+    $directory = jyutdictSheetDirectory($dbh, (int)$page);
+    if ((int)$page > $directory['pages']) outputJson(['error' => 'Entry directory page not found'], 404);
+    outputPublicJson($directory);
+}
+
 if (isset($_REQUEST['key'])) {
     $key = $_REQUEST['key'];
 
