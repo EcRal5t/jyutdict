@@ -1,5 +1,8 @@
+# Sensitive config
 api/config/oauth.php
 api/config/db.php
+
+# Not tracked in deployment
 .vscode/
 frontend/
 node_modules/

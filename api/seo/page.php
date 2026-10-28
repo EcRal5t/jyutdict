@@ -35,12 +35,7 @@ try {
     $shell = file_get_contents(seoRoot() . '/index.html');
     $shell = preg_replace('~<title>.*?</title>|<meta\b[^>]*\bname=["\x27](?:description|robots)["\x27][^>]*>~si', '', $shell);
     $shell = str_replace('</head>', seoRenderHead($page, $manifest) . '</head>', $shell);
-    $links = [];
-    foreach ($manifest['pages'] as $target => $entry) {
-        if ($entry['canonical'] !== $target) continue;
-        $links[] = '<a href="' . seoEscape($target) . '">' . seoEscape(explode('｜', $entry['title'])[0]) . '</a>';
-    }
-    $content = '<main style="max-width:72rem;margin:4rem auto;padding:1rem;font-family:serif;line-height:1.8">' . $page['html'] . '<footer>' . implode(' · ', $links) . '</footer></main>';
+    $content = '<main class="container mx-auto px-4 py-8 max-w-5xl">' . $page['html'] . '</main>';
     $shell = str_replace('<div id="app"></div>', '<div id="app">' . $content . '</div>', $shell);
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'HEAD') echo $shell;
 } catch (Throwable $e) {
