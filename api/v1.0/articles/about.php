@@ -16,6 +16,7 @@ header('Content-Type: application/json; charset=utf-8');
 // 配置
 define('ABOUT_PAGES_JSON', __DIR__ . '/../../../frontend/src/data/about_pages.json');
 define('MARKDOWN_DIR', __DIR__ . '/../../../frontend/src/data/markdown/');
+define('ABOUT_BUILD_JSON', __DIR__ . '/../../../data/about-pages.json');
 
 include_once(__DIR__ . '/../../core/helpers.php');
 
@@ -31,11 +32,11 @@ $host = $_SERVER['HTTP_HOST'];
 $imagesBase = $protocol . '://' . $host . '/img/';
 
 // 讀取 about_pages.json
-if (!file_exists(ABOUT_PAGES_JSON)) {
+if (!file_exists(ABOUT_BUILD_JSON) && !file_exists(ABOUT_PAGES_JSON)) {
     outputJson(['error' => 'About pages config not found'], 500);
 }
 
-$pagesJson = file_get_contents(ABOUT_PAGES_JSON);
+$pagesJson = file_get_contents(file_exists(ABOUT_BUILD_JSON) ? ABOUT_BUILD_JSON : ABOUT_PAGES_JSON);
 $pages = json_decode($pagesJson, true);
 
 if ($pages === null) {
@@ -47,7 +48,7 @@ $articleId = $_GET['id'] ?? null;
 
 if (!$articleId) {
     outputJson([
-        'pages' => $pages,
+        'pages' => array_map(function ($page) { unset($page['content']); return $page; }, $pages),
         'images_base' => $imagesBase
     ]);
 }
@@ -68,11 +69,11 @@ if (!$page) {
 // 讀取 Markdown 文件
 $markdownFile = MARKDOWN_DIR . $page['file'];
 
-if (!file_exists($markdownFile)) {
+if (!array_key_exists('content', $page) && !file_exists($markdownFile)) {
     outputJson(['error' => 'Markdown file not found'], 404);
 }
 
-$markdownContent = file_get_contents($markdownFile);
+$markdownContent = array_key_exists('content', $page) ? $page['content'] : file_get_contents($markdownFile);
 
 // 處理圖片路徑：將 ./img/ 或 img/ 替換為說明
 // Android 端可根據 images_base 自行拼接完整 URL
