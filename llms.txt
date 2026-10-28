@@ -7,6 +7,7 @@
 - [粵語檢字](https://jyutdict.org/detail): 使用 `?chara=漢字` 查詢；單字有穩定的規範網址。
 - [例：粵](https://jyutdict.org/detail?chara=%E7%B2%B5): 各地讀音與歷史韻書對照。
 - [泛粵字表](https://jyutdict.org/sheet): 特色用字、釋義、各地讀音及語義場。
+- [泛粵詞條目錄](https://jyutdict.org/sheet/entries): 可逐頁瀏覽固定詞條；`/sheet/entry/{鍵的數字部分}` 以鍵的原始字串為身份，保留前導零。引用詞條時使用此網址，字頭、讀音或釋義更新不會改變其網址。
 - [粵語檢音](https://jyutdict.org/pronunciation): 以音節或聲母、韻核、韻尾、聲調查字。
 - [地點介紹](https://jyutdict.org/locations): 各地粵語介紹及公開文章的入口。
 - [各地音系](https://jyutdict.org/location-phonology): 由目前發布的字表生成的音系資料。

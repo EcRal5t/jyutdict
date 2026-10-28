@@ -15,6 +15,10 @@ try {
         http_response_code(400);
         exit;
     }
+    if ($path === '/sheet/entries/1') {
+        header('Location: ' . $manifest['origin'] . '/sheet/entries' . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : ''), true, 301);
+        exit;
+    }
     // Normalize the public origin and static-file aliases, preserving meaningful query values.
     if (in_array($path, ['/index.html', '/index.php'], true) || $path !== '/' && substr($path, -1) === '/' || ($_SERVER['HTTP_HOST'] ?? '') === 'www.jyutdict.org') {
         $target = in_array($path, ['/index.html', '/index.php'], true) ? '/' : (rtrim($rawPath, '/') ?: '/');
@@ -36,7 +40,7 @@ try {
         if ($entry['canonical'] !== $target) continue;
         $links[] = '<a href="' . seoEscape($target) . '">' . seoEscape(explode('｜', $entry['title'])[0]) . '</a>';
     }
-    $content = '<main style="max-width:72rem;margin:4rem auto;padding:1rem;font-family:serif;line-height:1.8">' . $page['html'] . '<p>引用資料時，請保留地點、字表作者及來源資訊；資料說明見<a href="/about/intro">本站與資料來源</a>。</p><footer>' . implode(' · ', $links) . '</footer></main>';
+    $content = '<main style="max-width:72rem;margin:4rem auto;padding:1rem;font-family:serif;line-height:1.8">' . $page['html'] . '<footer>' . implode(' · ', $links) . '</footer></main>';
     $shell = str_replace('<div id="app"></div>', '<div id="app">' . $content . '</div>', $shell);
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'HEAD') echo $shell;
 } catch (Throwable $e) {

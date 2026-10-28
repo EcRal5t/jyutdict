@@ -8,9 +8,10 @@ try {
     $origin = $manifest['origin'];
     $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $count = (int)ceil(count($catalog['characters']) / 10000);
+    $sheetCount = (int)ceil(count($catalog['sheet_keys']) / 10000);
     if ($path === '/sitemap.xml') {
         $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-        foreach (array_merge(['/sitemaps/pages.xml'], array_map(function ($n) { return '/sitemaps/characters-' . $n . '.xml'; }, $count ? range(1, $count) : [])) as $part) {
+        foreach (array_merge(['/sitemaps/pages.xml'], array_map(function ($n) { return '/sitemaps/characters-' . $n . '.xml'; }, $count ? range(1, $count) : []), array_map(function ($n) { return '/sitemaps/entries-' . $n . '.xml'; }, $sheetCount ? range(1, $sheetCount) : [])) as $part) {
             $xml .= '<sitemap><loc>' . seoEscape($origin . $part) . '</loc></sitemap>';
         }
         $xml .= '</sitemapindex>';
@@ -24,8 +25,11 @@ try {
             foreach ($catalog['areas'] as $area) {
                 if ($area['has_phonology']) $urls[] = '/location-phonology/' . (int)$area['id'];
             }
+            for ($n = 1; $n <= max(1, (int)ceil(count($catalog['sheet_keys']) / 100)); $n++) $urls[] = jyutdictSheetDirectoryPath($n);
         } elseif (preg_match('~\A/sitemaps/characters-([1-9][0-9]*)\.xml\z~', $path, $match) && (int)$match[1] <= $count) {
             foreach (array_slice($catalog['characters'], ((int)$match[1] - 1) * 10000, 10000) as $character) $urls[] = '/detail?chara=' . rawurlencode($character);
+        } elseif (preg_match('~\A/sitemaps/entries-([1-9][0-9]*)\.xml\z~', $path, $match) && (int)$match[1] <= $sheetCount) {
+            foreach (array_slice($catalog['sheet_keys'], ((int)$match[1] - 1) * 10000, 10000) as $key) $urls[] = jyutdictSheetEntryPath($key);
         } else {
             http_response_code(404);
             header('Cache-Control: no-store');

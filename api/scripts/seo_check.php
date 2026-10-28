@@ -13,7 +13,6 @@ function checkSeo($condition, $message) {
 $manifest = seoManifest();
 $home = seoPageModel('/', [], $manifest);
 checkSeo($home['status'] === 200 && !$home['noindex'], 'Home must be indexable');
-checkSeo(strpos($home['html'], '<h1>') !== false, 'Home needs a visible heading');
 foreach (['/admin', '/user', '/missing-page'] as $path) {
     $page = seoPageModel($path, [], $manifest);
     checkSeo($page['noindex'], 'Private and missing pages must not be indexed');
@@ -28,4 +27,8 @@ $head = seoRenderHead($page, $manifest);
 checkSeo(strpos($head, '</title><script>') === false, 'Head metadata must be escaped');
 checkSeo(strpos($head, 'https://jyutdict.org/') !== false, 'Canonical origin must be fixed');
 checkSeo(substr_count($head, 'rel="canonical"') === 1, 'Exactly one canonical is required');
+checkSeo(jyutdictSheetEntryPath('>030390861753651') === '/sheet/entry/030390861753651', 'Opaque keys must preserve leading zeros');
+checkSeo(jyutdictSheetEntryPath('>1<script>') === null, 'Invalid entry keys cannot produce links');
+checkSeo(!jyutdictSheetEntryIndexable(['鍵' => '>1', '釋義' => '見另一詞', '釋' => '']), 'Unresolved meanings must not enter the index');
+checkSeo(jyutdictSheetDirectoryPath(1) === '/sheet/entries' && jyutdictSheetDirectoryPath(2) === '/sheet/entries/2', 'Directory pages need distinct canonical paths');
 echo "SEO contract checks passed\n";

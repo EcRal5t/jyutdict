@@ -3,6 +3,7 @@
 require_once __DIR__ . '/LocationLookup.php';
 require_once __DIR__ . '/CommonEntries.php';
 require_once __DIR__ . '/LocationArticleIdentity.php';
+require_once __DIR__ . '/SheetEntries.php';
 
 function seoEscape($value) {
     return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -44,7 +45,7 @@ function seoCachedCatalog(callable $load) {
     if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) {
         throw new RuntimeException('SEO cache directory unavailable');
     }
-    $file = $directory . '/catalog.json';
+    $file = $directory . '/catalog-v2.json';
     $read = function () use ($file) {
         if (!is_file($file)) return null;
         return json_decode(file_get_contents($file), true);
@@ -101,7 +102,8 @@ function seoPublicCatalog() {
         }
         $articles = $dbh->query("SELECT `location_name`, `updated_at` FROM `articles`
                                  WHERE `article_type` = 'location' ORDER BY `location_name`")->fetchAll();
-        return ['areas' => $areas, 'characters' => array_values(array_unique($characters)), 'articles' => $articles];
+        $sheetKeys = $dbh->query('SELECT `鍵` FROM `j_faamjyut` WHERE ' . jyutdictSheetIndexWhere() . ' ORDER BY `鍵`')->fetchAll(PDO::FETCH_COLUMN);
+        return ['areas' => $areas, 'characters' => array_values(array_unique($characters)), 'articles' => $articles, 'sheet_keys' => $sheetKeys];
     });
 }
 
@@ -124,12 +126,18 @@ function seoPageModel($path, array $query, array $manifest) {
         $page = ['title' => '帳戶與管理｜' . $manifest['name'], 'description' => '泛粵大典帳戶頁面。', 'canonical' => $path,
                  'html' => '<h1>帳戶與管理</h1><p>此功能需要登入。</p>', 'status' => 200, 'noindex' => true];
     }
-    if ($path === '/detail' && isset($query['chara']) && (!is_string($query['chara']) || trim($query['chara']) !== '')) {
+    if (preg_match('~\A/sheet/entry/([0-9]{1,15})\z~', $path, $match)) {
+        $page = seoSheetEntryPage(seoDatabase(), '>' . $match[1], $manifest);
+        if ($contentKeys) $page['noindex'] = true;
+    } elseif (preg_match('~\A/sheet/entries(?:/([1-9][0-9]{0,6}))?\z~', $path, $match)) {
+        $page = seoSheetDirectoryPage(seoDatabase(), isset($match[1]) ? (int)$match[1] : 1, $manifest);
+        if ($contentKeys) $page['noindex'] = true;
+    } elseif ($path === '/detail' && isset($query['chara']) && (!is_string($query['chara']) || trim($query['chara']) !== '')) {
         $character = is_string($query['chara']) ? trim($query['chara']) : '';
         $page['title'] = $character . '的粵語讀音與各地方音｜' . $manifest['name'];
         $page['description'] = '查詢「' . $character . '」在各地的粵語讀音、擴展粵拼與 IPA，對照歷史韻書記錄。';
         $page['canonical'] = '/detail?chara=' . rawurlencode($character);
-        $page['html'] = '<h1>' . seoEscape($character ?: '粵語檢字') . '</h1><p>' . seoEscape($page['description']) . '</p>';
+        $page['html'] = '<h1>' . seoEscape($character ?: '粵語檢字') . '</h1>';
         $page['noindex'] = !preg_match('/\A[\p{Han}〇]\z/u', $character) || count(array_diff($contentKeys, ['chara'])) > 0;
         if (!$page['noindex']) {
             $dbh = seoDatabase();
@@ -151,13 +159,13 @@ function seoPageModel($path, array $query, array $manifest) {
                 }
             }
             if ($count) {
-                $page['html'] = '<h1>' . seoEscape($character) . '的粵語讀音與各地方音</h1><p>以下為公開字表中的方音摘錄，包含查詢所對應的繁簡及異體字。完整韻書對照與互動查詢由頁面載入。</p><table><thead><tr><th>字</th><th>地點</th><th>擴展粵拼</th><th>IPA</th><th>備註</th><th>字表作者</th></tr></thead><tbody>' . $body . '</tbody></table>';
+                $page['html'] = '<h1>' . seoEscape($character) . '的粵語讀音與各地方音</h1><table><thead><tr><th>字</th><th>地點</th><th>擴展粵拼</th><th>IPA</th><th>備註</th><th>字表作者</th></tr></thead><tbody>' . $body . '</tbody></table>';
                 $page['term'] = $character;
             } else {
                 // A character absent from location tables may still occur in a historical book.
                 // Keep the query usable, but do not index an empty initial entry.
                 $page['noindex'] = true;
-                $page['html'] .= '<p>各地方音暫無記錄；可繼續查閱韻書或其他字形。</p>';
+                $page['html'] .= '<p>暫無各地方音記錄。</p>';
             }
         }
     } elseif ($path === '/locations' || $path === '/location-phonology') {
@@ -188,13 +196,57 @@ function seoPageModel($path, array $query, array $manifest) {
             if ((int)$match[1] !== $area['id'] || !$area['has_phonology']) continue;
             $name = ($area['second'] ?? '') . ($area['third'] ?? '') ?: $area['first'];
             $page = ['title' => $name . '粵語音系｜' . $manifest['name'], 'description' => '查閱' . $name . '目前發布字表所生成的音系四表及例字。',
-                     'canonical' => '/location-phonology/' . (int)$area['id'], 'html' => '<h1>' . seoEscape($name) . '粵語音系</h1><p>聲母、韻母、聲調與例字按目前發布的字表生成。互動四表於頁面載入後顯示。</p>', 'status' => 200, 'noindex' => false];
+                     'canonical' => '/location-phonology/' . (int)$area['id'], 'html' => '<h1>' . seoEscape($name) . '粵語音系</h1>', 'status' => 200, 'noindex' => false];
             break;
         }
     }
     if (in_array($path, ['/sheet', '/pronunciation', '/locations', '/phonology'], true) && $contentKeys) $page['noindex'] = true;
     if ($page['status'] === 404) $page['noindex'] = true;
     return $page;
+}
+
+function seoSheetEntryPage(PDO $dbh, $key, array $manifest) {
+    $path = jyutdictSheetEntryPath($key);
+    $stmt = $dbh->prepare('SELECT * FROM `j_faamjyut` WHERE `鍵` = ?');
+    $stmt->execute([$key]);
+    $row = $stmt->fetch();
+    if (!$row) return ['title' => '找不到詞條｜' . $manifest['name'], 'description' => '此泛粵字表記錄不存在。', 'canonical' => $path, 'html' => '<h1>找不到詞條</h1>', 'status' => 404, 'noindex' => true];
+    $label = jyutdictSheetEntryLabel($row);
+    $pron = trim($row['綜'] ?? '');
+    $meaning = seoPlainText($row['釋'] ?: $row['釋義']);
+    $description = mb_substr($label . ($pron ? '〔' . $pron . '〕' : '') . '：' . $meaning . '。泛粵字表的完整釋義、例詞與各地讀音記錄。', 0, 160);
+    $html = '<nav><a href="/sheet">泛粵字表檢索</a></nav><h1>' . seoEscape($label) . '</h1>';
+    if (preg_match('/\A[\p{Han}〇]\z/u', $row['繁'] ?? '')) $html .= '<p><a href="/detail?chara=' . rawurlencode($row['繁']) . '">查閱「' . seoEscape($row['繁']) . '」的方音與韻書對照</a></p>';
+    if ($pron) $html .= '<p>綜合音：' . seoEscape($pron) . '</p>';
+    $html .= '<h2>完整釋義與例詞</h2><p style="white-space:pre-wrap">' . seoEscape($row['釋義'] ?: '暫無釋義') . '</p>';
+    if ($row['釋']) $html .= '<h2>反查關鍵詞</h2><p>' . seoEscape($row['釋']) . '</p>';
+    foreach (['IDS' => '字形描述', '俗/常' => '常用或俗字', '字頭' => '字頭歸併', '錔' => '錔字字源', '註(少用)' => '註'] as $column => $name) {
+        if (!empty($row[$column])) $html .= '<p>' . $name . '：' . seoEscape($row[$column]) . '</p>';
+    }
+    $body = '';
+    foreach ($dbh->query('SELECT `col`, `kind`, `fullname`, `fullname_note` FROM `i_faamjyut` WHERE `kind` IN (1, 2) ORDER BY `id`') as $column) {
+        $value = $row[$column['col']] ?? '';
+        if ($value === '' || $value === null) continue;
+        $name = $column['fullname'] . ($column['fullname_note'] ? ' · ' . $column['fullname_note'] : '');
+        $body .= '<tr><th scope="row">' . seoEscape($name ?: $column['col']) . '</th><td>' . ($column['kind'] == 1 ? '域內' : '域外對照') . '</td><td>' . seoEscape($value) . '</td></tr>';
+    }
+    if ($body) $html .= '<h2>各地讀音與對照</h2><table><thead><tr><th>地點或語言</th><th>分類</th><th>字表記錄</th></tr></thead><tbody>' . $body . '</tbody></table>';
+    return ['title' => $label . ($pron ? '（' . $pron . '）' : '') . '的意思與各地讀音｜泛粵字表｜' . $manifest['name'], 'description' => $description, 'canonical' => $path, 'html' => $html, 'status' => 200, 'noindex' => !jyutdictSheetEntryIndexable($row), 'term' => $label, 'term_set' => '/sheet/entries'];
+}
+
+function seoSheetDirectoryPage(PDO $dbh, $number, array $manifest) {
+    $directory = jyutdictSheetDirectory($dbh, $number);
+    $path = jyutdictSheetDirectoryPath($number);
+    if ($number > $directory['pages']) return ['title' => '找不到目錄頁｜' . $manifest['name'], 'description' => '此詞條目錄頁不存在。', 'canonical' => $path, 'html' => '<h1>找不到目錄頁</h1>', 'status' => 404, 'noindex' => true];
+    $html = '<h1>泛粵詞條目錄 · 第 ' . $number . ' 頁</h1><ul>';
+    foreach ($directory['entries'] as $row) {
+        $html .= '<li><a href="' . jyutdictSheetEntryPath($row['鍵']) . '">' . seoEscape(jyutdictSheetEntryLabel($row) . '〔' . $row['綜'] . '〕') . '</a> — ' . seoEscape($row['釋']) . '</li>';
+    }
+    $html .= '</ul><nav aria-label="詞條目錄分頁">';
+    if ($number > 1) $html .= '<a href="' . jyutdictSheetDirectoryPath($number - 1) . '">上一頁</a> · ';
+    $html .= $number . ' / ' . $directory['pages'];
+    if ($number < $directory['pages']) $html .= ' · <a href="' . jyutdictSheetDirectoryPath($number + 1) . '">下一頁</a>';
+    return ['title' => '泛粵詞條目錄 · 第 ' . $number . ' 頁｜' . $manifest['name'], 'description' => '瀏覽泛粵特色字、釋義與方音的固定詞條頁，第 ' . $number . ' 頁。', 'canonical' => $path, 'html' => $html . '</nav>', 'status' => 200, 'noindex' => false];
 }
 
 function seoRenderHead(array $page, array $manifest) {
@@ -208,7 +260,7 @@ function seoRenderHead(array $page, array $manifest) {
     }
     $head .= '<link rel="canonical" href="' . seoEscape($url) . '">' . "\n";
     $graph = [['@type' => 'WebSite', '@id' => $manifest['origin'] . '/#website', 'name' => $manifest['name'], 'alternateName' => 'Jyutdict', 'url' => $manifest['origin'] . '/', 'inLanguage' => 'zh-Hant', 'description' => $manifest['description']]];
-    if (!empty($page['term'])) $graph[] = ['@type' => 'DefinedTerm', '@id' => $url, 'url' => $url, 'name' => $page['term'], 'description' => $page['description'], 'inDefinedTermSet' => ['@type' => 'DefinedTermSet', 'name' => '泛粵大典各地方音', 'url' => $manifest['origin'] . '/detail']];
+    if (!empty($page['term'])) $graph[] = ['@type' => 'DefinedTerm', '@id' => $url, 'url' => $url, 'name' => $page['term'], 'description' => $page['description'], 'inDefinedTermSet' => ['@type' => 'DefinedTermSet', 'name' => isset($page['term_set']) ? '泛粵字表' : '泛粵大典各地方音', 'url' => $manifest['origin'] . ($page['term_set'] ?? '/detail')]];
     if (!$page['noindex']) $head .= '<script id="jyutdict-structured-data" type="application/ld+json" data-url="' . seoEscape($url) . '">' . seoJson(['@context' => 'https://schema.org', '@graph' => $graph]) . '</script>';
     return $head;
 }
