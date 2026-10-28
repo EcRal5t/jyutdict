@@ -34,7 +34,7 @@ function jyutdictRequestOrigin() {
 
 function jyutdictSessionLifetime($config = null) {
     $config = $config ?? jyutdictLoadAuthConfig();
-    return max(0, (int)($config['session_lifetime'] ?? 604800));
+    return max(0, (int)($config['session_lifetime'] ?? 31536000));
 }
 
 function jyutdictCookieSecure($config = null) {
@@ -70,9 +70,33 @@ function startAppSession($config = null) {
 
     $config = $config ?? jyutdictLoadAuthConfig();
     $lifetime = jyutdictSessionLifetime($config);
+    if (!empty($config['session_save_path'])) {
+        if (!is_dir($config['session_save_path']) || !is_writable($config['session_save_path'])) {
+            throw new RuntimeException('Session storage is unavailable');
+        }
+        session_save_path($config['session_save_path']);
+    }
     ini_set('session.gc_maxlifetime', (string)$lifetime);
+    ini_set('session.use_strict_mode', '1');
     session_set_cookie_params(jyutdictSessionCookieParams($config));
     session_start();
+
+    if (isset($_SESSION['user_id']) && $lifetime > 0) {
+        $now = time();
+        $lastSeen = (int)($_SESSION['last_seen_at'] ?? $_SESSION['login_time'] ?? $now);
+        if ($now - $lastSeen >= $lifetime) {
+            // Enforce expiry even when probabilistic PHP garbage collection has not run.
+            $_SESSION = [];
+            session_regenerate_id(true);
+            return;
+        }
+        $_SESSION['last_seen_at'] = $now;
+        $renewEvery = min(86400, max(1, (int)($lifetime / 2)));
+        if ($now - (int)($_SESSION['cookie_renewed_at'] ?? 0) >= $renewEvery) {
+            setcookie(session_name(), session_id(), jyutdictSetCookieOptions($config, $now + $lifetime));
+            $_SESSION['cookie_renewed_at'] = $now;
+        }
+    }
 }
 
 function jyutdictOAuthStateLifetime($config = null) {
