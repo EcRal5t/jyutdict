@@ -51,7 +51,7 @@ const rememberArticleList = (articles) => {
 export default {
     // 获取单个地点的文章
     getArticle(locationName, type = 'location') {
-        return apiClient.get('/', { params: { location_name: locationName, type } }).then((res) => {
+        return apiClient.get('', { params: { location_name: locationName, type } }).then((res) => {
             const resolved = rememberResolution(res.data, locationName);
             if (res.data?.article) {
                 articleAvailableNames.add(locationName);
@@ -66,7 +66,7 @@ export default {
         if (articleExistsCache.has(key)) return articleExistsCache.get(key);
         if (articleExistsPromises.has(key)) return articleExistsPromises.get(key);
 
-        const request = apiClient.get('/', {
+        const request = apiClient.get('', {
             params: { location_name: locationName, type, exists: 1 }
         }).then((res) => {
             const exists = Boolean(res.data?.exists);
@@ -85,7 +85,7 @@ export default {
     },
     // 保存文章（创建或更新）
     saveArticle(data) {
-        return apiClient.post('/', data).then((res) => {
+        return apiClient.post('', data).then((res) => {
             this.clearArticleLocationCache();
             const resolved = rememberResolution(res.data, data.location_name);
             articleAvailableNames.add(data.location_name);
@@ -95,25 +95,25 @@ export default {
     },
     // 获取版本历史
     getVersions(locationName) {
-        return apiClient.get('/', { params: { location_name: locationName, versions: 1 } }).then((res) => {
+        return apiClient.get('', { params: { location_name: locationName, versions: 1 } }).then((res) => {
             rememberResolution(res.data, locationName);
             return res;
         });
     },
     // 获取单个版本内容
     getVersion(versionId) {
-        return apiClient.get('/', { params: { version_id: versionId } });
+        return apiClient.get('', { params: { version_id: versionId } });
     },
     // 回滚到指定版本
     rollback(articleId, versionId) {
-        return apiClient.post('/', { article_id: articleId, version_id: versionId }, { params: { action: 'rollback' } });
+        return apiClient.post('', { article_id: articleId, version_id: versionId }, { params: { action: 'rollback' } });
     },
     // 【新增】获取所有有文章的地点列表（带缓存）
     async getArticleList(search = '') {
         // 如果有搜索参数，不走缓存
         if (search) {
             const params = { list: 1, search };
-            return apiClient.get('/', { params });
+            return apiClient.get('', { params });
         }
 
         // 如果已经有缓存，直接返回完整列表数据。
@@ -128,7 +128,7 @@ export default {
         }
 
         // 发起新请求
-        articleLocationSetPromise = apiClient.get('/', { params: { list: 1 } });
+        articleLocationSetPromise = apiClient.get('', { params: { list: 1 } });
         let res;
         try {
             res = await articleLocationSetPromise;
@@ -166,7 +166,7 @@ export default {
     },
     // 删除文章（管理员+）
     deleteArticle(locationName) {
-        return apiClient.delete('/', { params: { location_name: locationName } }).then((res) => {
+        return apiClient.delete('', { params: { location_name: locationName } }).then((res) => {
             this.clearArticleLocationCache();
             return res;
         });

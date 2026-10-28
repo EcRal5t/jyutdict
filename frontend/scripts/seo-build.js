@@ -7,6 +7,12 @@ const readJson = async name => JSON.parse(await readFile(`${source}/${name}`, 'u
 const text = html => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 
+export async function createAboutManifest() {
+  return Promise.all((await readJson('about_pages.json')).map(async page => ({
+    ...page, content: await readFile(`${source}/markdown/${page.file}`, 'utf8'),
+  })))
+}
+
 export async function createSeoManifest() {
   const config = await readJson('seo.json')
   const pages = {}
@@ -54,6 +60,7 @@ export default function seoBuild() {
     },
     async generateBundle() {
       this.emitFile({ type: 'asset', fileName: 'data/seo-pages.json', source: JSON.stringify(await load()) })
+      this.emitFile({ type: 'asset', fileName: 'data/about-pages.json', source: JSON.stringify(await createAboutManifest()) })
     }
   }
 }
