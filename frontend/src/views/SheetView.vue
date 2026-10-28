@@ -6,6 +6,9 @@ import commentsApi from '@/api/comments.js';
 import articlesApi from '@/api/articles.js';
 import ResultCard from '@/components/ResultCard.vue';
 import CommentSidebar from '@/components/CommentSidebar.vue';
+import { sheetEntryMeta } from '@/utils/sheetEntry.js';
+import { updateCurrentSeo } from '@/utils/seo.js';
+import seoCatalog from 'virtual:jyutdict-seo';
 
 // 評論側邊欄
 const commentSidebarVisible = ref(false);
@@ -71,7 +74,8 @@ const initFromUrl = () => {
 
 // Sync state to URL
 const syncToUrl = () => {
-    router.replace({
+    return router.replace({
+        path: '/sheet',
         query: {
             q: query.value,
             col: location.value || undefined,
@@ -110,6 +114,7 @@ const loadHeaders = async () => {
 };
 
 const performSearch = async () => {
+    if (route.name === 'sheet-entry') return syncToUrl();
     isLoading.value = true;
     error.value = null;
     try {
@@ -192,12 +197,54 @@ const calculateDensityScore = (rowData) => {
     return score;
 };
 
+let entryRequest = 0;
+const loadEntry = async () => {
+    const key = route.params.key;
+    const path = route.path;
+    const request = ++entryRequest;
+    results.value = [];
+    commentCounts.value = {};
+    commentSidebarVisible.value = false;
+    isLoading.value = true;
+    error.value = null;
+    try {
+        const { data } = await SheetApi.getByKey(`>${key}`);
+        if (request !== entryRequest) return;
+        results.value = Array.isArray(data) ? data : [];
+        if (results.value.length) {
+            const row = results.value[0];
+            query.value = row['繁'] || '';
+            const meta = sheetEntryMeta(row, seoCatalog.name);
+            const filtered = Object.keys(route.query).some(k => !k.startsWith('utm_') && !['gclid', 'fbclid'].includes(k));
+            updateCurrentSeo({ ...meta, noindex: meta.noindex || filtered }, path);
+            loadCommentCounts();
+        } else {
+            error.value = '未找到結果。';
+            updateCurrentSeo({ noindex: true }, path);
+        }
+    } catch (e) {
+        if (request === entryRequest) error.value = '查詢出錯，請檢查輸入或稍後再試。';
+    } finally {
+        if (request === entryRequest) isLoading.value = false;
+    }
+};
+
 onMounted(async () => {
     initFromUrl();
     await loadHeaders();
-    await articlesApi.getArticleList(); // 載入文章及別名映射，整個 session 只請求一次
+    await articlesApi.getArticleList().catch(() => {}); // 地點文章暫時不可用時仍顯示字表
     // 無論是否有查詢參數，都執行搜索（空查詢會觸發隨機返回）
-    performSearch();
+    if (route.name === 'sheet-entry') loadEntry();
+    else performSearch();
+});
+
+watch(() => route.params.key, (key, previous) => {
+    if (key && key !== previous) loadEntry();
+    else if (!key && previous) {
+        ++entryRequest;
+        initFromUrl();
+        performSearch();
+    }
 });
 
 // Watch query for external changes (back button)

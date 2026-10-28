@@ -215,22 +215,9 @@ function seoSheetEntryPage(PDO $dbh, $key, array $manifest) {
     $pron = trim($row['綜'] ?? '');
     $meaning = seoPlainText($row['釋'] ?: $row['釋義']);
     $description = mb_substr($label . ($pron ? '〔' . $pron . '〕' : '') . '：' . $meaning . '。泛粵字表的完整釋義、例詞與各地讀音記錄。', 0, 160);
-    $html = '<nav><a href="/sheet">泛粵字表檢索</a></nav><h1>' . seoEscape($label) . '</h1>';
-    if (preg_match('/\A[\p{Han}〇]\z/u', $row['繁'] ?? '')) $html .= '<p><a href="/detail?chara=' . rawurlencode($row['繁']) . '">查閱「' . seoEscape($row['繁']) . '」的方音與韻書對照</a></p>';
-    if ($pron) $html .= '<p>綜合音：' . seoEscape($pron) . '</p>';
-    $html .= '<h2>完整釋義與例詞</h2><p style="white-space:pre-wrap">' . seoEscape($row['釋義'] ?: '暫無釋義') . '</p>';
-    if ($row['釋']) $html .= '<h2>反查關鍵詞</h2><p>' . seoEscape($row['釋']) . '</p>';
-    foreach (['IDS' => '字形描述', '俗/常' => '常用或俗字', '字頭' => '字頭歸併', '錔' => '錔字字源', '註(少用)' => '註'] as $column => $name) {
-        if (!empty($row[$column])) $html .= '<p>' . $name . '：' . seoEscape($row[$column]) . '</p>';
-    }
-    $body = '';
-    foreach ($dbh->query('SELECT `col`, `kind`, `fullname`, `fullname_note` FROM `i_faamjyut` WHERE `kind` IN (1, 2) ORDER BY `id`') as $column) {
-        $value = $row[$column['col']] ?? '';
-        if ($value === '' || $value === null) continue;
-        $name = $column['fullname'] . ($column['fullname_note'] ? ' · ' . $column['fullname_note'] : '');
-        $body .= '<tr><th scope="row">' . seoEscape($name ?: $column['col']) . '</th><td>' . ($column['kind'] == 1 ? '域內' : '域外對照') . '</td><td>' . seoEscape($value) . '</td></tr>';
-    }
-    if ($body) $html .= '<h2>各地讀音與對照</h2><table><thead><tr><th>地點或語言</th><th>分類</th><th>字表記錄</th></tr></thead><tbody>' . $body . '</tbody></table>';
+    require_once __DIR__ . '/SheetCard.php';
+    $columns = $dbh->query('SELECT `col`, `kind`, `fullname`, `fullname_note`, `color` FROM `i_faamjyut` WHERE `kind` IN (1, 2) ORDER BY `id`')->fetchAll();
+    $html = seoSheetCard($row, $columns);
     return ['title' => $label . ($pron ? '（' . $pron . '）' : '') . '的意思與各地讀音｜泛粵字表｜' . $manifest['name'], 'description' => $description, 'canonical' => $path, 'html' => $html, 'status' => 200, 'noindex' => !jyutdictSheetEntryIndexable($row), 'term' => $label, 'term_set' => '/sheet/entries'];
 }
 

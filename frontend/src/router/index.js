@@ -18,7 +18,7 @@ const router = createRouter({
         {
             path: '/sheet/entry/:key([0-9]{1,15})',
             name: 'sheet-entry',
-            component: () => import('../views/SheetEntryView.vue')
+            component: () => import('../views/SheetView.vue')
         },
         {
             path: '/sheet/entries/:page([1-9][0-9]{0,6})?',
