@@ -58,7 +58,8 @@ const generateElements = () => {
       attempts++
     } while (isInCenter(top, left) && attempts < 10)
 
-    const size = randomRange(150, 400);
+    const size = randomRange(150, 400)
+    const direction = i % 2 === 0 ? 1 : -1
 
     return {
       id: i,
@@ -67,13 +68,10 @@ const generateElements = () => {
         left: `${left}%`,
         width: `${size}px`,
         height: `${size}px`,
-        // Move animation to wrapper
-        animationName: i % 2 === 0 ? 'bg-float' : 'bg-float-reverse',
-        animationDuration: `${randomRange(15, 45)}s`,
-        animationDelay: `${randomRange(-40, 0)}s`,
-        animationTimingFunction: 'ease-in-out',
-        animationIterationCount: 'infinite',
-        animationDirection: 'alternate',
+        '--shard-x': `${40 * direction}px`,
+        '--shard-y': `${30 * direction}px`,
+        '--shard-duration': `${randomRange(15, 45)}s`,
+        '--shard-delay': `${randomRange(-40, 0)}s`,
         zIndex: 0
       },
       innerStyle: {
@@ -230,7 +228,7 @@ onUnmounted(() => {
       class="fixed inset-0 overflow-hidden pointer-events-none select-none z-0 bg-[#F4F4EE] dark:bg-slate-900 transition-colors duration-300">
 
       <!-- Shards -->
-      <div v-for="shard in shards" :key="`shard-${shard.id}`" class="absolute will-change-transform"
+      <div v-for="shard in shards" :key="`shard-${shard.id}`" class="home-shard absolute will-change-transform"
         :style="shard.wrapperStyle">
         <div class="w-full h-full" :style="shard.innerStyle"></div>
       </div>
@@ -273,35 +271,32 @@ onUnmounted(() => {
   </div>
 </template>
 
-<!-- Non-scoped styles for global keyframes to ensure JS strings match -->
-<style>
-/* 
-   Optimized Animations:
-   1. Use translate3d to force hardware acceleration.
-   2. REMOVED rotation from keyframes to avoid re-rasterizing blurred elements.
-*/
-@keyframes bg-float {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  100% {
-    transform: translate3d(40px, 30px, 0);
-  }
-}
-
-@keyframes bg-float-reverse {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  100% {
-    transform: translate3d(-40px, -30px, 0);
-  }
-}
-</style>
-
 <style scoped>
+/* Keep the fixed background anchored to the viewport throughout route entry. */
+.jd-route-enter-from {
+  transform: none;
+}
+
+.home-shard {
+  animation: home-shard-float var(--shard-duration) ease-in-out var(--shard-delay) infinite alternate;
+}
+
+@keyframes home-shard-float {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(var(--shard-x), var(--shard-y), 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-shard {
+    animation-name: none;
+  }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 1s ease-out;
 }
