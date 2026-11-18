@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { darkenColor, formatCharacter, formatUnicode, formatPronunciation, formatMeanings } from '@/utils/formatters.js';
 import articlesApi from '@/api/articles.js';
 import LocationArticleModal from '@/components/LocationArticleModal.vue';
+import { isDarkTheme } from '@/utils/theme.js';
 
 const props = defineProps({
   rowData: {
@@ -141,7 +142,7 @@ const stripColor = computed(() => {
 const processedLocations = computed(() => {
     const cellNotes = parsedNotes.value;
 
-    const lightness_scale = (localStorage.theme === 'dark') ? 1.12 : 0.88;
+    const lightness_scale = isDarkTheme.value ? 1.12 : 0.88;
 
     const cities = [];
     props.headerInfo.cities.forEach(info => {
@@ -232,7 +233,7 @@ const closeModal = () => {
         <!-- Left: Char Meta (fixed width) -->
         <div class="md:w-32 bg-slate-50 dark:bg-slate-900/50 flex flex-row md:flex-col items-center md:justify-center px-6 py-2 gap-4 md:gap-2 border-b md:border-b-0 md:border-r border-gray-100 dark:border-slate-700">
             <div class="relative inline-block w-fit">
-                <div class="text-4xl md:text-5xl font-bold leading-tight inline-block" :class="{'cursor-pointer hover:opacity-80': parsedNotes['繁']}" :style="charInfo.style" @click="parsedNotes['繁'] && toggleNote('繁')">
+                <div class="font-serif jd-headword text-4xl md:text-5xl font-bold leading-tight inline-block" :class="{'cursor-pointer hover:opacity-80': parsedNotes['繁']}" :style="charInfo.style" @click="parsedNotes['繁'] && toggleNote('繁')">
                     {{ charInfo.display }}<span v-if="parsedNotes['繁']" class="text-xs md:text-[10px] align-top text-slate-400 dark:text-slate-500 opacity-30 hover:opacity-100 transition-opacity cursor-pointer ml-0.5 inline-block select-none" @click.stop="toggleNote('繁')">*</span>
                 </div>
                 <!-- Note Popup for Char -->
@@ -273,14 +274,14 @@ const closeModal = () => {
         <div class="flex-1 px-5 py-3 min-w-0">
             
             <!-- Meanings -->
-            <div class="mb-5 text-base leading-relaxed text-slate-700 dark:text-slate-300 relative block">
+            <div class="mb-5 font-serif text-base leading-relaxed text-slate-700 dark:text-slate-300 relative block">
                 <div v-if="meaningInfo.bookInfo" class="mb-2 italic text-slate-500 border-l-2 border-slate-200 pl-2 text-sm">
                    —— {{ meaningInfo.bookInfo }}
                 </div>
                 
                 <div :class="{'cursor-pointer': parsedNotes['釋義']}" @click="parsedNotes['釋義'] && toggleNote('釋義')">
                     <div v-for="(m, idx) in meaningInfo.meanings" :key="idx" :class="{'mb-1': idx < meaningInfo.meanings.length-1}">
-                        <span v-if="m.isBold" class="font-bold text-slate-900 dark:text-slate-100" :class="{'hover:opacity-80': parsedNotes['釋義']}" v-html="m.text"></span>
+                        <span v-if="m.isBold" class="font-bold jd-semantic-bold text-slate-900 dark:text-slate-100" :class="{'hover:opacity-80': parsedNotes['釋義']}" v-html="m.text"></span>
                         <span v-else :class="{'hover:opacity-80': parsedNotes['釋義']}" v-html="m.text"></span>
                         
                         <span v-if="idx === meaningInfo.meanings.length-1 && parsedNotes['釋義']" class="text-[10px] align-top text-slate-400 dark:text-slate-500 opacity-30 hover:opacity-100 transition-opacity cursor-pointer ml-1 inline-block pb-1 select-none" @click.stop="toggleNote('釋義')">*</span>
@@ -300,18 +301,18 @@ const closeModal = () => {
             </div>
             
             <!-- Locations (Cities) -->
-            <div class="flex flex-wrap gap-3 mb-3 text-sm">
+            <div class="flex flex-wrap gap-x-3 gap-y-2 mb-3 text-sm">
                 <div v-for="loc in processedLocations.cities" :key="loc.key" class="relative">
                     <span>
                          <!-- Label（地点名称）— 有文章时可点击 -->
-                        <span class="font-bold"
+                        <span
                               :style="{ color: loc.color }"
                               :class="{
                                   'cursor-pointer underline decoration-1 underline-offset-2': hasArticle(loc.label),
                                   'decoration-current hover:opacity-70 transition-opacity duration-150': hasArticle(loc.label),
                               }"
                               @click="openArticleModal(loc.label, $event)">{{ loc.label }}</span><span
-                              class="font-bold" :style="{ color: loc.color }">:</span>
+                              :style="{ color: loc.color }">:</span>
                         <span class="ml-1" :class="{'cursor-pointer hover:opacity-80': loc.note}" @click="loc.note && toggleNote(loc.key)">
                             <!-- Value（读音值）— 有备注时可点击展开 -->
                             <span class="text-slate-800 dark:text-slate-300 transition-opacity"
@@ -339,9 +340,9 @@ const closeModal = () => {
             </div>
 
             <!-- Foreign (Separated by Divider) -->
-            <div v-if="processedLocations.foreign.length > 0" class="pt-3 mt-2 border-t border-dashed border-gray-200 dark:border-slate-700 flex flex-wrap gap-4 text-sm">
+            <div v-if="processedLocations.foreign.length > 0" class="pt-3 mt-2 border-t border-dashed border-gray-200 dark:border-slate-700 flex flex-wrap gap-x-4 gap-y-2 text-sm">
                 <div v-for="loc in processedLocations.foreign" :key="loc.key" class="relative text-slate-500 dark:text-slate-400">
-                    <span class="font-bold [text-shadow:_0_0_1px_#FFF7]" :style="{ color: loc.color }">{{ loc.label }}</span>:
+                    <span :style="{ color: loc.color }">{{ loc.label }}</span>:
                     <span :class="{'cursor-pointer hover:opacity-80': loc.note}" @click="loc.note && toggleNote('foreign-' + loc.key)">
                         <span :class="{ 'italic': loc.isItalic }" v-html="loc.value"></span>
                         <span v-if="loc.note" class="text-xs align-top text-accent opacity-70 ml-0.5 select-none">*</span>

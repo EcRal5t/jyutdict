@@ -304,7 +304,7 @@ onBeforeUnmount(() => {
 
                   <!-- Note -->
                   <td v-if="row.note" 
-                      class="py-0.5 px-2 text-slate-500 dark:text-slate-400 align-middle leading-tight relative group/note"
+                      class="py-0.5 px-2 font-serif text-slate-500 dark:text-slate-400 align-middle leading-tight relative group/note"
                   >
                       <!-- 
                         Using max-height transition. 

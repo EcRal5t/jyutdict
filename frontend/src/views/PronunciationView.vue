@@ -327,7 +327,7 @@ onMounted(async () => {
                             <span class="font-mono text-accent">{{ pron }}</span>
                             <span v-for="(chars, tone) in tones" :key="tone" class="ml-2">
                                 <span class="text-amber-600 dark:text-amber-400">{{ tone }}</span>
-                                <span class="text-slate-700 dark:text-slate-300">{{ chars }}</span>
+                                <span class="font-serif text-slate-700 dark:text-slate-300">{{ chars }}</span>
                             </span>
                         </template>
                     </div>
@@ -343,7 +343,7 @@ onMounted(async () => {
                         <div class="absolute left-0 top-0 bottom-0 w-1" :style="{ backgroundColor: getPrimaryAreaColor(getLocationById(loc.__id).color, '#999999') }"></div>
                         <div class="flex items-center gap-2 mb-1 border-b border-slate-100 dark:border-slate-700 pb-1">
                             <AreaColorBadge :color="getLocationById(loc.__id).color" badge-class="w-3.5 h-3.5" />
-                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ getLocationById(loc.__id).second }}</span>
+                            <span class="text-slate-800 dark:text-slate-200">{{ getLocationById(loc.__id).second }}</span>
                             <span v-if="getLocationById(loc.__id).third" class="text-sm text-slate-500">{{ getLocationById(loc.__id).third }}</span>
                         </div>
                         <div v-for="(tones, pron) in loc" :key="pron" class="text-sm">
@@ -351,7 +351,7 @@ onMounted(async () => {
                                 <span class="font-mono text-accent">{{ pron }}</span>
                                 <span v-for="(chars, tone) in tones" :key="tone" class="ml-1">
                                     <span class="text-amber-600 dark:text-amber-400">{{ tone }}</span>
-                                    <span class="text-slate-700 dark:text-slate-300">{{ chars }}</span>
+                                    <span class="font-serif text-slate-700 dark:text-slate-300">{{ chars }}</span>
                                 </span>
                             </template>
                         </div>

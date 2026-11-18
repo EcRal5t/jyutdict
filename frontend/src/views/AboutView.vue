@@ -133,7 +133,7 @@ watchEffect(async () => {
 .article-content .init-content h1,
 .article-content .init-content h2,
 .article-content .init-content h3 {
-    font-family: serif;
+    font-family: "Noto Serif HK", "Cactus Classical Serif", "I.Ming", "PMingLiU", "MingLiU_HKSCS", "PMingLiU-ExtB", "Songti TC", "Noto Serif CJK TC", "Source Han Serif TC", serif;
     font-weight: bold;
     margin-top: 1.5em;
     margin-bottom: 0.5em;

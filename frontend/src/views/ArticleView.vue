@@ -30,7 +30,7 @@ const currentArticle = computed(() => {
         <!-- Main Content -->
         <main class="flex-1 pb-12 article-content">
             <div v-if="currentArticle" class="bg-white dark:bg-gray-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-6 md:p-8 border border-slate-100 dark:border-slate-700">
-                <h1 class="text-3xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-6 border-b-2 border-slate-200 dark:border-slate-700 pb-3">{{ currentArticle.title
+                <h1 class="text-3xl font-heading font-bold text-gray-900 dark:text-gray-100 mb-6 border-b-2 border-slate-200 dark:border-slate-700 pb-3">{{ currentArticle.title
                     }}</h1>
 
                 <template v-for="(block, index) in currentArticle.blocks" :key="index">

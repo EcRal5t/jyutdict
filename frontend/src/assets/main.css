@@ -13,13 +13,41 @@
   --jd-base: 180ms;
   --jd-slow: 240ms;
   --jd-stagger: 22ms;
+  /* 與 tailwind.config.js 的 FONT_SCALE 保持一致 */
+  --jd-font-scale: 1.1;
 }
 
 @layer base {
+  /* 主字體都只有一個字重：禁止瀏覽器偽造粗體（筆畫會黏連）。
+   * 需要粗體的地方另行放開：語義粗體（<b>/<strong>、.jd-semantic-bold）
+   * 與大號字頭（.jd-headword，字形優先，大字號下合成粗體不黏連）。
+   * 標題則改用有真粗體的 font-heading。 */
+  html {
+    font-synthesis-weight: none;
+  }
+
+  b, strong, .jd-semantic-bold, .jd-headword {
+    font-synthesis-weight: auto;
+  }
+
+  /* 介面文字默認非襯線；標題、字頭、釋義與長文用襯線（見下方及各組件的 font-serif） */
   body {
-    font-family: 'Cactus Classical Serif', serif;
-    /* 移除 font-smoothing (在 Windows 上會關閉 ClearType 導致模糊) */
-    /* 搭配極輕微的描邊與文字陰影，物理加粗而不失銳利 */
+    @apply font-sans;
+    /* 未指定字號的文字（繼承默認 1rem）同樣按倍率放大；間距仍以 html 的 1rem 為準 */
+    font-size: calc(1rem * var(--jd-font-scale));
+  }
+
+  h1, h2, h3 {
+    @apply font-heading;
+  }
+
+  /* 所有 Markdown/長文容器 */
+  .prose {
+    @apply font-serif;
+  }
+
+  /* 襯線字筆畫細：保留極輕微描邊與文字陰影加實筆畫（不用 font-smoothing，避免 Windows 關閉 ClearType） */
+  .font-serif, .prose {
     -webkit-text-stroke: 0.15px currentColor;
     text-shadow: 0 0 0.1px currentColor;
   }
@@ -37,7 +65,7 @@
 
   /* 统一小节标题：左色条 */
   .jd-section-title {
-    @apply font-bold text-slate-700 dark:text-slate-200 border-l-4 border-accent pl-3 leading-tight;
+    @apply font-heading font-bold text-slate-700 dark:text-slate-200 border-l-4 border-accent pl-3 leading-tight;
   }
 
   /* 统一输入框 */

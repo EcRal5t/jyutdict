@@ -254,7 +254,7 @@ onUnmounted(() => {
       <div class="w-full max-w-xl flex flex-col gap-6 animate-fade-in-up mt-10">
         <div class="relative group">
           <input v-model="inputChara" @keypress.enter="goToDetail" type="text" placeholder="在此輸入…"
-            class="w-full bg-transparent border-b-2 border-gray-300 dark:border-slate-600 focus:border-[#D32913] dark:focus:border-[#D32913] py-4 text-center text-3xl font-light tracking-widest outline-none transition-colors duration-300 placeholder-gray-300 dark:placeholder-slate-700 text-slate-800 dark:text-slate-100">
+            class="w-full bg-transparent border-b-2 border-gray-300 dark:border-slate-600 focus:border-[#D32913] dark:focus:border-[#D32913] py-4 text-center text-3xl font-serif font-light tracking-widest outline-none transition-colors duration-300 placeholder-gray-300 dark:placeholder-slate-700 text-slate-800 dark:text-slate-100">
         </div>
 
         <div class="flex justify-center gap-8 mt-4">

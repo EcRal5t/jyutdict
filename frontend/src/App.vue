@@ -146,7 +146,7 @@ const externalLinks = [
 
 <template>
     <div
-        class="min-h-screen flex flex-col bg-background dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300 font-serif">
+        class="min-h-screen flex flex-col bg-background dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
 
         <header
             class="border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300 relative">
@@ -159,7 +159,7 @@ const externalLinks = [
                         <div class="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
                             <RouterLink to="/" custom v-slot="{ navigate, href }">
                                 <a :href="href" @click="handleBrandClick($event, navigate)"
-                                    class="text-xl sm:text-2xl font-bold text-accent dark:text-red-500 tracking-tight transition-opacity whitespace-nowrap">
+                                    class="font-heading text-xl sm:text-2xl font-bold text-accent dark:text-red-500 tracking-tight transition-opacity whitespace-nowrap">
                                     泛粵大典
                                 </a>
                             </RouterLink>

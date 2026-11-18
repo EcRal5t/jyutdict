@@ -302,7 +302,7 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
         <!-- Search Bar -->
         <div class="flex gap-2 sm:gap-3 mb-3 justify-center w-full max-w-4xl mx-auto">
             <input v-model="inputChara" @keypress.enter="performSearch" type="text" placeholder="輸入查詢..."
-                class="jd-input p-2 px-3 dark:bg-slate-800 flex-1 min-w-0 text-lg">
+                class="jd-input p-2 px-3 dark:bg-slate-800 flex-1 min-w-0 text-lg font-serif">
             <button @click="performSearch"
                 class="jd-btn-primary px-3 sm:px-5 py-2 flex-shrink-0">
                 耖
@@ -386,7 +386,7 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
                             <div class="absolute left-0 top-0 bottom-0 w-1 origin-center transition-[transform,background-color] duration-200 ease-out"
                                 :class="activeIndex === idx ? 'bg-accent scale-y-100' : 'bg-transparent scale-y-50 group-hover:scale-y-100 group-hover:bg-slate-300 dark:group-hover:bg-slate-600'"></div>
 
-                            <span class="font-bold text-slate-800 dark:text-slate-100" :class="isAreaMode ? 'text-xl' : 'text-2xl'">{{ entry.chara }}</span>
+                            <span class="font-serif jd-headword font-bold text-slate-800 dark:text-slate-100" :class="isAreaMode ? 'text-xl' : 'text-2xl'">{{ entry.chara }}</span>
                             <span class="block text-xs text-slate-400 mt-0.5"
                                 v-if="!isAreaMode && entry.location && entry.location.length">({{ entry.location.length }})</span>
                         </a>
@@ -409,7 +409,7 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
                 <div v-for="(entry, index) in resultData" :key="index" :id="'char-' + index" class="scroll-mt-6">
                     <!-- Header for Mobile only (since Sidebar handles desktop) -->
                     <div class="md:hidden flex justify-center items-center gap-2" :class="isAreaMode ? 'mb-1' : 'mb-4'">
-                        <h2 class="font-bold text-slate-800 dark:text-slate-100 relative z-10 leading-none"
+                        <h2 class="font-serif jd-headword font-bold text-slate-800 dark:text-slate-100 relative z-10 leading-none"
                             :class="isAreaMode ? 'text-2xl' : 'text-4xl'">{{
                             entry.chara }}</h2>
                         <button v-if="!isAreaMode" @click="openComments(entry.chara)"

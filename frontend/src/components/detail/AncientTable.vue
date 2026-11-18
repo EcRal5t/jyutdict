@@ -39,7 +39,7 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
 </script>
 
 <template>
-  <div v-if="props.data && props.data.length > 0" class="mb-6 page-break-inside-avoid">
+  <div v-if="props.data && props.data.length > 0" class="mb-6 page-break-inside-avoid font-serif">
     
     <!-- Kuangyon Header -->
     <div v-if="isKuangyon" class="pl-2 border-l-2 border-slate-300 dark:border-slate-600 mb-2 text-slate-700 dark:text-slate-300 text-base">
