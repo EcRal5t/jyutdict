@@ -183,7 +183,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div v-if="tableRows.length > 0"
-      class="bg-white/50 dark:bg-slate-800/50 rounded lg:rounded-lg overflow-visible text-md border border-slate-200 dark:border-slate-700"
+      class="bg-white/50 dark:bg-slate-800/50 rounded-none overflow-visible text-md border border-slate-200 dark:border-slate-700"
       :class="compact ? 'mb-0' : 'mb-4'">
       <table class="w-full text-left border-collapse text-sm" :class="{ 'table-fixed': !compact }">
           <thead class="bg-gray-100/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-slate-700 backdrop-blur-sm">
@@ -207,7 +207,7 @@ onBeforeUnmount(() => {
           </thead>
           <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
               <tr v-for="row in tableRows" :key="row.id"
-                  class="hover:bg-white/60 dark:hover:bg-slate-700/40 transition-colors group"
+                  class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors duration-100 group"
                   :class="{ 'relative z-[80]': row.locData && hoveredLocationKey === row.locData.key }">
                   
                   <!-- Location Cell -->
@@ -292,9 +292,11 @@ onBeforeUnmount(() => {
                                         <span class="text-[#CC2014] dark:text-red-400">{{ pron.initial }}</span><span class="text-emerald-800 dark:text-emerald-400">{{ pron.nuclei }}</span><span class="text-emerald-800 dark:text-emerald-400">{{ pron.coda }}</span><span class="text-amber-700 dark:text-amber-500">{{ pron.tone }}</span>
                                     </span>
                                     
+                                    <Transition name="jd-ipa">
                                     <span v-if="showIPA && pron.ipa" class="font-sans text-slate-500 dark:text-slate-500 ml-0.5">
                                         {{ pron.ipa }}
                                     </span>
+                                    </Transition>
                                 </div>
                             </template>
                         </div>
@@ -309,7 +311,7 @@ onBeforeUnmount(() => {
                         Default: max-h-[1.5em] (roughly 1 line, depends on line-height).
                         Hover: max-h-[200px].
                       -->
-                      <div class="relative overflow-hidden transition-all duration-500 ease-in-out max-h-[1.4rem] group-hover/note:max-h-[20rem]">
+                      <div class="relative overflow-hidden transition-[max-height] duration-200 ease-out max-h-[1.4rem] group-hover/note:max-h-[20rem]">
                           <div class="">
                             {{ row.note }}
                           </div>
@@ -317,7 +319,7 @@ onBeforeUnmount(() => {
                       
                       <!-- Gradient overlay that fades out on hover -->
                       <div v-if="row.note.length > 8" 
-                           class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-800 to-transparent pointer-events-none transition-opacity duration-300 group-hover/note:opacity-0">
+                           class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-800 to-transparent pointer-events-none transition-opacity duration-150 group-hover/note:opacity-0">
                       </div>
                   </td>
 
@@ -354,9 +356,20 @@ onBeforeUnmount(() => {
     transform: none;
 }
 
-.location-card-enter-active,
+.location-card-enter-active {
+    transition: opacity var(--jd-base) var(--jd-ease), transform var(--jd-base) var(--jd-ease);
+}
+
 .location-card-leave-active {
-    transition: opacity 150ms ease, transform 150ms ease;
+    transition: opacity var(--jd-fast) var(--jd-ease-in), transform var(--jd-fast) var(--jd-ease-in);
+}
+
+.jd-ipa-enter-active {
+    transition: opacity var(--jd-base) var(--jd-ease);
+}
+
+.jd-ipa-enter-from {
+    opacity: 0;
 }
 
 .location-card-enter-from.location-popover--left,

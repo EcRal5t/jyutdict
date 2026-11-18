@@ -245,9 +245,11 @@ const commentCount = computed(() => comments.value.filter(c => !c.is_deleted).le
 </template>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-active { transition: opacity var(--jd-base) var(--jd-ease); }
+.fade-leave-active { transition: opacity var(--jd-fast) var(--jd-ease-in); }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.slide-enter-active, .slide-leave-active { transition: transform 0.3s ease; }
+.slide-enter-active { transition: transform var(--jd-slow) var(--jd-ease); }
+.slide-leave-active { transition: transform var(--jd-base) var(--jd-ease-in); }
 .slide-enter-from, .slide-leave-to { transform: translateX(100%); }
 </style>

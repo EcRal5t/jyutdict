@@ -4,6 +4,7 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { useAuthStore } from '@/stores/auth.js'
 import articlesApi from '@/api/articles.js'
+import LoadingBlocks from '@/components/common/LoadingBlocks.vue'
 
 const props = defineProps({
     locationName: { type: String, required: true },  // 地点名称
@@ -71,10 +72,10 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 
 <template>
     <!-- 遮罩层 -->
-    <div class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm transition-all duration-300 flex items-center justify-center p-4 md:py-[100px]"
+    <div class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm jd-enter-fade flex items-center justify-center p-4 md:py-[100px]"
          @click="onOverlayClick">
         <!-- 弹窗主体 -->
-        <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-none shadow-[8px_8px_0_rgba(0,0,0,0.15)] dark:shadow-[8px_8px_0_rgba(0,0,0,0.5)] border border-gray-100/50 dark:border-slate-700/50 w-full max-w-[600px] max-h-full overflow-hidden flex flex-col scale-100 translate-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-none shadow-[8px_8px_0_rgba(0,0,0,0.15)] dark:shadow-[8px_8px_0_rgba(0,0,0,0.5)] border border-gray-100/50 dark:border-slate-700/50 w-full max-w-[600px] max-h-full overflow-hidden flex flex-col jd-modal-in">
             <!-- 标题栏 -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100/50 dark:border-slate-700/50">
                 <div>
@@ -95,7 +96,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
             <div class="flex-1 overflow-y-auto px-6 py-4">
                 <!-- 加载中 -->
                 <div v-if="isLoading" class="text-center py-8">
-                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-accent"></div>
+                    <LoadingBlocks size="sm" />
                 </div>
 
                 <!-- 错误 -->
@@ -104,7 +105,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
                 <!-- 文章内容 -->
                 <div v-else-if="article && renderedContent"
                     class="prose dark:prose-invert max-w-none text-sm text-slate-700 dark:text-slate-200"
-                    v-html="renderedContent">
+                    v-html="renderedContent" style="animation: jd-fade var(--jd-base) var(--jd-ease) backwards">
                 </div>
 
                 <!-- 无文章 -->
@@ -129,3 +130,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
         </div>
     </div>
 </template>
+
+<style scoped>
+.jd-modal-in {
+    animation: jd-slide-in-up var(--jd-slow) var(--jd-ease) backwards;
+}
+</style>

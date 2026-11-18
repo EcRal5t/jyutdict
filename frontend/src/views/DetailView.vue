@@ -11,6 +11,7 @@ import CommentSidebar from '@/components/CommentSidebar.vue';
 import AreaColorBadge from '@/components/common/AreaColorBadge.vue';
 import { parseAreaColors } from '@/utils/areaColor.js';
 import { updateCurrentSeo } from '@/utils/seo.js';
+import LoadingBlocks from '@/components/common/LoadingBlocks.vue';
 
 // 評論側邊欄
 const commentSidebarVisible = ref(false);
@@ -301,35 +302,35 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
         <!-- Search Bar -->
         <div class="flex gap-2 sm:gap-3 mb-3 justify-center w-full max-w-4xl mx-auto">
             <input v-model="inputChara" @keypress.enter="performSearch" type="text" placeholder="輸入查詢..."
-                class="p-2 px-3 border-2 border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-none focus:border-accent outline-none flex-1 min-w-0 text-lg transition-all">
+                class="jd-input p-2 px-3 dark:bg-slate-800 flex-1 min-w-0 text-lg">
             <button @click="performSearch"
-                class="bg-accent text-white px-3 sm:px-5 py-2 rounded-none font-bold shadow-[4px_4px_0_rgba(183,41,20,0.3)] hover:shadow-[6px_6px_0_rgba(183,41,20,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all flex-shrink-0">
+                class="jd-btn-primary px-3 sm:px-5 py-2 flex-shrink-0">
                 耖
             </button>
             <button @click="toggleAreaPicker" type="button"
-                class="px-2.5 sm:px-4 py-2 border-2 font-bold transition-all flex-shrink-0 flex items-center gap-1 sm:gap-1.5"
+                class="px-2.5 sm:px-4 py-2 border-2 font-bold transition-colors duration-150 flex-shrink-0 flex items-center gap-1 sm:gap-1.5 active:translate-y-px"
                 :class="isAreaMode
                     ? 'border-accent bg-accent/10 text-accent dark:text-red-400'
                     : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-accent hover:text-accent'"
                 :aria-expanded="areaPickerOpen" aria-controls="area-mode-picker">
                 <span>{{ isAreaMode ? `地點 ${selectedAreaIds.length}` : '地點' }}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform"
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200"
                     :class="{ 'rotate-180': areaPickerOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
         </div>
 
-        <Transition name="area-picker">
+        <Transition name="jd-drop">
             <div v-if="areaPickerOpen" id="area-mode-picker"
-                class="mx-auto mb-6 max-w-5xl border-l-4 border-accent bg-white dark:bg-slate-800 px-3 sm:px-4 py-3 shadow-[4px_4px_0_rgba(0,0,0,0.05)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.25)]">
+                class="jd-panel mx-auto mb-6 max-w-5xl border-l-4 !border-l-accent px-3 sm:px-4 py-3">
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <span class="text-sm font-bold text-slate-700 dark:text-slate-200">指定地點查詢</span>
-                    <span class="text-xs text-slate-500">已選 {{ draftAreaIds.length }}</span>
+                    <span class="text-xs text-slate-500">已選 <span :key="draftAreaIds.length" class="inline-block jd-tick tabular-nums">{{ draftAreaIds.length }}</span></span>
                 </div>
                 <div class="max-h-64 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 pr-1">
                     <label v-for="area in headerList" :key="area.id"
-                        class="flex items-center gap-2 min-w-0 px-2.5 py-2 border cursor-pointer transition-colors"
+                        class="flex items-center gap-2 min-w-0 px-2.5 py-2 border cursor-pointer transition-colors duration-150 active:translate-y-px"
                         :class="draftAreaIdSet.has(area.id)
                             ? 'bg-accent/5 border-accent/40 text-slate-900 dark:text-slate-100'
                             : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-400'">
@@ -337,20 +338,20 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
                             @change="toggleDraftArea(area.id)">
                         <AreaColorBadge :color="area.color" badge-class="w-4 h-4" />
                         <span class="truncate text-sm">{{ area.second }}{{ area.third }}</span>
-                        <span v-if="draftAreaIdSet.has(area.id)" class="ml-auto text-accent text-xs">✓</span>
+                        <Transition name="jd-check"><span v-if="draftAreaIdSet.has(area.id)" class="ml-auto text-accent text-xs">✓</span></Transition>
                     </label>
                 </div>
                 <div class="flex flex-wrap justify-end gap-1.5 sm:gap-2 mt-3">
                     <button v-if="isAreaMode" type="button" @click="leaveAreaMode"
-                        class="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-accent">
+                        class="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-accent transition-colors duration-150">
                         返回全量查詢
                     </button>
                     <button type="button" @click="draftAreaIds = []"
-                        class="px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-accent">
+                        class="jd-btn-ghost px-3 py-1.5 text-xs font-bold">
                         清空選擇
                     </button>
                     <button type="button" @click="applyAreaMode" :disabled="draftAreaIds.length === 0"
-                        class="px-4 py-1.5 text-xs font-bold bg-accent text-white disabled:opacity-40 disabled:cursor-not-allowed">
+                        class="jd-btn-primary px-4 py-1.5 text-xs !shadow-none">
                         套用 {{ draftAreaIds.length }} 個地點
                     </button>
                 </div>
@@ -358,13 +359,12 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
         </Transition>
 
         <!-- Loading/Error -->
-        <div v-if="isLoading" class="text-center py-10">
-            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-accent">
-            </div>
-        </div>
-        <div v-if="error"
-            class="text-red-500 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-none border-l-4 border-red-500 dark:border-red-400">
-            {{ error }}</div>
+        <LoadingBlocks v-if="isLoading" class="py-10" />
+        <Transition name="jd-rise">
+            <div v-if="error"
+                class="max-w-4xl mx-auto text-red-600 dark:text-red-400 text-center py-4 bg-red-50 dark:bg-red-900/10 rounded-none border-l-4 border-red-500 dark:border-red-400">
+                {{ error }}</div>
+        </Transition>
 
         <!-- Main Layout -->
         <div v-if="resultData && resultData.length" class="flex flex-col md:flex-row relative items-start" :class="isAreaMode ? 'gap-3' : 'gap-8'">
@@ -373,18 +373,18 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
             <aside
                 class="hidden md:block flex-shrink-0 sticky top-24 self-start max-h-[80vh] overflow-y-auto no-scrollbar py-2"
                 :class="isAreaMode ? 'w-12' : 'w-24'">
-                <div class="flex flex-col" :class="isAreaMode ? 'gap-0.5' : 'gap-2'">
+                <div class="flex flex-col jd-stagger" :class="isAreaMode ? 'gap-0.5' : 'gap-2'">
                     <div v-for="(entry, idx) in resultData" :key="idx" class="relative">
                         <a :href="'#char-' + idx"
-                            class="block text-center rounded-none transition-all group relative overflow-hidden"
+                            class="block text-center rounded-none transition-colors duration-150 group relative overflow-hidden"
                             :class="[
                                 isAreaMode ? 'p-1' : 'p-2',
                                 activeIndex === idx ? 'bg-accent/10 dark:bg-accent/20' : 'hover:bg-slate-100 dark:hover:bg-slate-700/50'
                             ]"
                             @click.prevent="scrollToChar(idx)">
                             <!-- Color Block Indicator -->
-                            <div class="absolute left-0 top-0 bottom-0 w-1 transition-colors"
-                                :class="activeIndex === idx ? 'bg-accent' : 'bg-transparent group-hover:bg-slate-300 dark:group-hover:bg-slate-600'"></div>
+                            <div class="absolute left-0 top-0 bottom-0 w-1 origin-center transition-[transform,background-color] duration-200 ease-out"
+                                :class="activeIndex === idx ? 'bg-accent scale-y-100' : 'bg-transparent scale-y-50 group-hover:scale-y-100 group-hover:bg-slate-300 dark:group-hover:bg-slate-600'"></div>
 
                             <span class="font-bold text-slate-800 dark:text-slate-100" :class="isAreaMode ? 'text-xl' : 'text-2xl'">{{ entry.chara }}</span>
                             <span class="block text-xs text-slate-400 mt-0.5"
@@ -405,7 +405,7 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
             </aside>
 
             <!-- Content Area -->
-            <div class="flex-grow w-full" :class="isAreaMode ? 'space-y-3' : 'space-y-16'">
+            <div class="flex-grow w-full jd-stagger" :class="isAreaMode ? 'space-y-3' : 'space-y-16'">
                 <div v-for="(entry, index) in resultData" :key="index" :id="'char-' + index" class="scroll-mt-6">
                     <!-- Header for Mobile only (since Sidebar handles desktop) -->
                     <div class="md:hidden flex justify-center items-center gap-2" :class="isAreaMode ? 'mb-1' : 'mb-4'">
@@ -426,8 +426,8 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
                     <!-- Per Character Card -->
                     <div class="bg-white dark:bg-slate-800 rounded-none"
                         :class="isAreaMode
-                            ? 'p-1 md:p-2'
-                            : 'p-3 md:p-8 shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)]'">
+                            ? 'p-1 md:p-2 border border-slate-200/80 dark:border-slate-700'
+                            : 'jd-panel p-3 md:p-8'">
                         <!-- Grid Layout: Desktop 2 cols, Mobile 1 col -->
                         <!-- Mobile Order Requirement: Dialect Table FIRST, then Ancient, then Map/Links -->
                         <div :class="isAreaMode ? 'block' : 'grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6'">
@@ -435,13 +435,13 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
                             <!-- Dialect Table (Area) -->
                             <!-- On Mobile: Order 1. On Desktop: Order 2 (Right Col) -->
                             <div class="order-1 xl:order-2 h-fit" :class="isAreaMode ? 'p-0' : 'p-4'">
-                                <div v-if="!isAreaMode" class="flex justify-between items-center mb-4 border-l-4 border-accent pl-3">
+                                <div v-if="!isAreaMode" class="flex justify-between items-center mb-4">
                                     <h3
-                                        class="text-lg font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                        class="jd-section-title text-lg flex items-center gap-2">
                                         <span>方音</span>
                                     </h3>
                                     <button @click="showIPA = !showIPA"
-                                        class="text-xs font-bold px-3 py-1 rounded-none transition-all hover:-translate-y-0.5 active:translate-y-0"
+                                        class="text-xs font-bold px-3 py-1 rounded-none transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0"
                                         :class="showIPA ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-800 shadow-[2px_2px_0_rgba(0,0,0,0.2)]' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:shadow-[2px_2px_0_rgba(0,0,0,0.1)]'">
                                         IPA
                                     </button>
@@ -470,7 +470,7 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
                                 <!-- Ancient (WanShyu) -->
                                 <div class="p-4">
                                     <h3
-                                        class="text-lg font-bold mb-4 text-slate-700 dark:text-slate-300 border-l-4 border-wood pl-3 flex items-center gap-2">
+                                        class="jd-section-title !border-wood text-lg mb-4 flex items-center gap-2">
                                         <span>韻書</span>
                                     </h3>
 
@@ -513,14 +513,14 @@ watch([() => route.query.chara, () => route.query.areas, () => route.query.area]
 </template>
 
 <style scoped>
-.area-picker-enter-active,
-.area-picker-leave-active {
-    transition: opacity 160ms ease, transform 160ms ease;
+.jd-check-enter-active,
+.jd-check-leave-active {
+    transition: opacity var(--jd-fast) var(--jd-ease), transform var(--jd-fast) var(--jd-ease);
 }
 
-.area-picker-enter-from,
-.area-picker-leave-to {
+.jd-check-enter-from,
+.jd-check-leave-to {
     opacity: 0;
-    transform: translateY(-0.4rem);
+    transform: translateX(-3px);
 }
 </style>

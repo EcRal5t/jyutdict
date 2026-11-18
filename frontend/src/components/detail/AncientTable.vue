@@ -55,7 +55,7 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
     </div>
 
     <!-- Fanwan Table -->
-    <div v-if="isFanwan" class="border border-slate-300 dark:border-slate-600 mb-2 bg-white dark:bg-slate-800 text-xs rounded-lg overflow-hidden shadow-sm">
+    <div v-if="isFanwan" class="border border-slate-300 dark:border-slate-600 mb-2 bg-white dark:bg-slate-800 text-xs rounded-none overflow-hidden">
         <table class="w-full border-collapse text-center">
              <thead class="bg-gray-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-300">
                  <tr>
@@ -93,7 +93,7 @@ const isKuangyon = computed(() => bookName.value === '廣韻');
     </div>
 
     <!-- Jingwaa Table -->
-    <div v-if="isJingwaa" class="border border-slate-300 dark:border-slate-600 mb-2 bg-white dark:bg-slate-800 text-xs rounded-lg overflow-hidden shadow-sm">
+    <div v-if="isJingwaa" class="border border-slate-300 dark:border-slate-600 mb-2 bg-white dark:bg-slate-800 text-xs rounded-none overflow-hidden">
         <table class="w-full border-collapse text-center">
             <thead class="bg-gray-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-300">
                  <tr>

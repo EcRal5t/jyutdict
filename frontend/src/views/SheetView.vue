@@ -9,6 +9,7 @@ import CommentSidebar from '@/components/CommentSidebar.vue';
 import { sheetEntryMeta } from '@/utils/sheetEntry.js';
 import { updateCurrentSeo } from '@/utils/seo.js';
 import seoCatalog from 'virtual:jyutdict-seo';
+import LoadingBlocks from '@/components/common/LoadingBlocks.vue';
 
 // 評論側邊欄
 const commentSidebarVisible = ref(false);
@@ -54,6 +55,7 @@ const isDef = ref(false);
 const isDefClean = ref(true);
 
 const results = ref([]);
+const resultsVersion = ref(0);
 const headerInfo = reactive({ cities: [], foreign: [], all: [] });
 const isLoading = ref(false);
 const error = ref(null);
@@ -169,6 +171,7 @@ const performSearch = async () => {
             rows.sort((a, b) => b._score - a._score);
 
             results.value = rows;
+            resultsVersion.value++;
 
             // 加載評論數量
             loadCommentCounts();
@@ -211,6 +214,7 @@ const loadEntry = async () => {
         const { data } = await SheetApi.getByKey(`>${key}`);
         if (request !== entryRequest) return;
         results.value = Array.isArray(data) ? data : [];
+        resultsVersion.value++;
         if (results.value.length) {
             const row = results.value[0];
             query.value = row['繁'] || '';
@@ -260,14 +264,15 @@ watch(() => route.query, (newQ) => {
 
         <!-- Search Box -->
         <div
-            class="bg-white dark:bg-slate-800 p-4 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] border border-gray-100 dark:border-slate-700 mb-8 transition-all duration-300">
+            class="jd-panel p-4 mb-8 jd-enter">
             <div class="flex flex-col gap-3">
                 <div class="flex flex-col md:flex-row gap-2">
                     <div class="flex-1 relative">
                         <input v-model="query" @keypress.enter="performSearch" type="text" placeholder="輸入字或音... (留空隨機)"
-                            class="w-full p-2 pl-3 text-sm bg-gray-50 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-none focus:border-accent outline-none transition-all dark:text-slate-100 placeholder-gray-400">
+                            class="jd-input w-full p-2 pl-3 pr-9 text-sm bg-slate-50 focus:bg-white dark:bg-slate-900 dark:focus:bg-slate-900">
+                        <Transition name="jd-fade">
                         <button @click="query = ''" v-if="query"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-accent transition-colors duration-150">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
                                 fill="currentColor">
                                 <path fill-rule="evenodd"
@@ -275,11 +280,12 @@ watch(() => route.query, (newQ) => {
                                     clip-rule="evenodd" />
                             </svg>
                         </button>
+                        </Transition>
                     </div>
 
                     <div class="flex gap-2">
                         <select v-model="location"
-                            class="flex-1 md:flex-none p-2 text-sm bg-gray-50 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-none focus:border-accent outline-none dark:text-slate-100 min-w-[100px]">
+                            class="jd-input flex-1 md:flex-none p-2 text-sm bg-slate-50 focus:bg-white dark:bg-slate-900 dark:focus:bg-slate-900 min-w-[100px] cursor-pointer">
                             <option value="">綜合音</option>
                             <option value="檢">檢索音</option>
                             <option v-for="loc in locations" :key="loc.value" :value="loc.value">
@@ -288,7 +294,7 @@ watch(() => route.query, (newQ) => {
                         </select>
 
                         <button @click="performSearch"
-                            class="bg-accent hover:bg-red-700 text-white px-5 py-2 text-sm rounded-none font-bold shadow-[4px_4px_0_rgba(183,41,20,0.3)] hover:shadow-[6px_6px_0_rgba(183,41,20,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[2px_2px_0_rgba(183,41,20,0.3)] transition-all duration-200 whitespace-nowrap">
+                            class="jd-btn-primary px-5 py-2 text-sm whitespace-nowrap">
                             揾
                         </button>
                     </div>
@@ -299,93 +305,89 @@ watch(() => route.query, (newQ) => {
                         class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isFuzzy"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
-                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 group-hover:border-accent/60 checked:bg-accent checked:border-accent transition-colors duration-150">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 scale-50 peer-checked:opacity-100 peer-checked:scale-100 transition-[opacity,transform] duration-150 ease-out text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </div>
-                        <span class="group-hover:text-accent transition-colors">模糊查詢 (查字)</span>
+                        <span class="group-hover:text-accent transition-colors duration-150">模糊查詢 (查字)</span>
                     </label>
 
                     <label
                         class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isTrim"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
-                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 group-hover:border-accent/60 checked:bg-accent checked:border-accent transition-colors duration-150">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 scale-50 peer-checked:opacity-100 peer-checked:scale-100 transition-[opacity,transform] duration-150 ease-out text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </div>
-                        <span class="group-hover:text-accent transition-colors">音節整體 (查音)</span>
+                        <span class="group-hover:text-accent transition-colors duration-150">音節整體 (查音)</span>
                     </label>
 
                     <label
                         class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isRegex"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
-                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 group-hover:border-accent/60 checked:bg-accent checked:border-accent transition-colors duration-150">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 scale-50 peer-checked:opacity-100 peer-checked:scale-100 transition-[opacity,transform] duration-150 ease-out text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </div>
-                        <span class="group-hover:text-accent transition-colors">正則表達式</span>
+                        <span class="group-hover:text-accent transition-colors duration-150">正則表達式</span>
                     </label>
 
                     <label
                         class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isDef"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
-                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 group-hover:border-accent/60 checked:bg-accent checked:border-accent transition-colors duration-150">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 scale-50 peer-checked:opacity-100 peer-checked:scale-100 transition-[opacity,transform] duration-150 ease-out text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </div>
-                        <span class="group-hover:text-accent transition-colors">反查釋義</span>
+                        <span class="group-hover:text-accent transition-colors duration-150">反查釋義</span>
                     </label>
 
                     <label v-if="isDef"
-                        class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none animate-fadeIn">
+                        class="flex items-center gap-2 cursor-pointer group text-slate-600 dark:text-slate-400 select-none jd-enter-fade">
                         <div class="relative flex items-center">
                             <input type="checkbox" v-model="isDefClean"
-                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 checked:bg-accent checked:border-accent transition-all">
-                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white"
+                                class="peer h-5 w-5 cursor-pointer appearance-none rounded-none border-2 border-slate-300 dark:border-slate-600 group-hover:border-accent/60 checked:bg-accent checked:border-accent transition-colors duration-150">
+                            <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 scale-50 peer-checked:opacity-100 peer-checked:scale-100 transition-[opacity,transform] duration-150 ease-out text-white"
                                 viewBox="0 0 14 14" fill="none">
                                 <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </div>
-                        <span class="group-hover:text-accent transition-colors" title="去除例句與冗餘干擾，精確匹配核心義項">僅搜簡釋 (去例句)</span>
+                        <span class="group-hover:text-accent transition-colors duration-150" title="去除例句與冗餘干擾，精確匹配核心義項">僅搜簡釋 (去例句)</span>
                     </label>
                 </div>
             </div>
         </div>
 
         <!-- Results List -->
-        <div v-if="isLoading" class="text-center py-16">
-            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-accent">
-            </div>
-            <p class="mt-4 text-slate-500">載入中 Loading...</p>
-        </div>
+        <LoadingBlocks v-if="isLoading" class="py-16" label="載入中 Loading..." />
 
         <div v-else-if="error"
-            class="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 p-6 rounded-none text-center border-l-4 border-red-500 dark:border-red-400">
+            class="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 p-6 rounded-none text-center border-l-4 border-red-500 dark:border-red-400 jd-enter">
             {{ error }}
         </div>
 
-        <div v-else class="space-y-4">
-            <div v-for="row in results" :key="row.id || Math.random()" class="relative">
+        <div v-else :key="resultsVersion" class="space-y-4 jd-stagger">
+            <div v-for="(row, rowIdx) in results" :key="row['鍵'] || row.id || rowIdx" class="relative">
                 <ResultCard :row-data="row" :header-info="headerInfo" />
                 <!-- 評論按鈕（僅當行有鍵值時顯示） -->
                 <button v-if="row['鍵']" @click="openSheetComments(row['鍵'])"
-                    class="absolute top-3 right-3 flex items-center gap-1 text-xs px-2 py-1 rounded-none transition-colors"
+                    class="absolute top-3 right-3 flex items-center gap-1 text-xs px-2 py-1 rounded-none transition-colors duration-150 active:translate-y-px"
                     :class="getCommentCount(row['鍵']) > 0 ? 'bg-accent text-white hover:bg-red-700' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-accent'"
                     title="查看評論">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

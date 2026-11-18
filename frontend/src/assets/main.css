@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== 动效基础 =====
+ * 全站动画统一使用这里的时长与缓动，保持“快、直、利落”：
+ * 短位移（≤6px）+ 透明度，不做弹跳、不做圆角/缩放形变。
+ */
+:root {
+  --jd-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --jd-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --jd-fast: 120ms;
+  --jd-base: 180ms;
+  --jd-slow: 240ms;
+  --jd-stagger: 22ms;
+}
+
 @layer base {
   body {
     font-family: 'Cactus Classical Serif', serif;
@@ -9,6 +22,82 @@
     /* 搭配極輕微的描邊與文字陰影，物理加粗而不失銳利 */
     -webkit-text-stroke: 0.15px currentColor;
     text-shadow: 0 0 0.1px currentColor;
+  }
+
+  ::selection {
+    background-color: rgba(211, 41, 19, 0.18);
+  }
+}
+
+@layer components {
+  /* 统一面板：直角、细边框、偏移阴影 */
+  .jd-panel {
+    @apply bg-white dark:bg-slate-800 rounded-none border border-slate-200/80 dark:border-slate-700 shadow-[5px_5px_0_rgba(0,0,0,0.05)] dark:shadow-[5px_5px_0_rgba(0,0,0,0.3)];
+  }
+
+  /* 统一小节标题：左色条 */
+  .jd-section-title {
+    @apply font-bold text-slate-700 dark:text-slate-200 border-l-4 border-accent pl-3 leading-tight;
+  }
+
+  /* 统一输入框 */
+  .jd-input {
+    @apply rounded-none border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none placeholder-slate-400 dark:placeholder-slate-600;
+    transition: border-color var(--jd-fast) var(--jd-ease), box-shadow var(--jd-fast) var(--jd-ease), background-color var(--jd-fast) var(--jd-ease);
+  }
+  .jd-input:hover:not(:focus) {
+    @apply border-slate-300 dark:border-slate-600;
+  }
+  .jd-input:focus {
+    @apply border-accent;
+    box-shadow: 3px 3px 0 rgba(211, 41, 19, 0.15);
+  }
+
+  /* 主按钮：偏移阴影，悬浮抬起、按下贴合 */
+  .jd-btn-primary {
+    @apply bg-accent text-white rounded-none font-bold select-none;
+    box-shadow: 4px 4px 0 rgba(183, 41, 20, 0.3);
+    transition: transform var(--jd-fast) var(--jd-ease), box-shadow var(--jd-fast) var(--jd-ease), background-color var(--jd-fast) var(--jd-ease), opacity var(--jd-fast) var(--jd-ease);
+  }
+  .jd-btn-primary:hover:not(:disabled) {
+    background-color: #b82410;
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 rgba(183, 41, 20, 0.35);
+  }
+  .jd-btn-primary:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 rgba(183, 41, 20, 0.3);
+    transition-duration: 60ms;
+  }
+  .jd-btn-primary:disabled {
+    @apply cursor-not-allowed;
+    opacity: 0.45;
+    box-shadow: none;
+  }
+
+  /* 次级小按钮 */
+  .jd-btn-ghost {
+    @apply rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 select-none;
+    transition: color var(--jd-fast) var(--jd-ease), border-color var(--jd-fast) var(--jd-ease), background-color var(--jd-fast) var(--jd-ease), transform var(--jd-fast) var(--jd-ease);
+  }
+  .jd-btn-ghost:hover {
+    @apply border-accent text-accent dark:text-red-400;
+  }
+  .jd-btn-ghost:active {
+    transform: translateY(1px);
+    transition-duration: 60ms;
+  }
+
+  /* 可悬浮卡片：轻微抬起 + 阴影加深 */
+  .jd-lift {
+    transition: transform var(--jd-fast) var(--jd-ease), box-shadow var(--jd-fast) var(--jd-ease), border-color var(--jd-fast) var(--jd-ease);
+  }
+  .jd-lift:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.07);
+  }
+  .dark .jd-lift:hover {
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
   }
 }
 
@@ -19,4 +108,116 @@
     .glass-strong {
         @apply bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/40 dark:border-slate-700/50 shadow-md;
     }
+
+    /* 进场：淡入 + 上移 6px。配合 style="--i: n" 实现交错。 */
+    .jd-enter {
+        animation: jd-fade-up var(--jd-base) var(--jd-ease) backwards;
+        animation-delay: calc(min(var(--i, 0), 14) * var(--jd-stagger));
+    }
+    .jd-enter-fade {
+        animation: jd-fade var(--jd-base) var(--jd-ease) backwards;
+        animation-delay: calc(min(var(--i, 0), 14) * var(--jd-stagger));
+    }
+    /* 子元素依序进场（最多前 14 个有延迟，后续同时出现） */
+    .jd-stagger > * {
+        animation: jd-fade-up var(--jd-base) var(--jd-ease) backwards;
+    }
+    .jd-stagger > *:nth-child(2) { animation-delay: calc(1 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(3) { animation-delay: calc(2 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(4) { animation-delay: calc(3 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(5) { animation-delay: calc(4 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(6) { animation-delay: calc(5 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(7) { animation-delay: calc(6 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(8) { animation-delay: calc(7 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(9) { animation-delay: calc(8 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(10) { animation-delay: calc(9 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(11) { animation-delay: calc(10 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(12) { animation-delay: calc(11 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(13) { animation-delay: calc(12 * var(--jd-stagger)); }
+    .jd-stagger > *:nth-child(n+14) { animation-delay: calc(13 * var(--jd-stagger)); }
+
+    /* 值变化时的“刷新”提示（配合 :key 重新挂载） */
+    .jd-tick {
+        animation: jd-tick var(--jd-base) var(--jd-ease) backwards;
+    }
+
+    /* 内容折叠：外层 grid 行高 0fr ↔ 1fr，内层需 overflow-hidden + min-h-0 */
+    .jd-collapse {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows var(--jd-base) var(--jd-ease), opacity var(--jd-base) var(--jd-ease);
+        opacity: 0;
+    }
+    .jd-collapse.is-open {
+        grid-template-rows: 1fr;
+        opacity: 1;
+    }
+    .jd-collapse > * {
+        min-height: 0;
+        overflow: hidden;
+    }
+}
+
+@keyframes jd-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes jd-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes jd-tick {
+  0% { opacity: 0.2; transform: translateY(-3px); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes jd-slide-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes jd-loader {
+  0%, 80%, 100% { transform: scaleY(0.35); opacity: 0.35; }
+  40% { transform: scaleY(1); opacity: 1; }
+}
+
+/* ===== 全局 <Transition> 名称 ===== */
+/* 淡入淡出 */
+.jd-fade-enter-active { transition: opacity var(--jd-base) var(--jd-ease); }
+.jd-fade-leave-active { transition: opacity var(--jd-fast) var(--jd-ease-in); }
+.jd-fade-enter-from, .jd-fade-leave-to { opacity: 0; }
+
+/* 下拉/弹出：自上而下 */
+.jd-drop-enter-active { transition: opacity var(--jd-base) var(--jd-ease), transform var(--jd-base) var(--jd-ease); }
+.jd-drop-leave-active { transition: opacity var(--jd-fast) var(--jd-ease-in), transform var(--jd-fast) var(--jd-ease-in); }
+.jd-drop-enter-from, .jd-drop-leave-to { opacity: 0; transform: translateY(-4px); }
+
+/* 上浮：用于结果区块、提示 */
+.jd-rise-enter-active { transition: opacity var(--jd-base) var(--jd-ease), transform var(--jd-base) var(--jd-ease); }
+.jd-rise-leave-active { transition: opacity var(--jd-fast) var(--jd-ease-in); }
+.jd-rise-enter-from { opacity: 0; transform: translateY(6px); }
+.jd-rise-leave-to { opacity: 0; }
+
+/* 路由切换 */
+.jd-route-enter-active { transition: opacity var(--jd-base) var(--jd-ease), transform var(--jd-base) var(--jd-ease); }
+.jd-route-leave-active { transition: opacity 90ms var(--jd-ease-in); }
+.jd-route-enter-from { opacity: 0; transform: translateY(6px); }
+.jd-route-leave-to { opacity: 0; }
+
+/* 列表项增删（TransitionGroup） */
+.jd-list-enter-active { transition: opacity var(--jd-base) var(--jd-ease), transform var(--jd-base) var(--jd-ease); }
+.jd-list-leave-active { transition: opacity var(--jd-fast) var(--jd-ease-in); position: absolute; }
+.jd-list-enter-from { opacity: 0; transform: translateY(4px); }
+.jd-list-leave-to { opacity: 0; }
+.jd-list-move { transition: transform var(--jd-base) var(--jd-ease); }
+
+/* 尊重系统“减少动态效果”设置 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
 }

@@ -167,7 +167,7 @@ const externalLinks = [
                                 class="lg:hidden p-1 text-gray-500 hover:text-accent dark:hover:text-red-400 focus:outline-none flex items-center justify-center flex-shrink-0"
                                 aria-label="Toggle Menu">
                                 <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5 transition-transform"
+                                    class="h-5 w-5 transition-transform duration-200"
                                     :class="{ 'rotate-180': showMobileMenu }" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -206,18 +206,22 @@ const externalLinks = [
                                     :class="isGroupActive(group.items) ? 'border-accent text-accent' : 'border-transparent'"
                                     :aria-expanded="openMobileSubmenu === group.key">
                                     <span>{{ group.label }}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform"
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200"
                                         :class="{ 'rotate-180': openMobileSubmenu === group.key }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
-                                <div v-if="openMobileSubmenu === group.key" class="bg-slate-50/80 dark:bg-slate-900/40 py-1">
+                                <div class="jd-collapse" :class="{ 'is-open': openMobileSubmenu === group.key }" :inert="openMobileSubmenu !== group.key">
+                                <div class="bg-slate-50/80 dark:bg-slate-900/40">
+                                    <div class="py-1"></div>
                                     <RouterLink v-for="child in group.items" :key="child.path" :to="child.path"
                                         class="block pl-8 pr-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-accent border-l-4 border-transparent hover:border-accent transition-colors"
                                         active-class="text-accent border-l-accent font-bold"
                                         @click="closeNavigation">
                                         {{ child.label }}
                                     </RouterLink>
+                                    <div class="py-1"></div>
+                                </div>
                                 </div>
                             </template>
 
@@ -282,7 +286,7 @@ const externalLinks = [
                                     :class="{ active: isGroupActive(group.items) }"
                                     :aria-expanded="openDesktopMenu === group.key">
                                     <span>{{ group.label }}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 transition-transform"
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 transition-transform duration-200"
                                         :class="{ 'rotate-180': openDesktopMenu === group.key }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
@@ -308,7 +312,7 @@ const externalLinks = [
                                     <a v-else :href="link.url" class="nav-link whitespace-nowrap">{{ link.label }}</a>
                                     <!-- Tooltip -->
                                     <div
-                                        class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 shadow-[4px_4px_0_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] rounded-none p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[60]">
+                                        class="absolute right-0 top-full mt-2 w-64 max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 shadow-[4px_4px_0_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.3)] rounded-none p-4 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible group-hover/tooltip:translate-y-0 -translate-y-1 transition-all duration-150 z-[60]">
                                         {{ tooltipContent }}
                                     </div>
                                 </div>
@@ -327,24 +331,26 @@ const externalLinks = [
                         <button @click="toggleTheme"
                             class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400 flex-shrink-0"
                             :title="themeMode === 'light' ? '亮色模式' : themeMode === 'dark' ? '深色模式' : '跟隨系統'">
+                            <Transition name="jd-theme" mode="out-in">
                             <!-- Sun Icon (light mode) -->
-                            <svg v-if="themeIcon === 'sun'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                            <svg :key="themeIcon" v-if="themeIcon === 'sun'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                             </svg>
                             <!-- Moon Icon (dark mode) -->
-                            <svg v-else-if="themeIcon === 'moon'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            <svg :key="themeIcon" v-else-if="themeIcon === 'moon'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                             </svg>
                             <!-- System Icon -->
-                            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            <svg :key="themeIcon" v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
+                            </Transition>
                         </button>
                     </div>
                 </div>
@@ -352,7 +358,11 @@ const externalLinks = [
         </header>
 
         <main class="w-full flex-1 flex flex-col">
-            <RouterView />
+            <RouterView v-slot="{ Component }">
+                <Transition name="jd-route" mode="out-in">
+                    <component :is="Component" />
+                </Transition>
+            </RouterView>
         </main>
 
         <footer v-if="route.path !== '/phonology'"
@@ -400,7 +410,7 @@ const externalLinks = [
 
 .nav-link::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-full h-0.5 bg-accent dark:bg-red-500 transform scale-x-0 transition-transform origin-right duration-300;
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-accent dark:bg-red-500 transform scale-x-0 transition-transform origin-right duration-200 ease-out;
 }
 
 .nav-link:hover::after,
@@ -409,16 +419,33 @@ const externalLinks = [
 }
 
 /* Dropdown transition (fade + slide + scale) */
-.dropdown-enter-active,
+.dropdown-enter-active {
+    transition: opacity var(--jd-base) var(--jd-ease), transform var(--jd-base) var(--jd-ease);
+}
+
 .dropdown-leave-active {
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-    transform-origin: top;
+    transition: opacity var(--jd-fast) var(--jd-ease-in), transform var(--jd-fast) var(--jd-ease-in);
 }
 
 .dropdown-enter-from,
 .dropdown-leave-to {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-4px);
+}
+
+.jd-theme-enter-active,
+.jd-theme-leave-active {
+    transition: opacity 100ms var(--jd-ease), transform 100ms var(--jd-ease);
+}
+
+.jd-theme-enter-from {
+    opacity: 0;
+    transform: rotate(-45deg);
+}
+
+.jd-theme-leave-to {
+    opacity: 0;
+    transform: rotate(45deg);
 }
 
 .glass-header {

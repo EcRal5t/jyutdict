@@ -5,6 +5,7 @@ import axios from 'axios';
 import { parsePronunciationQuery } from '@/utils/pronunciationQuery.js';
 import AreaColorBadge from '@/components/common/AreaColorBadge.vue';
 import { getPrimaryAreaColor } from '@/utils/areaColor.js';
+import LoadingBlocks from '@/components/common/LoadingBlocks.vue';
 
 const form = reactive({
     pron: '',
@@ -126,6 +127,7 @@ const analyzeInput = () => {
 // 結果相關
 const results = ref(null);
 const loading = ref(false);
+const resultsVersion = ref(0);
 
 const submitSearch = async () => {
     if (inputDisabled.value) return;
@@ -165,6 +167,7 @@ const fetchResults = async () => {
 
         const response = await axios.get('/api/v1.0/detail', { params });
         results.value = response.data;
+        resultsVersion.value++;
     } catch (e) {
         console.error('API 错误:', e);
     } finally {
@@ -220,22 +223,20 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="container mx-auto px-4 pt-20 pb-12 flex flex-col items-center">
+    <div class="container mx-auto px-4 pt-12 pb-12 flex flex-col items-center">
         <!-- Input Section -->
-        <div class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-5 w-full max-w-2xl border border-gray-100 dark:border-slate-700">
+        <div class="jd-panel p-5 w-full max-w-2xl jd-enter">
             <div class="flex flex-col sm:flex-row gap-2 mb-4">
                 <input v-model="form.pron" @input="analyzeInput" type="text"
-                    class="flex-1 p-2 text-lg font-mono border-2 rounded-none outline-none transition-colors dark:bg-slate-900 dark:text-white"
+                    class="jd-input flex-1 p-2 text-lg font-mono"
                     :class="{
-                        'border-gray-200 dark:border-slate-700': parseStatus === 'neutral',
-                        'border-green-500': parseStatus === 'valid',
-                        'border-red-500': parseStatus === 'invalid'
+                        '!border-green-500 focus:!shadow-[3px_3px_0_rgba(34,197,94,0.18)]': parseStatus === 'valid',
+                        '!border-red-500': parseStatus === 'invalid'
                     }" placeholder="輸入擴展粵拼…">
                 <button
                     @click="submitSearch"
                     :disabled="inputDisabled"
-                    class="px-6 py-2 font-bold text-white rounded-none transition-all shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:translate-y-0 active:shadow-[2px_2px_0_rgba(0,0,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
-                    :class="inputDisabled ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700 hover:shadow-[6px_6px_0_rgba(0,0,0,0.25)] hover:-translate-y-0.5'"
+                    class="jd-btn-primary px-6 py-2"
                 >
                     耖
                 </button>
@@ -248,46 +249,46 @@ onMounted(async () => {
             <!-- Color Blocks Visualization -->
             <div class="flex justify-center gap-1 font-mono text-xl h-10">
                 <div
-                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300">
-                    {{ parsedComponents.in || '-' }}</div>
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-b-2 border-red-400/70 dark:border-red-500/60 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 transition-[min-width] duration-150">
+                    <span :key="parsedComponents.in" class="jd-tick">{{ parsedComponents.in || '-' }}</span></div>
                 <div
-                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
-                    {{ parsedComponents.nu || '-' }}</div>
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-b-2 border-orange-400/70 dark:border-orange-500/60 bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 transition-[min-width] duration-150">
+                    <span :key="parsedComponents.nu" class="jd-tick">{{ parsedComponents.nu || '-' }}</span></div>
                 <div
-                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
-                    {{ parsedComponents.co || '-' }}</div>
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-b-2 border-green-400/70 dark:border-green-500/60 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 transition-[min-width] duration-150">
+                    <span :key="parsedComponents.co" class="jd-tick">{{ parsedComponents.co || '-' }}</span></div>
                 <div
-                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                    {{ parsedComponents.to || '-' }}</div>
+                    class="w-auto min-w-10 px-2 flex items-center justify-center rounded-none border-b-2 border-blue-400/70 dark:border-blue-500/60 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 transition-[min-width] duration-150">
+                    <span :key="parsedComponents.to" class="jd-tick">{{ parsedComponents.to || '-' }}</span></div>
             </div>
         </div>
 
         <!-- Location Selection -->
-        <div class="bg-white dark:bg-slate-800 rounded-none shadow-[6px_6px_0_rgba(0,0,0,0.06)] dark:shadow-[6px_6px_0_rgba(0,0,0,0.3)] p-5 w-full max-w-4xl mt-6 border border-gray-100 dark:border-slate-700">
+        <div class="jd-panel p-5 w-full max-w-4xl mt-6 jd-enter" style="--i: 2">
             <div class="flex justify-between items-center mb-3">
-                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 border-l-4 border-accent pl-3">選擇地點</h2>
+                <h2 class="jd-section-title text-lg">選擇地點</h2>
                 <div class="flex gap-1">
-                    <button @click="selectAll" class="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 rounded-none hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">全選</button>
-                    <button @click="deselectAll" class="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 rounded-none hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">全不選</button>
-                    <button @click="invertSelection" class="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 rounded-none hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">反選</button>
+                    <button @click="selectAll" class="jd-btn-ghost px-2 py-1 text-xs">全選</button>
+                    <button @click="deselectAll" class="jd-btn-ghost px-2 py-1 text-xs">全不選</button>
+                    <button @click="invertSelection" class="jd-btn-ghost px-2 py-1 text-xs">反選</button>
                 </div>
             </div>
 
-            <div v-if="loadingLocations" class="text-center py-4 text-slate-500">載入中...</div>
+            <LoadingBlocks v-if="loadingLocations" size="sm" class="py-4" />
 
-            <div v-else class="max-h-60 overflow-y-auto overflow-x-hidden">
+            <div v-else class="max-h-60 overflow-y-auto overflow-x-hidden jd-enter-fade">
                 <!-- 韻書選項 -->
                 <div class="mb-3">
                     <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 border-l-4 border-wood pl-2">韻書</h3>
                     <div class="flex flex-wrap gap-2">
-                        <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-all text-sm border-l-4 hover:-translate-y-0.5 hover:shadow-sm"
+                        <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-[transform,background-color,border-color,color] duration-150 text-sm border-l-4 hover:-translate-y-px active:translate-y-0"
                             :class="selectedLocations.has('fanwan') ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-500' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-amber-400'">
-                            <input type="checkbox" :checked="selectedLocations.has('fanwan')" @change="toggleLocation('fanwan')" class="w-3 h-3">
+                            <input type="checkbox" :checked="selectedLocations.has('fanwan')" @change="toggleLocation('fanwan')" class="w-3 h-3 accent-amber-600">
                             分韻
                         </label>
-                        <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-all text-sm border-l-4 hover:-translate-y-0.5 hover:shadow-sm"
+                        <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-none cursor-pointer transition-[transform,background-color,border-color,color] duration-150 text-sm border-l-4 hover:-translate-y-px active:translate-y-0"
                             :class="selectedLocations.has('jingwaa') ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-500' : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-amber-400'">
-                            <input type="checkbox" :checked="selectedLocations.has('jingwaa')" @change="toggleLocation('jingwaa')" class="w-3 h-3">
+                            <input type="checkbox" :checked="selectedLocations.has('jingwaa')" @change="toggleLocation('jingwaa')" class="w-3 h-3 accent-amber-600">
                             英華
                         </label>
                     </div>
@@ -298,12 +299,12 @@ onMounted(async () => {
                     <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 pl-2 border-b border-slate-200 dark:border-slate-700 pb-1">{{ division }}</h3>
                     <div class="flex flex-wrap gap-2">
                         <label v-for="loc in locs" :key="loc.id"
-                            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-none cursor-pointer transition-all text-sm border hover:-translate-y-0.5 hover:shadow-sm location-label"
+                            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-none cursor-pointer transition-[transform,background-color,border-color,color] duration-150 text-sm border hover:-translate-y-px active:translate-y-0 location-label"
                             :style="selectedLocations.has(loc.id) ? getSelectedStyle(loc.color) : {}"
                             :class="selectedLocations.has(loc.id)
                                 ? 'selected border-accent/40 dark:border-red-500/40'
                                 : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'">
-                            <input type="checkbox" :checked="selectedLocations.has(loc.id)" @change="toggleLocation(loc.id)" class="w-3 h-3">
+                            <input type="checkbox" :checked="selectedLocations.has(loc.id)" @change="toggleLocation(loc.id)" class="w-3 h-3 accent-[#D32913]">
                             <AreaColorBadge :color="loc.color" badge-class="w-3.5 h-3.5" />
                             <span>{{ loc.second }}{{ loc.third ? ' ' + loc.third : '' }}</span>
                         </label>
@@ -313,13 +314,13 @@ onMounted(async () => {
         </div>
 
         <!-- Results -->
-        <div v-if="loading" class="mt-8 text-slate-500">載入中...</div>
+        <LoadingBlocks v-if="loading" class="mt-8" />
 
-        <div v-if="hasResults" class="mt-8 w-full max-w-4xl">
+        <div v-if="hasResults && !loading" :key="resultsVersion" class="mt-8 w-full max-w-4xl jd-enter">
             <!-- 韻書結果 -->
             <div v-if="results['韻書'] && results['韻書'].length > 0" class="mb-6">
-                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 border-l-4 border-wood pl-3">韻書</h2>
-                <div v-for="(book, idx) in results['韻書']" :key="idx" class="mb-4 p-4 bg-white dark:bg-slate-800 rounded-none shadow-[4px_4px_0_rgba(0,0,0,0.04)] dark:shadow-[4px_4px_0_rgba(0,0,0,0.2)] border border-slate-100 dark:border-slate-700">
+                <h2 class="jd-section-title !border-wood text-xl mb-4">韻書</h2>
+                <div v-for="(book, idx) in results['韻書']" :key="idx" class="jd-panel mb-4 p-4 border-l-4 !border-l-wood/70 jd-enter" :style="{ '--i': idx }">
                     <h3 class="font-bold text-slate-700 dark:text-slate-300 mb-2">{{ book.__name }}</h3>
                     <div v-for="(tones, pron) in book" :key="pron" class="mb-2">
                         <template v-if="pron !== '__name'">
@@ -335,10 +336,11 @@ onMounted(async () => {
 
             <!-- 各地結果 -->
             <div v-if="results['各地'] && results['各地'].length > 0">
-                <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 border-l-4 border-accent pl-3">各地</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <h2 class="jd-section-title text-xl mb-4">各地</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 jd-stagger">
                     <div v-for="loc in results['各地']" :key="loc.__id"
-                        class="p-3 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-[4px_4px_0_rgba(0,0,0,0.06)] dark:hover:shadow-[4px_4px_0_rgba(0,0,0,0.3)] hover:-translate-y-0.5 transition-all">
+                        class="relative p-3 pl-4 rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 jd-lift">
+                        <div class="absolute left-0 top-0 bottom-0 w-1" :style="{ backgroundColor: getPrimaryAreaColor(getLocationById(loc.__id).color, '#999999') }"></div>
                         <div class="flex items-center gap-2 mb-1 border-b border-slate-100 dark:border-slate-700 pb-1">
                             <AreaColorBadge :color="getLocationById(loc.__id).color" badge-class="w-3.5 h-3.5" />
                             <span class="font-bold text-slate-800 dark:text-slate-200">{{ getLocationById(loc.__id).second }}</span>
